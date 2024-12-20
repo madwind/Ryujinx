@@ -44,6 +44,7 @@ namespace Ryujinx.Input.SDL2
             {
                 HandleJoyStickConnected(joystickIndex, SDL_JoystickGetDeviceInstanceID(joystickIndex));
             }
+            _gamepadsIds.Add(MergedJoyConPair.Id);
         }
 
         private string GenerateGamepadId(int joystickIndex)
@@ -157,6 +158,11 @@ namespace Ryujinx.Input.SDL2
 
         public IGamepad GetGamepad(string id)
         {
+            if (id == MergedJoyConPair.Id)
+            {
+                return new MergedJoyConPair(_gamepadsIds);
+            }
+
             int joystickIndex = GetJoystickIndexByGamepadId(id);
 
             if (joystickIndex == -1)

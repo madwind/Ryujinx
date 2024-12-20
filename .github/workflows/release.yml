@@ -21,7 +21,7 @@ env:
   DOTNET_CLI_TELEMETRY_OPTOUT: 1
   RYUJINX_BASE_VERSION: "1.2"
   RYUJINX_TARGET_RELEASE_CHANNEL_NAME: "release"
-  RYUJINX_TARGET_RELEASE_CHANNEL_OWNER: "GreemDev"
+  RYUJINX_TARGET_RELEASE_CHANNEL_OWNER: "madwind"
   RYUJINX_TARGET_RELEASE_CHANNEL_REPO: "Ryujinx"
   RELEASE: 1
 
@@ -58,9 +58,9 @@ jobs:
             | Platform | Artifact |
             |--|--|
             | Windows 64 bit | [Release Windows Artifact](https://github.com/${{ env.RYUJINX_TARGET_RELEASE_CHANNEL_OWNER }}/${{ env.RYUJINX_TARGET_RELEASE_CHANNEL_REPO }}/releases/download/${{ steps.version_info.outputs.build_version }}/ryujinx-${{ steps.version_info.outputs.build_version }}-win_x64.zip) |
-            | Linux 64 bit | [Release Linux Artifact](https://github.com/${{ env.RYUJINX_TARGET_RELEASE_CHANNEL_OWNER }}/${{ env.RYUJINX_TARGET_RELEASE_CHANNEL_REPO }}/releases/download/${{ steps.version_info.outputs.build_version }}/ryujinx-${{ steps.version_info.outputs.build_version }}-linux_x64.tar.gz) |
-            | Linux arm 64 bit | [Release Linux arm Artifact](https://github.com/${{ env.RYUJINX_TARGET_RELEASE_CHANNEL_OWNER }}/${{ env.RYUJINX_TARGET_RELEASE_CHANNEL_REPO }}/releases/download/${{ steps.version_info.outputs.build_version }}/ryujinx-${{ steps.version_info.outputs.build_version }}-linux_arm64.tar.gz) |
-            | macOS | [Release macOS Artifact](https://github.com/${{ env.RYUJINX_TARGET_RELEASE_CHANNEL_OWNER }}/${{ env.RYUJINX_TARGET_RELEASE_CHANNEL_REPO }}/releases/download/${{ steps.version_info.outputs.build_version }}/ryujinx-${{ steps.version_info.outputs.build_version }}-macos_universal.app.tar.gz) |
+            # | Linux 64 bit | [Release Linux Artifact](https://github.com/${{ env.RYUJINX_TARGET_RELEASE_CHANNEL_OWNER }}/${{ env.RYUJINX_TARGET_RELEASE_CHANNEL_REPO }}/releases/download/${{ steps.version_info.outputs.build_version }}/ryujinx-${{ steps.version_info.outputs.build_version }}-linux_x64.tar.gz) |
+            # | Linux arm 64 bit | [Release Linux arm Artifact](https://github.com/${{ env.RYUJINX_TARGET_RELEASE_CHANNEL_OWNER }}/${{ env.RYUJINX_TARGET_RELEASE_CHANNEL_REPO }}/releases/download/${{ steps.version_info.outputs.build_version }}/ryujinx-${{ steps.version_info.outputs.build_version }}-linux_arm64.tar.gz) |
+            # | macOS | [Release macOS Artifact](https://github.com/${{ env.RYUJINX_TARGET_RELEASE_CHANNEL_OWNER }}/${{ env.RYUJINX_TARGET_RELEASE_CHANNEL_REPO }}/releases/download/${{ steps.version_info.outputs.build_version }}/ryujinx-${{ steps.version_info.outputs.build_version }}-macos_universal.app.tar.gz) |
             
             **Full Changelog**: https://github.com/${{ env.RYUJINX_TARGET_RELEASE_CHANNEL_OWNER }}/${{ env.RYUJINX_TARGET_RELEASE_CHANNEL_REPO }}/compare/${{ steps.version_info.outputs.prev_build_version }}...${{ steps.version_info.outputs.build_version }}
           omitBodyDuringUpdate: true
@@ -75,8 +75,8 @@ jobs:
       matrix:
         platform:
           - { name: win-x64,     os: windows-latest, zip_os_name: win_x64     }
-          - { name: linux-x64,   os: ubuntu-latest,  zip_os_name: linux_x64   }
-          - { name: linux-arm64, os: ubuntu-latest,  zip_os_name: linux_arm64 }
+          # - { name: linux-x64,   os: ubuntu-latest,  zip_os_name: linux_x64   }
+          # - { name: linux-arm64, os: ubuntu-latest,  zip_os_name: linux_arm64 }
     steps:
       - uses: actions/checkout@v4
 

@@ -10,28 +10,42 @@ using static SDL2.SDL;
 namespace Ryujinx.Input.SDL2
 {
 
-    public class MergedJoyConPair : IGamepad
+    public class JoyConPair : IGamepad
     {
         private readonly IGamepad _leftJoyCon;
         private readonly IGamepad _rightJoyCon;
-        private List<string> gamepadsIds;
         private StandardControllerInputConfig _configuration;
-        public MergedJoyConPair(List<string> gamepadsIds)
+        public JoyConPair(List<string> gamepadsIds)
         {
             _buttonsUserMapping = new List<ButtonMappingEntry>(20);
-            this.gamepadsIds = gamepadsIds;
-            nint leftGamepadHandle = SDL_GameControllerOpen(0);
-            nint rightGamepadHandle = SDL_GameControllerOpen(1);
-            _leftJoyCon = new SDL2Gamepad(leftGamepadHandle, gamepadsIds[0]);
-            _rightJoyCon = new SDL2Gamepad(rightGamepadHandle, gamepadsIds[1]);
+
+            for (int index = 0; index < gamepadsIds.Count; index++)
+            {
+                if (gamepadsIds[index] == JoyConPair.Id)
+                {
+                    continue;
+                }
+                string gamepadName = SDL_GameControllerNameForIndex(index);
+
+                if (gamepadName == leftName)
+                {
+                    _leftJoyCon = new SDL2Gamepad(SDL_GameControllerOpen(index), gamepadsIds[0]);
+                }
+                else if (gamepadName == rightName)
+                {
+                    _rightJoyCon = new SDL2Gamepad(SDL_GameControllerOpen(index), gamepadsIds[0]);
+                }
+            }
         }
 
         public GamepadFeaturesFlag Features => _leftJoyCon.Features | _rightJoyCon.Features;
 
-        public static string Id => "MergedJoyConPair";
+        public static string Id => "JoyConPair";
+        public static string leftName => "Nintendo Switch Joy-Con (L)";
+        public static string rightName => "Nintendo Switch Joy-Con (R)";
         string IGamepad.Id => Id;
 
-        public string Name => "Merged Joy-Con Pair";
+        public string Name => "Joy-Con Pair";
 
         public bool IsConnected => _leftJoyCon.IsConnected && _rightJoyCon.IsConnected;
 
@@ -52,8 +66,8 @@ namespace Ryujinx.Input.SDL2
 };
         public void Dispose()
         {
-            _leftJoyCon.Dispose();
-            _rightJoyCon.Dispose();
+            _leftJoyCon?.Dispose();
+            _rightJoyCon?.Dispose();
         }
 
         public (float, float) GetStick(StickInputId inputId)

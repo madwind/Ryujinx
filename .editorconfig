@@ -16,6 +16,9 @@ tab_width = 4
 # New line preferences
 end_of_line = lf
 insert_final_newline = true
+dotnet_style_coalesce_expression = true:suggestion
+dotnet_style_operator_placement_when_wrapping = beginning_of_line
+dotnet_style_null_propagation = true:suggestion
 
 # Markdown, JSON, YAML, props and csproj files
 [*.{md,json,yml,props,csproj}]
@@ -106,7 +109,7 @@ csharp_style_conditional_delegate_call = true:suggestion
 csharp_prefer_static_local_function = true:suggestion
 csharp_preferred_modifier_order = public,private,protected,internal,static,extern,new,virtual,abstract,sealed,override,readonly,unsafe,volatile,async:silent
 csharp_style_prefer_readonly_struct = true
-csharp_style_prefer_method_group_conversion = true
+csharp_style_prefer_method_group_conversion = true:silent
 
 # Code-block preferences
 csharp_prefer_braces = true:silent
@@ -177,9 +180,9 @@ csharp_preserve_single_line_statements = false
 
 # Naming rules
 
-dotnet_naming_rule.interfaces_should_be_prefixed_with_I.severity = suggestion
+dotnet_naming_rule.interfaces_should_be_prefixed_with_i.severity = suggestion
 dotnet_naming_rule.interfaces_should_be_prefixed_with_I.symbols = interface
-dotnet_naming_rule.interfaces_should_be_prefixed_with_I.style = IPascalCase
+dotnet_naming_rule.interfaces_should_be_prefixed_with_i.style = IPascalCase
 
 dotnet_naming_rule.types_should_be_pascal_case.severity = suggestion
 dotnet_naming_rule.types_should_be_pascal_case.symbols = types
@@ -258,6 +261,9 @@ dotnet_diagnostic.CA1859.severity = none
 dotnet_diagnostic.CA1861.severity = none
 # Disable "Prefer using 'string.Equals(string, StringComparison)' to perform a case-insensitive comparison, but keep in mind that this might cause subtle changes in behavior, so make sure to conduct thorough testing after applying the suggestion, or if culturally sensitive comparison is not required, consider using 'StringComparison.OrdinalIgnoreCase'"
 dotnet_diagnostic.CA1862.severity = none
+csharp_style_prefer_top_level_statements = true:silent
+csharp_style_prefer_primary_constructors = true:suggestion
+csharp_prefer_system_threading_lock = true:suggestion
 
 [src/Ryujinx/UI/ViewModels/**.cs]
 # Disable "mark members as static" rule for ViewModels

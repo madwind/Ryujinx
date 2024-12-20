@@ -1,6 +1,8 @@
+using Gommon;
 using Ryujinx.SDL2.Common;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using static SDL2.SDL;
 
@@ -44,7 +46,6 @@ namespace Ryujinx.Input.SDL2
             {
                 HandleJoyStickConnected(joystickIndex, SDL_JoystickGetDeviceInstanceID(joystickIndex));
             }
-            _gamepadsIds.Add(MergedJoyConPair.Id);
         }
 
         private string GenerateGamepadId(int joystickIndex)
@@ -90,6 +91,7 @@ namespace Ryujinx.Input.SDL2
             lock (_lock)
             {
                 _gamepadsIds.Remove(id);
+                DetecteJoyConPair();
             }
 
             OnGamepadDisconnected?.Invoke(id);
@@ -122,7 +124,7 @@ namespace Ryujinx.Input.SDL2
                         else
                             _gamepadsIds.Add(id);
                     }
-
+                    DetecteJoyConPair();
                     OnGamepadConnected?.Invoke(id);
                 }
             }
@@ -158,9 +160,9 @@ namespace Ryujinx.Input.SDL2
 
         public IGamepad GetGamepad(string id)
         {
-            if (id == MergedJoyConPair.Id)
+            if (id == JoyConPair.Id)
             {
-                return new MergedJoyConPair(_gamepadsIds);
+                return new JoyConPair(_gamepadsIds);
             }
 
             int joystickIndex = GetJoystickIndexByGamepadId(id);
@@ -178,6 +180,23 @@ namespace Ryujinx.Input.SDL2
             }
 
             return new SDL2Gamepad(gamepadHandle, id);
+        }
+
+        private void DetecteJoyConPair()
+        {
+            var joyConNames = new[] { JoyConPair.leftName, JoyConPair.rightName };
+            var gamepadsNames = _gamepadsIds.Select(gamepadId => SDL_GameControllerNameForIndex(GetJoystickIndexByGamepadId(gamepadId))).ToList();
+            if (joyConNames.All(joyConName => gamepadsNames.Any(gamepadsName => gamepadsName == joyConName)))
+            {
+                if (!_gamepadsIds.Contains(JoyConPair.Id))
+                {
+                    _gamepadsIds.Add(JoyConPair.Id);
+                }
+            }
+            else
+            {
+                _gamepadsIds.Remove(JoyConPair.Id);
+            }
         }
     }
 }

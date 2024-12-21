@@ -1,7 +1,6 @@
 using Ryujinx.Common.Configuration.Hid;
 using Ryujinx.Common.Configuration.Hid.Controller;
 using Ryujinx.Common.Memory;
-using System;
 using System.Collections.Generic;
 using System.Numerics;
 using static SDL2.SDL;
@@ -12,8 +11,8 @@ namespace Ryujinx.Input.SDL2
 
     public class JoyConPair : IGamepad
     {
-        private readonly IGamepad _leftJoyCon;
-        private readonly IGamepad _rightJoyCon;
+        private readonly IGamepad _joyConLeft;
+        private readonly IGamepad _joyConRight;
         private StandardControllerInputConfig _configuration;
         public JoyConPair(List<string> gamepadsIds)
         {
@@ -29,25 +28,25 @@ namespace Ryujinx.Input.SDL2
 
                 if (gamepadName == leftName)
                 {
-                    _leftJoyCon = new SDL2Gamepad(SDL_GameControllerOpen(index), gamepadsIds[0]);
+                    _joyConLeft = new SDL2Gamepad(SDL_GameControllerOpen(index), gamepadsIds[0]);
                 }
                 else if (gamepadName == rightName)
                 {
-                    _rightJoyCon = new SDL2Gamepad(SDL_GameControllerOpen(index), gamepadsIds[0]);
+                    _joyConRight = new SDL2Gamepad(SDL_GameControllerOpen(index), gamepadsIds[0]);
                 }
             }
         }
 
-        public GamepadFeaturesFlag Features => _leftJoyCon.Features | _rightJoyCon.Features;
+        public GamepadFeaturesFlag Features => _joyConLeft.Features | _joyConRight.Features;
 
         public static string Id => "JoyConPair";
         public static string leftName => "Nintendo Switch Joy-Con (L)";
         public static string rightName => "Nintendo Switch Joy-Con (R)";
         string IGamepad.Id => Id;
 
-        public string Name => "Joy-Con Pair";
+        public string Name => "Nintendo Switch Joy-Con (L/R)";
 
-        public bool IsConnected => _leftJoyCon.IsConnected && _rightJoyCon.IsConnected;
+        public bool IsConnected => _joyConLeft.IsConnected && _joyConRight.IsConnected;
 
         private readonly record struct ButtonMappingEntry(GamepadButtonInputId To, GamepadButtonInputId From)
         {
@@ -66,19 +65,21 @@ namespace Ryujinx.Input.SDL2
 };
         public void Dispose()
         {
-            _leftJoyCon?.Dispose();
-            _rightJoyCon?.Dispose();
+            _joyConLeft?.Dispose();
+            _joyConRight?.Dispose();
         }
 
         public (float, float) GetStick(StickInputId inputId)
         {
             if (inputId == StickInputId.Left)
             {
-                return _leftJoyCon.GetStick(StickInputId.Left);
+                (float x, float y) = _joyConLeft.GetStick(StickInputId.Left);
+                return (y, -x);
             }
             else if (inputId == StickInputId.Right)
             {
-                return _rightJoyCon.GetStick(StickInputId.Left);
+                (float x, float y) = _joyConRight.GetStick(StickInputId.Left);
+                return (-y, x);
             }
 
             return (0, 0);
@@ -88,16 +89,16 @@ namespace Ryujinx.Input.SDL2
         {
             return inputId switch
             {
-                MotionInputId.RightAccelerometer => _rightJoyCon.GetMotionData(MotionInputId.Accelerometer),
-                MotionInputId.RightGyroscope => _rightJoyCon.GetMotionData(MotionInputId.Gyroscope),
-                _ => _leftJoyCon.GetMotionData(inputId)
+                MotionInputId.RightAccelerometer => _joyConRight.GetMotionData(MotionInputId.Accelerometer),
+                MotionInputId.RightGyroscope => _joyConRight.GetMotionData(MotionInputId.Gyroscope),
+                _ => _joyConLeft.GetMotionData(inputId)
             };
         }
 
         public void SetTriggerThreshold(float triggerThreshold)
         {
-            _leftJoyCon.SetTriggerThreshold(triggerThreshold);
-            _rightJoyCon.SetTriggerThreshold(triggerThreshold);
+            _joyConLeft.SetTriggerThreshold(triggerThreshold);
+            _joyConRight.SetTriggerThreshold(triggerThreshold);
         }
 
         public void SetConfiguration(InputConfig configuration)
@@ -106,8 +107,8 @@ namespace Ryujinx.Input.SDL2
             {
                 _configuration = (StandardControllerInputConfig)configuration;
 
-                _leftJoyCon.SetConfiguration(configuration);
-                _rightJoyCon.SetConfiguration(configuration);
+                _joyConLeft.SetConfiguration(configuration);
+                _joyConRight.SetConfiguration(configuration);
 
                 _buttonsUserMapping.Clear();
 
@@ -148,16 +149,16 @@ namespace Ryujinx.Input.SDL2
         {
             if (lowFrequency != 0)
             {
-                _rightJoyCon.Rumble(lowFrequency, highFrequency, durationMs);
+                _joyConRight.Rumble(lowFrequency, highFrequency, durationMs);
             }
             if (highFrequency != 0)
             {
-                _leftJoyCon.Rumble(lowFrequency, highFrequency, durationMs);
+                _joyConLeft.Rumble(lowFrequency, highFrequency, durationMs);
             }
             if (lowFrequency == 0 && highFrequency == 0)
             {
-                _leftJoyCon.Rumble(lowFrequency, highFrequency, durationMs);
-                _rightJoyCon.Rumble(lowFrequency, highFrequency, durationMs);
+                _joyConLeft.Rumble(lowFrequency, highFrequency, durationMs);
+                _joyConRight.Rumble(lowFrequency, highFrequency, durationMs);
             }
         }
 
@@ -188,8 +189,8 @@ namespace Ryujinx.Input.SDL2
                 (float leftStickX, float leftStickY) = rawState.GetStick(_stickUserMapping[(int)StickInputId.Left]);
                 (float rightStickX, float rightStickY) = rawState.GetStick(_stickUserMapping[(int)StickInputId.Right]);
 
-                result.SetStick(StickInputId.Left, leftStickY, -leftStickX);
-                result.SetStick(StickInputId.Right, -rightStickY, rightStickX);
+                result.SetStick(StickInputId.Left, leftStickX, leftStickY);
+                result.SetStick(StickInputId.Right, rightStickX, rightStickY);
             }
 
             return result;
@@ -235,28 +236,28 @@ namespace Ryujinx.Input.SDL2
             return inputId switch
             {
                 // 左 Joy-Con 按键映射
-                GamepadButtonInputId.LeftStick => _leftJoyCon.IsPressed(GamepadButtonInputId.LeftStick),
-                GamepadButtonInputId.DpadUp => _leftJoyCon.IsPressed(GamepadButtonInputId.Y),
-                GamepadButtonInputId.DpadDown => _leftJoyCon.IsPressed(GamepadButtonInputId.A),
-                GamepadButtonInputId.DpadLeft => _leftJoyCon.IsPressed(GamepadButtonInputId.B),
-                GamepadButtonInputId.DpadRight => _leftJoyCon.IsPressed(GamepadButtonInputId.X),
-                GamepadButtonInputId.Minus => _leftJoyCon.IsPressed(GamepadButtonInputId.Start),
-                GamepadButtonInputId.LeftShoulder => _leftJoyCon.IsPressed(GamepadButtonInputId.Paddle2),
-                GamepadButtonInputId.LeftTrigger => _leftJoyCon.IsPressed(GamepadButtonInputId.Paddle4),
-                GamepadButtonInputId.SingleRightTrigger0 => _leftJoyCon.IsPressed(GamepadButtonInputId.LeftShoulder),
-                GamepadButtonInputId.SingleLeftTrigger0 => _leftJoyCon.IsPressed(GamepadButtonInputId.RightShoulder),
+                GamepadButtonInputId.LeftStick => _joyConLeft.IsPressed(GamepadButtonInputId.LeftStick),
+                GamepadButtonInputId.DpadUp => _joyConLeft.IsPressed(GamepadButtonInputId.Y),
+                GamepadButtonInputId.DpadDown => _joyConLeft.IsPressed(GamepadButtonInputId.A),
+                GamepadButtonInputId.DpadLeft => _joyConLeft.IsPressed(GamepadButtonInputId.B),
+                GamepadButtonInputId.DpadRight => _joyConLeft.IsPressed(GamepadButtonInputId.X),
+                GamepadButtonInputId.Minus => _joyConLeft.IsPressed(GamepadButtonInputId.Start),
+                GamepadButtonInputId.LeftShoulder => _joyConLeft.IsPressed(GamepadButtonInputId.Paddle2),
+                GamepadButtonInputId.LeftTrigger => _joyConLeft.IsPressed(GamepadButtonInputId.Paddle4),
+                GamepadButtonInputId.SingleRightTrigger0 => _joyConLeft.IsPressed(GamepadButtonInputId.LeftShoulder),
+                GamepadButtonInputId.SingleLeftTrigger0 => _joyConLeft.IsPressed(GamepadButtonInputId.RightShoulder),
 
                 // 右 Joy-Con 按键映射
-                GamepadButtonInputId.RightStick => _rightJoyCon.IsPressed(GamepadButtonInputId.LeftStick),
-                GamepadButtonInputId.A => _rightJoyCon.IsPressed(GamepadButtonInputId.B),
-                GamepadButtonInputId.B => _rightJoyCon.IsPressed(GamepadButtonInputId.Y),
-                GamepadButtonInputId.X => _rightJoyCon.IsPressed(GamepadButtonInputId.A),
-                GamepadButtonInputId.Y => _rightJoyCon.IsPressed(GamepadButtonInputId.X),
-                GamepadButtonInputId.Plus => _rightJoyCon.IsPressed(GamepadButtonInputId.Start),
-                GamepadButtonInputId.RightShoulder => _rightJoyCon.IsPressed(GamepadButtonInputId.Paddle1),
-                GamepadButtonInputId.RightTrigger => _rightJoyCon.IsPressed(GamepadButtonInputId.Paddle3),
-                GamepadButtonInputId.SingleRightTrigger1 => _rightJoyCon.IsPressed(GamepadButtonInputId.LeftShoulder),
-                GamepadButtonInputId.SingleLeftTrigger1 => _rightJoyCon.IsPressed(GamepadButtonInputId.RightShoulder),
+                GamepadButtonInputId.RightStick => _joyConRight.IsPressed(GamepadButtonInputId.LeftStick),
+                GamepadButtonInputId.A => _joyConRight.IsPressed(GamepadButtonInputId.B),
+                GamepadButtonInputId.B => _joyConRight.IsPressed(GamepadButtonInputId.Y),
+                GamepadButtonInputId.X => _joyConRight.IsPressed(GamepadButtonInputId.A),
+                GamepadButtonInputId.Y => _joyConRight.IsPressed(GamepadButtonInputId.X),
+                GamepadButtonInputId.Plus => _joyConRight.IsPressed(GamepadButtonInputId.Start),
+                GamepadButtonInputId.RightShoulder => _joyConRight.IsPressed(GamepadButtonInputId.Paddle1),
+                GamepadButtonInputId.RightTrigger => _joyConRight.IsPressed(GamepadButtonInputId.Paddle3),
+                GamepadButtonInputId.SingleRightTrigger1 => _joyConRight.IsPressed(GamepadButtonInputId.LeftShoulder),
+                GamepadButtonInputId.SingleLeftTrigger1 => _joyConRight.IsPressed(GamepadButtonInputId.RightShoulder),
 
                 // 默认情况返回 false
                 _ => false

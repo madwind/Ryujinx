@@ -9,8 +9,7 @@ using Ryujinx.Ava.UI.ViewModels.Input;
 using Ryujinx.Common.Configuration.Hid.Controller;
 using Ryujinx.Input;
 using Ryujinx.Input.Assigner;
-using System;
-using System.Numerics;
+using Ryujinx.Input.HLE;
 using System.Threading.Tasks;
 using StickInputId = Ryujinx.Common.Configuration.Hid.Controller.StickInputId;
 
@@ -249,74 +248,41 @@ namespace Ryujinx.Ava.UI.Views.Input
         }
 
 
-        private async void StartUpdatingData()
+        private void StartUpdatingData()
         {
-            while (_isRunning)
+            Task.Run(async () =>
             {
-                var viewModel = (DataContext as ControllerInputViewModel);
-                if (viewModel != null)
+                while (_isRunning)
                 {
-                    IGamepad gamepad = viewModel.ParentModel.SelectedGamepad;
-                    var config = viewModel.Config;
-
-                    if (config.LeftJoystick != StickInputId.Unbound)
+                    var viewModel = (DataContext as ControllerInputViewModel);
+                    if (viewModel != null)
                     {
-                        var stickInputId = (Ryujinx.Input.StickInputId)(int)config.LeftJoystick;
-                        (float leftAxisX, float leftAxisY) =
-                            gamepad.GetStick(stickInputId);
-                        viewModel.LeftStickPosition =
-                            ClampToCircle(ApplyDeadzone(leftAxisX, leftAxisY, config.DeadzoneLeft), config.RangeLeft)
+                        IGamepad gamepad = viewModel.ParentModel.SelectedGamepad;
+                        var config = viewModel.Config;
+
+                        if (config.LeftJoystick != StickInputId.Unbound)
+                        {
+                            var stickInputId = (Ryujinx.Input.StickInputId)(int)config.LeftJoystick;
+                            (float leftAxisX, float leftAxisY) =
+                                gamepad.GetStick(stickInputId);
+                            viewModel.LeftStickPosition = NpadController.GetJoystickPosition(leftAxisX, leftAxisY,
+                                    config.DeadzoneLeft, config.RangeLeft)
                                 .ToString();
+                        }
+
+                        if (config.RightJoystick != StickInputId.Unbound)
+                        {
+                            var stickInputId = (Ryujinx.Input.StickInputId)(int)config.RightJoystick;
+                            (float rightAxisX, float rightAxisY) = gamepad.GetStick(stickInputId);
+                            viewModel.RightStickPosition = NpadController
+                                .GetJoystickPosition(rightAxisX, rightAxisY, config.DeadzoneRight, config.RangeRight)
+                                .ToString();
+                        }
                     }
 
-                    if (config.RightJoystick != StickInputId.Unbound)
-                    {
-                        var stickInputId = (Ryujinx.Input.StickInputId)(int)config.RightJoystick;
-                        (float rightAxisX, float rightAxisY) = gamepad.GetStick(stickInputId);
-                        viewModel.RightStickPosition =
-                            ClampToCircle(ApplyDeadzone(rightAxisX, rightAxisY, config.DeadzoneRight),
-                                config.RangeRight).ToString();
-                    }
+                    await Task.Delay(100);
                 }
-
-                await Task.Delay(100);
-            }
-        }
-
-        private static (int x, int y) ClampToCircle((int x, int y) postion, float range)
-        {
-            Vector2 point = new Vector2(postion.x, postion.y) * range;
-
-            if (point.Length() > short.MaxValue)
-            {
-                point = point / point.Length() * short.MaxValue;
-            }
-
-            return ((int)point.X, (int)point.Y);
-        }
-
-        private static (short x, short y) ApplyDeadzone(float x, float y, float deadzone)
-        {
-            float magnitudeClamped = Math.Min(MathF.Sqrt(x * x + y * y), 1f);
-
-            if (magnitudeClamped <= deadzone)
-            {
-                return (0, 0);
-            }
-
-            return (ClampAxis((x / magnitudeClamped) * ((magnitudeClamped - deadzone) / (1 - deadzone))),
-                ClampAxis((y / magnitudeClamped) * ((magnitudeClamped - deadzone) / (1 - deadzone))));
-        }
-
-
-        private static short ClampAxis(float value)
-        {
-            if (Math.Sign(value) < 0)
-            {
-                return (short)Math.Max(value * -short.MinValue, short.MinValue);
-            }
-
-            return (short)Math.Min(value * short.MaxValue, short.MaxValue);
+            });
         }
     }
 }

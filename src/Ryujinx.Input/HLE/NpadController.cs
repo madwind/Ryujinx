@@ -392,6 +392,11 @@ namespace Ryujinx.Input.HLE
 
             return state;
         }
+        
+        public static JoystickPosition GetJoystickPosition(float x, float y, float deadzone, float range)
+        {
+          return  ClampToCircle(ApplyDeadzone(x, y,deadzone), range);
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static JoystickPosition ApplyDeadzone(float x, float y, float deadzone)

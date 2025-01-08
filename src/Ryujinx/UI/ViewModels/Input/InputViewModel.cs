@@ -37,8 +37,8 @@ namespace Ryujinx.Ava.UI.ViewModels.Input
         private const string Disabled = "disabled";
         private const string ProControllerResource = "Ryujinx/Assets/Icons/Controller_ProCon.svg";
         private const string JoyConPairResource = "Ryujinx/Assets/Icons/Controller_JoyConPair.svg";
-        private const string JoyConLeftResource = "Ryujinx/Assets/Icons/Controller_JoyConLeft.svg";
-        private const string JoyConRightResource = "Ryujinx/Assets/Icons/Controller_JoyConRight.svg";
+        private const string JoyConLeftResource = "Ryujinx/Assets/Icons/Controller_JoyConLeft_Settings.svg";
+        private const string JoyConRightResource = "Ryujinx/Assets/Icons/Controller_JoyConRight_Settings.svg";
         private const string KeyboardString = "keyboard";
         private const string ControllerString = "controller";
         private readonly MainWindow _mainWindow;

@@ -15,7 +15,9 @@
     x:DataType="viewModels:ControllerInputViewModel"
     x:CompileBindings="True"
     mc:Ignorable="d"
-    Focusable="True">
+    Focusable="True"
+    Unloaded="Control_OnUnloaded"
+    >
     <Design.DataContext>
         <viewModels:ControllerInputViewModel />
     </Design.DataContext>
@@ -183,6 +185,9 @@
                                 <TextBlock
                                     HorizontalAlignment="Center"
                                     Text="{ext:Locale ControllerSettingsStickDeadzone}" />
+                                <TextBlock
+                                    HorizontalAlignment="Center"
+                                    Text="{Binding LeftStickPosition }" />
                                 <StackPanel
                                     HorizontalAlignment="Center"
                                     VerticalAlignment="Center"
@@ -716,6 +721,9 @@
                                 <TextBlock
                                     HorizontalAlignment="Center"
                                     Text="{ext:Locale ControllerSettingsStickDeadzone}" />
+                                <TextBlock
+                                    HorizontalAlignment="Center"
+                                    Text="{Binding RightStickPosition }" />
                                 <StackPanel
                                     HorizontalAlignment="Center"
                                     VerticalAlignment="Center"

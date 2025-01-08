@@ -132,6 +132,8 @@
     <None Remove="Assets\Icons\Controller_JoyConLeft.svg" />
     <None Remove="Assets\Icons\Controller_JoyConPair.svg" />
     <None Remove="Assets\Icons\Controller_JoyConRight.svg" />
+    <None Remove="Assets\Icons\Controller_JoyConLeft_Settings.svg" />
+    <None Remove="Assets\Icons\Controller_JoyConRight_Settings.svg" />
     <None Remove="Assets\Icons\Controller_ProCon.svg" />
   </ItemGroup>
 
@@ -153,6 +155,8 @@
     <EmbeddedResource Include="Assets\Icons\Controller_JoyConLeft.svg" />
     <EmbeddedResource Include="Assets\Icons\Controller_JoyConPair.svg" />
     <EmbeddedResource Include="Assets\Icons\Controller_JoyConRight.svg" />
+    <EmbeddedResource Include="Assets\Icons\Controller_JoyConLeft_Settings.svg" />
+    <EmbeddedResource Include="Assets\Icons\Controller_JoyConRight_Settings.svg" />
     <EmbeddedResource Include="Assets\Icons\Controller_ProCon.svg" />
     <EmbeddedResource Include="Assets\UIImages\Icon_NCA.png" />
     <EmbeddedResource Include="Assets\UIImages\Icon_NRO.png" />

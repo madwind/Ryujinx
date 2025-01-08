@@ -4,14 +4,13 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
-using DiscordRPC;
 using Ryujinx.Ava.UI.Helpers;
 using Ryujinx.Ava.UI.ViewModels.Input;
 using Ryujinx.Common.Configuration.Hid.Controller;
-using Ryujinx.Common.Logging;
 using Ryujinx.Input;
 using Ryujinx.Input.Assigner;
-using System;
+using Ryujinx.Input.HLE;
+using System.Threading.Tasks;
 using StickInputId = Ryujinx.Common.Configuration.Hid.Controller.StickInputId;
 
 namespace Ryujinx.Ava.UI.Views.Input
@@ -19,6 +18,7 @@ namespace Ryujinx.Ava.UI.Views.Input
     public partial class ControllerInputView : UserControl
     {
         private ButtonKeyAssigner _currentAssigner;
+        private volatile bool _isRunning = true;
 
         public ControllerInputView()
         {
@@ -39,6 +39,8 @@ namespace Ryujinx.Ava.UI.Views.Input
                         break;
                 }
             }
+
+            StartUpdatingData();
         }
 
         protected override void OnPointerReleased(PointerReleasedEventArgs e)
@@ -85,7 +87,7 @@ namespace Ryujinx.Ava.UI.Views.Input
 
         private void Button_IsCheckedChanged(object sender, RoutedEventArgs e)
         {
-            if (sender is ToggleButton button) 
+            if (sender is ToggleButton button)
             {
                 if (button.IsChecked is true)
                 {
@@ -106,7 +108,9 @@ namespace Ryujinx.Ava.UI.Views.Input
 
                         var viewModel = (DataContext as ControllerInputViewModel);
 
-                        IKeyboard keyboard = (IKeyboard)viewModel.ParentModel.AvaloniaKeyboardDriver.GetGamepad("0"); // Open Avalonia keyboard for cancel operations.
+                        IKeyboard keyboard =
+                            (IKeyboard)viewModel.ParentModel.AvaloniaKeyboardDriver
+                                .GetGamepad("0"); // Open Avalonia keyboard for cancel operations.
                         IButtonAssigner assigner = CreateButtonAssigner(isStick);
 
                         _currentAssigner.ButtonAssigned += (sender, e) =>
@@ -236,6 +240,49 @@ namespace Ryujinx.Ava.UI.Views.Input
             base.OnDetachedFromVisualTree(e);
             _currentAssigner?.Cancel();
             _currentAssigner = null;
+        }
+
+        private void Control_OnUnloaded(object sender, RoutedEventArgs e)
+        {
+            _isRunning = false;
+        }
+
+
+        private void StartUpdatingData()
+        {
+            Task.Run(async () =>
+            {
+                while (_isRunning)
+                {
+                    var viewModel = (DataContext as ControllerInputViewModel);
+                    if (viewModel != null)
+                    {
+                        IGamepad gamepad = viewModel.ParentModel.SelectedGamepad;
+                        var config = viewModel.Config;
+
+                        if (config.LeftJoystick != StickInputId.Unbound)
+                        {
+                            var stickInputId = (Ryujinx.Input.StickInputId)(int)config.LeftJoystick;
+                            (float leftAxisX, float leftAxisY) =
+                                gamepad.GetStick(stickInputId);
+                            viewModel.LeftStickPosition = NpadController.GetJoystickPosition(leftAxisX, leftAxisY,
+                                    config.DeadzoneLeft, config.RangeLeft)
+                                .ToString();
+                        }
+
+                        if (config.RightJoystick != StickInputId.Unbound)
+                        {
+                            var stickInputId = (Ryujinx.Input.StickInputId)(int)config.RightJoystick;
+                            (float rightAxisX, float rightAxisY) = gamepad.GetStick(stickInputId);
+                            viewModel.RightStickPosition = NpadController
+                                .GetJoystickPosition(rightAxisX, rightAxisY, config.DeadzoneRight, config.RangeRight)
+                                .ToString();
+                        }
+                    }
+
+                    await Task.Delay(100);
+                }
+            });
         }
     }
 }

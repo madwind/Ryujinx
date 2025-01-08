@@ -7,6 +7,7 @@ namespace Ryujinx.Ava.UI.ViewModels.Input
     public class ControllerInputViewModel : BaseModel
     {
         private GamepadInputConfig _config;
+
         public GamepadInputConfig Config
         {
             get => _config;
@@ -18,6 +19,7 @@ namespace Ryujinx.Ava.UI.ViewModels.Input
         }
 
         private bool _isLeft;
+
         public bool IsLeft
         {
             get => _isLeft;
@@ -30,6 +32,7 @@ namespace Ryujinx.Ava.UI.ViewModels.Input
         }
 
         private bool _isRight;
+
         public bool IsRight
         {
             get => _isRight;
@@ -44,6 +47,7 @@ namespace Ryujinx.Ava.UI.ViewModels.Input
         public bool HasSides => IsLeft ^ IsRight;
 
         private SvgImage _image;
+
         public SvgImage Image
         {
             get => _image;
@@ -55,6 +59,30 @@ namespace Ryujinx.Ava.UI.ViewModels.Input
         }
 
         public readonly InputViewModel ParentModel;
+        
+        private string _leftStickPosition;
+
+        public string LeftStickPosition
+        {
+            get => _leftStickPosition;
+            set
+            {
+                _leftStickPosition = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private string _rightStickPosition;
+
+        public string RightStickPosition
+        {
+            get => _rightStickPosition;
+            set
+            {
+                _rightStickPosition = value;
+                OnPropertyChanged();
+            }
+        }
 
         public ControllerInputViewModel(InputViewModel model, GamepadInputConfig config)
         {

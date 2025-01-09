@@ -28,6 +28,7 @@ using Ryujinx.HLE.HOS;
 using Ryujinx.HLE.HOS.Services.Account.Acc;
 using Ryujinx.Input.HLE;
 using Ryujinx.Input.SDL2;
+using Ryujinx.Input.SDl3;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -106,7 +107,10 @@ namespace Ryujinx.Ava.UI.Windows
 
             if (Program.PreviewerDetached)
             {
-                InputManager = new InputManager(new AvaloniaKeyboardDriver(this), new SDL2GamepadDriver());
+                InputManager = new InputManager(new AvaloniaKeyboardDriver(this), new SDL3GamepadDriver());
+                
+                //TODO: after sdl3 delete it 
+                new SDL2GamepadDriver();
 
                 _ = this.GetObservable(IsActiveProperty).Subscribe(it => ViewModel.IsActive = it);
                 this.ScalingChanged += OnScalingChanged;

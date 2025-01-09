@@ -1,0 +1,31 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <RootNamespace>Ryujinx.SDL3_CS</RootNamespace>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(OS)' == 'Windows_NT'">
+    <None Include="runtimes\win-x64\native\SDL3.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Link>SDL3.dll</Link>
+    </None>
+  </ItemGroup>
+
+<!--  <ItemGroup Condition="'$(OS)' == 'Linux'">-->
+<!--    <None Include="runtimes\linux-x64\native\SDL3.dll">-->
+<!--      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>-->
+<!--      <DestinationFolder>$(ProjectDir)</DestinationFolder>-->
+<!--    </None>-->
+<!--  </ItemGroup>-->
+
+<!--  <ItemGroup Condition="'$(OS)' == 'Darwin'">-->
+<!--    <None Include="runtimes\osx-x64\native\SDL3.dll">-->
+<!--      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>-->
+<!--      <DestinationFolder>$(ProjectDir)</DestinationFolder>-->
+<!--    </None>-->
+<!--  </ItemGroup>-->
+
+</Project>

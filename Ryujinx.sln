@@ -95,6 +95,14 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.github\workflows\release.yml = .github\workflows\release.yml
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ryujinx.SDL3.Common", "src\Ryujinx.SDL3.Common\Ryujinx.SDL3.Common.csproj", "{7C70B441-F3D1-41FE-A648-19014BFB88D9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ryujinx.Input.SDL3", "src\Ryujinx.Input.SDL3\Ryujinx.Input.SDL3.csproj", "{7420A718-7E3C-42B5-82EA-74F6BEE0F1FB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ryujinx.SDL3-CS", "src\Ryujinx.SDL3-CS\Ryujinx.SDL3-CS.csproj", "{ED2A7EA4-4098-47ED-BA87-EDB3537CFC10}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ryujinx.Audio.Backends.SDL3", "src\Ryujinx.Audio.Backends.SDL3\Ryujinx.Audio.Backends.SDL3.csproj", "{027A38DC-774D-4CF7-A1C0-C510BFC4BD29}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -259,6 +267,22 @@ Global
 		{81EA598C-DBA1-40B0-8DA4-4796B78F2037}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{81EA598C-DBA1-40B0-8DA4-4796B78F2037}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{81EA598C-DBA1-40B0-8DA4-4796B78F2037}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7C70B441-F3D1-41FE-A648-19014BFB88D9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7C70B441-F3D1-41FE-A648-19014BFB88D9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7C70B441-F3D1-41FE-A648-19014BFB88D9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7C70B441-F3D1-41FE-A648-19014BFB88D9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7420A718-7E3C-42B5-82EA-74F6BEE0F1FB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7420A718-7E3C-42B5-82EA-74F6BEE0F1FB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7420A718-7E3C-42B5-82EA-74F6BEE0F1FB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7420A718-7E3C-42B5-82EA-74F6BEE0F1FB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ED2A7EA4-4098-47ED-BA87-EDB3537CFC10}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ED2A7EA4-4098-47ED-BA87-EDB3537CFC10}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ED2A7EA4-4098-47ED-BA87-EDB3537CFC10}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ED2A7EA4-4098-47ED-BA87-EDB3537CFC10}.Release|Any CPU.Build.0 = Release|Any CPU
+		{027A38DC-774D-4CF7-A1C0-C510BFC4BD29}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{027A38DC-774D-4CF7-A1C0-C510BFC4BD29}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{027A38DC-774D-4CF7-A1C0-C510BFC4BD29}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{027A38DC-774D-4CF7-A1C0-C510BFC4BD29}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -20,6 +20,7 @@ using Ryujinx.Common.SystemInterop;
 using Ryujinx.Graphics.Vulkan.MoltenVK;
 using Ryujinx.Headless;
 using Ryujinx.SDL2.Common;
+using Ryujinx.SDL3.Common;
 using System;
 using System.IO;
 using System.Linq;
@@ -128,6 +129,9 @@ namespace Ryujinx.Ava
             // Initialize SDL2 driver
             SDL2Driver.MainThreadDispatcher = action => Dispatcher.UIThread.InvokeAsync(action, DispatcherPriority.Input);
 
+            // Initialize SDL3 driver
+            SDL3Driver.MainThreadDispatcher = action => Dispatcher.UIThread.InvokeAsync(action, DispatcherPriority.Input);
+            
             ReloadConfig();
 
             WindowScaleFactor = ForceDpiAware.GetWindowScaleFactor();

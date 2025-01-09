@@ -14,10 +14,10 @@
     <PackageVersion Include="Microsoft.Build.Utilities.Core" Version="17.12.6" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageVersion Include="Projektanker.Icons.Avalonia" Version="9.4.0" />
-    <PackageVersion Include="Projektanker.Icons.Avalonia.FontAwesome" Version="9.4.0"/>
-    <PackageVersion Include="Projektanker.Icons.Avalonia.MaterialDesign" Version="9.4.0"/>
+    <PackageVersion Include="Projektanker.Icons.Avalonia.FontAwesome" Version="9.4.0" />
+    <PackageVersion Include="Projektanker.Icons.Avalonia.MaterialDesign" Version="9.4.0" />
     <PackageVersion Include="CommandLineParser" Version="2.9.1" />
-    <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.4.0"/>
+    <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.4.0" />
     <PackageVersion Include="Concentus" Version="2.2.0" />
     <PackageVersion Include="DiscordRichPresence" Version="1.2.1.24" />
     <PackageVersion Include="DynamicData" Version="9.0.4" />
@@ -41,7 +41,7 @@
     <PackageVersion Include="Ryujinx.Audio.OpenAL.Dependencies" Version="1.21.0.1" />
     <PackageVersion Include="Ryujinx.Graphics.Nvdec.Dependencies" Version="5.0.3-build14" />
     <PackageVersion Include="Ryujinx.Graphics.Vulkan.Dependencies.MoltenVK" Version="1.2.0" />
-    <PackageVersion Include="Ryujinx.SDL2-CS" Version="2.30.0-build32" />
+    <PackageVersion Include="Ryujinx.SDL3-CS" Version="2.30.0-build32" />
     <PackageVersion Include="Gommon" Version="2.7.0.1" />
     <PackageVersion Include="securifybv.ShellLink" Version="0.1.0" />
     <PackageVersion Include="Sep" Version="0.6.0" />

@@ -159,26 +159,24 @@ namespace Ryujinx.Input.SDL3
 
             const int ElementCount = 3;
 
-            float[] values = new float[ElementCount];
+
             unsafe
             {
-                fixed (float* valuesPtr = &values[0])
+                float* values = stackalloc float[ElementCount];
+                if (!SDL_GetGamepadSensorData(_gamepadHandle, sensorType, values, ElementCount))
                 {
-                    if (!SDL_GetGamepadSensorData(_gamepadHandle, sensorType, valuesPtr, ElementCount))
-                    {
-                        return Vector3.Zero;
-                    }
+                    return Vector3.Zero;
                 }
+
+                Vector3 value = new(values[0], values[1], values[2]);
+
+                return inputId switch
+                {
+                    MotionInputId.Gyroscope => RadToDegree(value),
+                    MotionInputId.Accelerometer => GsToMs2(value),
+                    _ => value
+                };
             }
-
-            Vector3 value = new(values[0], values[1], values[2]);
-
-            return inputId switch
-            {
-                MotionInputId.Gyroscope => RadToDegree(value),
-                MotionInputId.Accelerometer => GsToMs2(value),
-                _ => value
-            };
         }
 
         private static Vector3 RadToDegree(Vector3 rad) => rad * (180 / MathF.PI);

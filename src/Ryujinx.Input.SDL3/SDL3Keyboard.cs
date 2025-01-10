@@ -193,7 +193,7 @@ namespace Ryujinx.Input.SDL3
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static int ToSDL2Scancode(Key key)
+        private static int ToSDL3Scancode(Key key)
         {
             if (key >= Key.Unknown && key <= Key.Menu)
             {
@@ -235,7 +235,7 @@ namespace Ryujinx.Input.SDL3
 
             for (Key key = 0; key < Key.Count; key++)
             {
-                int index = ToSDL2Scancode(key);
+                int index = ToSDL3Scancode(key);
                 if (index == -1)
                 {
                     SDL_Keymod modifierMask = GetKeyboardModifierMask(key);

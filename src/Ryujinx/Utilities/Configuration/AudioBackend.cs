@@ -10,5 +10,6 @@ namespace Ryujinx.Ava.Utilities.Configuration
         OpenAl,
         SoundIo,
         SDL2,
+        SDL3,
     }
 }

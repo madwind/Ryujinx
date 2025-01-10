@@ -25,7 +25,7 @@ namespace Ryujinx.SDL3.Common
 
         public static Action<Action> MainThreadDispatcher { get; set; }
 
-        private const SDL_InitFlags SdlInitFlags = SDL_InitFlags.SDL_INIT_GAMEPAD;
+        private const SDL_InitFlags SdlInitFlags = SDL_InitFlags.SDL_INIT_GAMEPAD | SDL_InitFlags.SDL_INIT_AUDIO;
 
         private bool _isRunning;
         private uint _refereceCount;
@@ -52,13 +52,13 @@ namespace Ryujinx.SDL3.Common
                     return;
                 }
 
-                // SDL_SetHint(SDL_HINT_APP_NAME, "Ryujinx");
-                // SDL_SetHint(SDL_HINT_JOYSTICK_HIDAPI_PS4_RUMBLE, "1");
-                // SDL_SetHint(SDL_HINT_JOYSTICK_HIDAPI_PS5_RUMBLE, "1");
-                // SDL_SetHint(SDL_HINT_JOYSTICK_ALLOW_BACKGROUND_EVENTS, "1");
-                // SDL_SetHint(SDL_HINT_JOYSTICK_HIDAPI_SWITCH_HOME_LED, "0");
-                // SDL_SetHint(SDL_HINT_JOYSTICK_HIDAPI_JOY_CONS, "1");
-                // SDL_SetHint(SDL_HINT_VIDEO_ALLOW_SCREENSAVER, "1");
+                SDL_SetHint(SDL_HINT_APP_NAME, "Ryujinx");
+                SDL_SetHint(SDL_HINT_JOYSTICK_HIDAPI_PS4_RUMBLE, "1");
+                SDL_SetHint(SDL_HINT_JOYSTICK_HIDAPI_PS5_RUMBLE, "1");
+                SDL_SetHint(SDL_HINT_JOYSTICK_ALLOW_BACKGROUND_EVENTS, "1");
+                SDL_SetHint(SDL_HINT_JOYSTICK_HIDAPI_SWITCH_HOME_LED, "0");
+                SDL_SetHint(SDL_HINT_JOYSTICK_HIDAPI_JOY_CONS, "1");
+                SDL_SetHint(SDL_HINT_VIDEO_ALLOW_SCREENSAVER, "1");
                 //
                 //
                 // // NOTE: As of SDL2 2.24.0, joycons are combined by default but the motion source only come from one of them.
@@ -67,7 +67,7 @@ namespace Ryujinx.SDL3.Common
 
                 if (!SDL_Init(SdlInitFlags))
                 {
-                    string errorMessage = $"SDL2 initialization failed with error \"{SDL_GetError()}\"";
+                    string errorMessage = $"SDL3 initialization failed with error \"{SDL_GetError()}\"";
 
                     Logger.Error?.Print(LogClass.Application, errorMessage);
 

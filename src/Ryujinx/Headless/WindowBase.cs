@@ -15,6 +15,7 @@ using Ryujinx.Input;
 using Ryujinx.Input.HLE;
 using Ryujinx.Input.SDL2;
 using Ryujinx.SDL2.Common;
+using Ryujinx.SDL3.Common;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -116,6 +117,7 @@ namespace Ryujinx.Headless
             HostUITheme = new HeadlessHostUiTheme();
 
             SDL2Driver.Instance.Initialize();
+            SDL3Driver.Instance.Initialize();
         }
 
         public void Initialize(Switch device, List<InputConfig> inputConfigs, bool enableKeyboard, bool enableMouse)

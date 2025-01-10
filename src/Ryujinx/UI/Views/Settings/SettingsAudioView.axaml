@@ -46,6 +46,12 @@
                         <ComboBoxItem IsEnabled="{Binding IsSDL2Enabled}">
                             <TextBlock Text="{ext:Locale SettingsTabSystemAudioBackendSDL2}" />
                         </ComboBoxItem>
+                        <ComboBoxItem IsEnabled="{Binding IsSDL3Enabled}">
+                            <TextBlock>
+                            <TextBlock Text="{ext:Locale SettingsTabSystemAudioBackendSDL2}" />
+                            <TextBlock Text="*" />
+                            </TextBlock>
+                        </ComboBoxItem>
                     </ComboBox>
                 </StackPanel>
                 <StackPanel Margin="10,0,0,0" Orientation="Horizontal">

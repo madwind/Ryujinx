@@ -151,7 +151,6 @@ namespace Ryujinx.Audio.Backends.SDL3
 
         public override void QueueBuffer(AudioBuffer buffer)
         {
-            Console.WriteLine(buffer);
             EnsureAudioStreamSetup(buffer);
 
             if (_outputStream != 0)

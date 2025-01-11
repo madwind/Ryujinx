@@ -101,41 +101,32 @@ namespace Ryujinx.Input.SDL3
             right.SetTriggerThreshold(triggerThreshold);
         }
 
-        public static bool IsCombinable(Dictionary<uint, string> gamepadsInstanceIdsMapping)
+        public static bool IsCombinable(Dictionary<uint, GamepadInfo> gamepadsInstanceIdsMapping)
         {
-            (uint leftIndex, uint rightIndex) = DetectJoyConPair(gamepadsInstanceIdsMapping);
-            return leftIndex != 0 && rightIndex != 0;
+            (GamepadInfo leftGamepadInfo, GamepadInfo rightGamepadInfo) = DetectJoyConPair(gamepadsInstanceIdsMapping);
+            return leftGamepadInfo != null && rightGamepadInfo != null;
         }
 
-        private static (uint leftInstance, uint rightInstance) DetectJoyConPair(
-            Dictionary<uint, string> gamepadsInstanceIdsMapping)
+        private static (GamepadInfo leftGamepadInfo, GamepadInfo rightGamepadInfo) DetectJoyConPair(
+            Dictionary<uint, GamepadInfo> gamepadsInstanceIdsMapping)
         {
-            var leftInstance = gamepadsInstanceIdsMapping
-                .FirstOrDefault(item => SDL_GetGamepadNameForID(item.Key) == SDL3JoyCon.LeftName).Key;
-            var rightInstance = gamepadsInstanceIdsMapping
-                .FirstOrDefault(item => SDL_GetGamepadNameForID(item.Key) == SDL3JoyCon.RightName).Key;
+            var leftGamepadInfo = gamepadsInstanceIdsMapping
+                .FirstOrDefault(item => SDL_GetGamepadNameForID(item.Key) == SDL3JoyCon.LeftName).Value;
+            var rightGamepadInfo = gamepadsInstanceIdsMapping
+                .FirstOrDefault(item => SDL_GetGamepadNameForID(item.Key) == SDL3JoyCon.RightName).Value;
 
-            return (leftInstance, rightInstance);
+            return (leftGamepadInfo, rightGamepadInfo);
         }
 
-        public static IGamepad GetGamepad(Dictionary<uint, string> gamepadsInstanceIdsMapping)
+        public static IGamepad GetGamepad(Dictionary<uint, GamepadInfo> gamepadsInstanceIdsMapping)
         {
-            (uint leftInstance, uint rightInstance) = DetectJoyConPair(gamepadsInstanceIdsMapping);
-            if (leftInstance == 0 || rightInstance == 0)
+            (GamepadInfo leftGamepadInfo, GamepadInfo rightGamepadInfo) = DetectJoyConPair(gamepadsInstanceIdsMapping);
+            if (leftGamepadInfo == null || rightGamepadInfo == null)
             {
                 return null;
             }
 
-            nint leftGamepadHandle = SDL_OpenGamepad(leftInstance);
-            nint rightGamepadHandle = SDL_OpenGamepad(rightInstance);
-
-            if (leftGamepadHandle == nint.Zero || rightGamepadHandle == nint.Zero)
-            {
-                return null;
-            }
-
-            return new SDL3JoyConPair(new SDL3JoyCon(leftGamepadHandle, gamepadsInstanceIdsMapping[leftInstance]),
-                new SDL3JoyCon(rightGamepadHandle, gamepadsInstanceIdsMapping[rightInstance]));
+            return new SDL3JoyConPair(new SDL3JoyCon(leftGamepadInfo), new SDL3JoyCon(rightGamepadInfo));
         }
     }
 }

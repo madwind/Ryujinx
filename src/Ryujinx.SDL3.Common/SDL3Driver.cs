@@ -25,7 +25,8 @@ namespace Ryujinx.SDL3.Common
 
         public static Action<Action> MainThreadDispatcher { get; set; }
 
-        private const SDL_InitFlags SdlInitFlags = SDL_InitFlags.SDL_INIT_GAMEPAD | SDL_InitFlags.SDL_INIT_AUDIO;
+        private const SDL_InitFlags SdlInitFlags = SDL_InitFlags.SDL_INIT_GAMEPAD | SDL_InitFlags.SDL_INIT_AUDIO |
+                                                   SDL_InitFlags.SDL_INIT_VIDEO;
 
         private bool _isRunning;
         private uint _refereceCount;
@@ -123,19 +124,18 @@ namespace Ryujinx.SDL3.Common
         private void HandleSDLEvent(ref SDL_Event evnt)
         {
             var type = (SDL_EventType)evnt.type;
-            if (type == SDL_EventType.SDL_EVENT_JOYSTICK_ADDED)
+            if (type == SDL_EventType.SDL_EVENT_GAMEPAD_ADDED)
             {
-
                 uint instanceId = evnt.jdevice.which;
 
                 Logger.Debug?.Print(LogClass.Application, $"Added joystick instance id {instanceId}");
 
                 OnJoyStickConnected?.Invoke(instanceId);
             }
-            else if (type == SDL_EventType.SDL_EVENT_JOYSTICK_REMOVED)
+            else if (type == SDL_EventType.SDL_EVENT_GAMEPAD_REMOVED)
             {
                 uint instanceId = evnt.jdevice.which;
-                
+
                 Logger.Debug?.Print(LogClass.Application, $"Removed joystick instance id {instanceId}");
 
                 OnJoystickDisconnected?.Invoke(instanceId);
@@ -144,7 +144,8 @@ namespace Ryujinx.SDL3.Common
             {
                 OnJoyBatteryUpdated?.Invoke(evnt.jbattery.which, evnt.jbattery);
             }
-            else if (type is >= SDL_EventType.SDL_EVENT_WINDOW_FIRST and <= SDL_EventType.SDL_EVENT_WINDOW_LAST or SDL_EventType.SDL_EVENT_MOUSE_BUTTON_DOWN
+            else if (type is >= SDL_EventType.SDL_EVENT_WINDOW_FIRST and <= SDL_EventType.SDL_EVENT_WINDOW_LAST
+                     or SDL_EventType.SDL_EVENT_MOUSE_BUTTON_DOWN
                      or SDL_EventType.SDL_EVENT_MOUSE_BUTTON_UP)
             {
                 if (_registeredWindowHandlers.TryGetValue(evnt.window.windowID, out Action<SDL_Event> handler))

@@ -61,27 +61,27 @@ namespace Ryujinx.Input.SDL3
         public GamepadFeaturesFlag Features { get; }
 
         private nint _gamepadHandle;
-
+        
         private enum JoyConType
         {
             Left, Right
         }
 
-        public const string Prefix = "Nintendo Switch Joy-Con";
         public const string LeftName = "Nintendo Switch Joy-Con (L)";
         public const string RightName = "Nintendo Switch Joy-Con (R)";
 
         private readonly JoyConType _joyConType;
 
-        public SDL3JoyCon(nint gamepadHandle, string driverId)
+        public SDL3JoyCon(GamepadInfo gamepadInfo)
         {
-            _gamepadHandle = gamepadHandle;
+            _gamepadHandle = gamepadInfo.gamepadHandle;
             _buttonsUserMapping = new List<ButtonMappingEntry>(10);
 
             Name = SDL_GetGamepadName(_gamepadHandle);
-            Id = driverId;
+            Id = gamepadInfo.driverId;
             Features = GetFeaturesFlag();
-
+            Console.WriteLine(Name+": "+Features);
+            
             // Enable motion tracking
             if (Features.HasFlag(GamepadFeaturesFlag.Motion))
             {
@@ -118,7 +118,6 @@ namespace Ryujinx.Input.SDL3
         private GamepadFeaturesFlag GetFeaturesFlag()
         {
             GamepadFeaturesFlag result = GamepadFeaturesFlag.None;
-
             if (SDL_GamepadHasSensor(_gamepadHandle, SDL_SensorType.SDL_SENSOR_ACCEL) &&
                 SDL_GamepadHasSensor(_gamepadHandle, SDL_SensorType.SDL_SENSOR_GYRO))
             {
@@ -141,8 +140,7 @@ namespace Ryujinx.Input.SDL3
         {
             if (disposing && _gamepadHandle != nint.Zero)
             {
-                SDL_CloseGamepad(_gamepadHandle);
-
+                // SDL_CloseGamepad(_gamepadHandle);
                 _gamepadHandle = nint.Zero;
             }
         }
@@ -210,9 +208,7 @@ namespace Ryujinx.Input.SDL3
         }
 
         private static Vector3 RadToDegree(Vector3 rad) => rad * (180 / MathF.PI);
-
-        //TODO: miss constant SDL_STANDARD_GRAVITY    9.80665f
-        private static Vector3 GsToMs2(Vector3 gs) => gs / 9.80665f;
+        private static Vector3 GsToMs2(Vector3 gs) => gs / SDL_STANDARD_GRAVITY;
 
         public void SetConfiguration(InputConfig configuration)
         {
@@ -415,6 +411,12 @@ namespace Ryujinx.Input.SDL3
             //     Console.WriteLine(inputId+", "+button);
             // }
             return SDL_GetGamepadButton(_gamepadHandle, button);
+        }
+
+        public static bool IsJoyCon(IntPtr gamepadHandle)
+        {
+            var gamepadName = SDL_GetGamepadName(gamepadHandle);
+            return gamepadName is LeftName or RightName;
         }
     }
 }

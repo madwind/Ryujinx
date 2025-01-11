@@ -8048,6 +8048,6 @@ public static unsafe partial class SDL
 	[UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
 	public static partial int SDL_EnterAppMainCallbacks(int argc, IntPtr argv, SDL_AppInit_func appinit, SDL_AppIterate_func appiter, SDL_AppEvent_func appevent, SDL_AppQuit_func appquit);
 
-    public const uint SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK  = 0xFFFFFFFFu;
-
+    public const uint SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK = 0xFFFFFFFFu;
+    public const float SDL_STANDARD_GRAVITY = 9.80665f;
 }

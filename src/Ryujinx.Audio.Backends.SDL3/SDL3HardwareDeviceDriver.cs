@@ -49,14 +49,6 @@ namespace Ryujinx.Audio.Backends.SDL3
 
         private static bool IsSupportedInternal()
         {
-            var devices = SDL_GetAudioPlaybackDevices(out int count);
-            var joystickIDs = new int[count];
-            Marshal.Copy(devices, joystickIDs, 0, count);
-            for (int i = 0; i < count; ++i)
-            {
-                Console.WriteLine(joystickIDs[i]);
-            }
-
             var device = OpenStream(SampleFormat.PcmInt16, Constants.TargetSampleRate, Constants.ChannelCountMax,
                 Constants.TargetSampleCount, null);
 
@@ -147,11 +139,9 @@ namespace Ryujinx.Audio.Backends.SDL3
                 return 0;
             }
 
-            Console.WriteLine(SDL_GetAudioDeviceName(device));
             bool isValid = false;
             if (SDL_GetAudioDeviceFormat(device, out SDL_AudioSpec got, out int i))
             {
-                Console.WriteLine(got.freq);
                 isValid = got.format == desired.format && got.freq == desired.freq &&
                           got.channels == desired.channels;
             }

@@ -60,13 +60,13 @@ namespace Ryujinx.Input.SDL3
 
         private float _triggerThreshold;
 
-        public SDL3Gamepad(nint gamepadHandle, string driverId)
+        public SDL3Gamepad(GamepadInfo gamepadInfo)
         {
-            _gamepadHandle = gamepadHandle;
+            _gamepadHandle = gamepadInfo.gamepadHandle;
             _buttonsUserMapping = new List<ButtonMappingEntry>(20);
 
             Name = SDL_GetGamepadName(_gamepadHandle);
-            Id = driverId;
+            Id = gamepadInfo.driverId;
             Features = GetFeaturesFlag();
             _triggerThreshold = 0.0f;
 
@@ -181,8 +181,7 @@ namespace Ryujinx.Input.SDL3
 
         private static Vector3 RadToDegree(Vector3 rad) => rad * (180 / MathF.PI);
 
-        //TODO: miss constant SDL_STANDARD_GRAVITY    9.80665f
-        private static Vector3 GsToMs2(Vector3 gs) => gs / 9.80665f;
+        private static Vector3 GsToMs2(Vector3 gs) => gs / SDL_STANDARD_GRAVITY;
 
         public void SetConfiguration(InputConfig configuration)
         {

@@ -25,7 +25,7 @@ namespace Ryujinx.Input.SDL2
         public const string Id = "JoyConPair";
         string IGamepad.Id => Id;
 
-        public string Name => "Nintendo Switch Joy-Con (L/R)";
+        public string Name => "* Nintendo Switch Joy-Con (L/R)";
         public bool IsConnected => left is { IsConnected: true } && right is { IsConnected: true };
 
         public void Dispose()

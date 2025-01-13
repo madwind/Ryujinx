@@ -9,6 +9,7 @@ using System.Text;
 
 public static unsafe partial class SDL
 {
+
 	// Custom marshaller for SDL-owned strings returned by SDL.
 	[CustomMarshaller(typeof(string), MarshalMode.ManagedToUnmanagedOut, typeof(SDLOwnedStringMarshaller))]
 	public static unsafe class SDLOwnedStringMarshaller
@@ -2591,7 +2592,7 @@ public static unsafe partial class SDL
 
 	[LibraryImport(nativeLibName, StringMarshalling = StringMarshalling.Utf8)]
 	[UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-	public static partial void SDL_GUIDToString(SDL_GUID guid, Span<byte> pszGUID, int cbGUID);
+    public static partial void SDL_GUIDToString(SDL_GUID guid, Span<byte> pszGUID, int cbGUID);
 
 	[LibraryImport(nativeLibName, StringMarshalling = StringMarshalling.Utf8)]
 	[UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
@@ -2748,7 +2749,7 @@ public static unsafe partial class SDL
 
 	[LibraryImport(nativeLibName)]
 	[UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-	public static partial SDL_GUID SDL_GetJoystickGUIDForID(uint instance_id);
+	public static partial SDL_GUID SDL_GetJoystickGUIDForID(SDL_JoystickID instance_id);
 
 	[LibraryImport(nativeLibName)]
 	[UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
@@ -4619,7 +4620,7 @@ public static unsafe partial class SDL
 		public SDL_EventType type;
 		public uint reserved;
 		public ulong timestamp;
-		public uint which;
+		public SDL_JoystickID which;
 	}
 
 	[StructLayout(LayoutKind.Sequential)]
@@ -4628,7 +4629,7 @@ public static unsafe partial class SDL
 		public SDL_EventType type;
 		public uint reserved;
 		public ulong timestamp;
-		public uint which;
+		public SDL_JoystickID which;
 		public SDL_PowerState state;
 		public int percent;
 	}
@@ -8050,4 +8051,16 @@ public static unsafe partial class SDL
 
     public const uint SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK = 0xFFFFFFFFu;
     public const float SDL_STANDARD_GRAVITY = 9.80665f;
+    public record struct SDL_JoystickID
+    {
+        public uint Value;
+
+        public SDL_JoystickID(uint value)
+        {
+            Value = value;
+        }
+
+        public static implicit operator uint(SDL_JoystickID id) => id.Value;
+        public static implicit operator SDL_JoystickID(uint value) => new SDL_JoystickID(value);
+    }
 }

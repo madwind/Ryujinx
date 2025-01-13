@@ -3,13 +3,14 @@ using Ryujinx.Common.Configuration.Hid.Controller;
 using Ryujinx.Common.Logging;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Numerics;
 using System.Threading;
 using static SDL3.SDL;
 
 namespace Ryujinx.Input.SDL3
 {
-    internal class SDL3JoyCon : IGamepad
+    class SDL3JoyCon : IGamepad
     {
         private bool HasConfiguration => _configuration != null;
 
@@ -48,7 +49,7 @@ namespace Ryujinx.Input.SDL3
             { GamepadButtonInputId.SingleLeftTrigger1, SDL_GamepadButton.SDL_GAMEPAD_BUTTON_LEFT_SHOULDER }
         };
 
-        private readonly Dictionary<GamepadButtonInputId, SDL_GamepadButton> _buttonsDriverMapping;
+        private readonly SDL_GamepadButton[] _buttonsDriverMapping;
         private readonly Lock _userMappingLock = new();
 
         private readonly List<ButtonMappingEntry> _buttonsUserMapping;
@@ -61,7 +62,7 @@ namespace Ryujinx.Input.SDL3
         public GamepadFeaturesFlag Features { get; }
 
         private nint _gamepadHandle;
-        
+
         private enum JoyConType
         {
             Left, Right
@@ -72,16 +73,15 @@ namespace Ryujinx.Input.SDL3
 
         private readonly JoyConType _joyConType;
 
-        public SDL3JoyCon(GamepadInfo gamepadInfo)
+        public SDL3JoyCon(SDL_JoystickID joystickId, string driverId)
         {
-            _gamepadHandle = gamepadInfo.gamepadHandle;
+            _gamepadHandle = SDL_OpenGamepad(joystickId);
             _buttonsUserMapping = new List<ButtonMappingEntry>(10);
 
             Name = SDL_GetGamepadName(_gamepadHandle);
-            Id = gamepadInfo.driverId;
+            Id = driverId;
             Features = GetFeaturesFlag();
-            Console.WriteLine(Name+": "+Features);
-            
+
             // Enable motion tracking
             if (Features.HasFlag(GamepadFeaturesFlag.Motion))
             {
@@ -102,17 +102,30 @@ namespace Ryujinx.Input.SDL3
             {
                 case LeftName:
                     {
-                        _buttonsDriverMapping = _leftButtonsDriverMapping;
+                        _buttonsDriverMapping = ToSDLButtonMapping(_leftButtonsDriverMapping);
                         _joyConType = JoyConType.Left;
                         break;
                     }
                 case RightName:
                     {
-                        _buttonsDriverMapping = _rightButtonsDriverMapping;
+                        _buttonsDriverMapping = ToSDLButtonMapping(_rightButtonsDriverMapping);
                         _joyConType = JoyConType.Right;
                         break;
                     }
+                default:
+                    throw new InvalidOperationException(
+                        $"Unexpected Name: {Name}. Expected '{LeftName}' or '{RightName}'.");
             }
+        }
+
+        private static SDL_GamepadButton[] ToSDLButtonMapping(
+            Dictionary<GamepadButtonInputId, SDL_GamepadButton> buttonsDriverMapping)
+        {
+            return Enumerable.Range(0, (int)GamepadButtonInputId.Count)
+                .Select(i =>
+                    buttonsDriverMapping.GetValueOrDefault((GamepadButtonInputId)i,
+                        SDL_GamepadButton.SDL_GAMEPAD_BUTTON_INVALID))
+                .ToArray();
         }
 
         private GamepadFeaturesFlag GetFeaturesFlag()
@@ -136,11 +149,11 @@ namespace Ryujinx.Input.SDL3
         public string Name { get; }
         public bool IsConnected => SDL_GamepadConnected(_gamepadHandle);
 
-        protected virtual void Dispose(bool disposing)
+        private void Dispose(bool disposing)
         {
             if (disposing && _gamepadHandle != nint.Zero)
             {
-                // SDL_CloseGamepad(_gamepadHandle);
+                SDL_CloseGamepad(_gamepadHandle);
                 _gamepadHandle = nint.Zero;
             }
         }
@@ -195,7 +208,8 @@ namespace Ryujinx.Input.SDL3
                 Vector3 value = _joyConType switch
                 {
                     JoyConType.Left => new Vector3(-values[2], values[1], values[0]),
-                    JoyConType.Right => new Vector3(values[2], values[1], -values[0])
+                    JoyConType.Right => new Vector3(values[2], values[1], -values[0]),
+                    _ => throw new ArgumentOutOfRangeException($"Unexpected JoyConType value: {_joyConType}")
                 };
 
                 return inputId switch
@@ -401,7 +415,8 @@ namespace Ryujinx.Input.SDL3
 
         public bool IsPressed(GamepadButtonInputId inputId)
         {
-            if (!_buttonsDriverMapping.TryGetValue(inputId, out var button))
+            var button = _buttonsDriverMapping[(int)inputId];
+            if (button == SDL_GamepadButton.SDL_GAMEPAD_BUTTON_INVALID)
             {
                 return false;
             }
@@ -413,9 +428,9 @@ namespace Ryujinx.Input.SDL3
             return SDL_GetGamepadButton(_gamepadHandle, button);
         }
 
-        public static bool IsJoyCon(IntPtr gamepadHandle)
+        public static bool IsJoyCon(SDL_JoystickID joystickId)
         {
-            var gamepadName = SDL_GetGamepadName(gamepadHandle);
+            var gamepadName = SDL_GetGamepadNameForID(joystickId);
             return gamepadName is LeftName or RightName;
         }
     }

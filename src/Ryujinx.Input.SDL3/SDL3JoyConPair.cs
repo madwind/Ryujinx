@@ -1,5 +1,4 @@
 using Ryujinx.Common.Configuration.Hid;
-using Ryujinx.Common.Configuration.Hid.Controller;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
@@ -7,24 +6,15 @@ using static SDL3.SDL;
 
 namespace Ryujinx.Input.SDL3
 {
-    internal class SDL3JoyConPair(IGamepad left, IGamepad right) : IGamepad
+    class SDL3JoyConPair(IGamepad left, IGamepad right) : IGamepad
     {
-        private StandardControllerInputConfig _configuration;
-
-        private readonly StickInputId[] _stickUserMapping =
-        [
-            StickInputId.Unbound,
-            StickInputId.Left,
-            StickInputId.Right
-        ];
-
         public GamepadFeaturesFlag Features => (left?.Features ?? GamepadFeaturesFlag.None) |
                                                (right?.Features ?? GamepadFeaturesFlag.None);
 
         public const string Id = "JoyConPair";
         string IGamepad.Id => Id;
 
-        public string Name => "Nintendo Switch Joy-Con (L/R)";
+        public string Name => "* Nintendo Switch Joy-Con (L/R)";
         public bool IsConnected => left is { IsConnected: true } && right is { IsConnected: true };
 
         public void Dispose()
@@ -101,32 +91,27 @@ namespace Ryujinx.Input.SDL3
             right.SetTriggerThreshold(triggerThreshold);
         }
 
-        public static bool IsCombinable(Dictionary<uint, GamepadInfo> gamepadsInstanceIdsMapping)
+        public static bool IsCombinable(Dictionary<SDL_JoystickID, string> gamepadsInstanceIdsMapping)
         {
-            (GamepadInfo leftGamepadInfo, GamepadInfo rightGamepadInfo) = DetectJoyConPair(gamepadsInstanceIdsMapping);
-            return leftGamepadInfo != null && rightGamepadInfo != null;
+            var gamepadNames = gamepadsInstanceIdsMapping.Keys.Select(id => SDL_GetGamepadNameForID(id)).ToArray();
+            return gamepadNames.Contains(SDL3JoyCon.LeftName) && gamepadNames.Contains(SDL3JoyCon.RightName);
         }
 
-        private static (GamepadInfo leftGamepadInfo, GamepadInfo rightGamepadInfo) DetectJoyConPair(
-            Dictionary<uint, GamepadInfo> gamepadsInstanceIdsMapping)
+        public static IGamepad GetGamepad(Dictionary<SDL_JoystickID, string> gamepadsInstanceIdsMapping)
         {
-            var leftGamepadInfo = gamepadsInstanceIdsMapping
-                .FirstOrDefault(item => SDL_GetGamepadNameForID(item.Key) == SDL3JoyCon.LeftName).Value;
-            var rightGamepadInfo = gamepadsInstanceIdsMapping
-                .FirstOrDefault(item => SDL_GetGamepadNameForID(item.Key) == SDL3JoyCon.RightName).Value;
-
-            return (leftGamepadInfo, rightGamepadInfo);
-        }
-
-        public static IGamepad GetGamepad(Dictionary<uint, GamepadInfo> gamepadsInstanceIdsMapping)
-        {
-            (GamepadInfo leftGamepadInfo, GamepadInfo rightGamepadInfo) = DetectJoyConPair(gamepadsInstanceIdsMapping);
-            if (leftGamepadInfo == null || rightGamepadInfo == null)
+            var leftPair =
+                gamepadsInstanceIdsMapping.FirstOrDefault(pair =>
+                    SDL_GetGamepadNameForID(pair.Key) == SDL3JoyCon.LeftName);
+            var rightPair =
+                gamepadsInstanceIdsMapping.FirstOrDefault(pair =>
+                    SDL_GetGamepadNameForID(pair.Key) == SDL3JoyCon.RightName);
+            if (leftPair.Key == 0 || rightPair.Key == 0)
             {
                 return null;
             }
 
-            return new SDL3JoyConPair(new SDL3JoyCon(leftGamepadInfo), new SDL3JoyCon(rightGamepadInfo));
+            return new SDL3JoyConPair(new SDL3JoyCon(leftPair.Key, leftPair.Value),
+                new SDL3JoyCon(rightPair.Key, rightPair.Value));
         }
     }
 }

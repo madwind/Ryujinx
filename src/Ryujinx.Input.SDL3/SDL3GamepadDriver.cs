@@ -12,7 +12,7 @@ namespace Ryujinx.Input.SDl3
 {
     public class SDL3GamepadDriver : IGamepadDriver
     {
-        private readonly Dictionary<uint, GamepadInfo> _gamepadsInstanceIdsMapping;
+        private readonly Dictionary<SDL_JoystickID, string> _gamepadsInstanceIdsMapping;
         private readonly List<string> _gamepadsIds;
         private readonly Lock _lock = new();
 
@@ -34,36 +34,21 @@ namespace Ryujinx.Input.SDl3
 
         public SDL3GamepadDriver()
         {
-            _gamepadsInstanceIdsMapping = new Dictionary<uint, GamepadInfo>();
+            _gamepadsInstanceIdsMapping = new Dictionary<SDL_JoystickID, string>();
             _gamepadsIds = new List<string>();
 
             SDL3Driver.Instance.Initialize();
             SDL3Driver.Instance.OnJoyStickConnected += HandleJoyStickConnected;
             SDL3Driver.Instance.OnJoystickDisconnected += HandleJoyStickDisconnected;
             SDL3Driver.Instance.OnJoyBatteryUpdated += HandleJoyBatteryUpdated;
-
-            // IntPtr joystickArray = SDL_GetJoysticks(out int count);
-            //
-            // var joystickIDs = new int[count];
-            // Marshal.Copy(joystickArray, joystickIDs, 0, count);
-            //
-            // for (int i = 0; i < count; i++)
-            // {
-            //     HandleJoyStickConnected((uint)joystickIDs[i]);
-            // }
         }
 
-        private string GenerateGamepadId(uint joystickIndex)
+        private string GenerateGamepadId(SDL_JoystickID joystickId)
         {
             int bufferSize = 33;
-            Span<byte> pszGUID = stackalloc byte[bufferSize];
-            SDL_GUIDToString(SDL_GetJoystickGUIDForID(joystickIndex), pszGUID, bufferSize);
-            var guid = Encoding.UTF8.GetString(pszGUID);
-
-            // if (guid == new SDL_GUID())
-            // {
-            //     return null;
-            // }
+            Span<byte> pszGuid = stackalloc byte[bufferSize];
+            SDL_GUIDToString(SDL_GetJoystickGUIDForID(joystickId), pszGuid, bufferSize);
+            var guid = Encoding.UTF8.GetString(pszGuid);
 
             string id;
             lock (_lock)
@@ -80,24 +65,23 @@ namespace Ryujinx.Input.SDl3
             return id;
         }
 
-        private GamepadInfo GetJoystickIndexByGamepadId(string id)
+        private KeyValuePair<SDL_JoystickID,string> GetGamepadInfoByGamepadId(string id)
         {
             lock (_lock)
             {
-                return _gamepadsInstanceIdsMapping.FirstOrDefault(x => x.Value.driverId == id).Value;
+                return _gamepadsInstanceIdsMapping.FirstOrDefault(gamepadId  => gamepadId.Value == id);
             }
         }
 
-        private void HandleJoyStickDisconnected(uint joystickInstanceId)
+        private void HandleJoyStickDisconnected(SDL_JoystickID joystickId)
         {
             bool joyConPairDisconnected = false;
-            if (!_gamepadsInstanceIdsMapping.Remove(joystickInstanceId, out GamepadInfo gamepadInfo))
+            if (!_gamepadsInstanceIdsMapping.Remove(joystickId, out string id))
                 return;
 
             lock (_lock)
             {
-                _gamepadsIds.Remove(gamepadInfo.driverId);
-                SDL_CloseGamepad(gamepadInfo.gamepadHandle);
+                _gamepadsIds.Remove(id);
                 if (!SDL3JoyConPair.IsCombinable(_gamepadsInstanceIdsMapping))
                 {
                     _gamepadsIds.Remove(SDL3JoyConPair.Id);
@@ -105,40 +89,35 @@ namespace Ryujinx.Input.SDl3
                 }
             }
 
-            OnGamepadDisconnected?.Invoke(gamepadInfo.driverId);
+            OnGamepadDisconnected?.Invoke(id);
             if (joyConPairDisconnected)
             {
                 OnGamepadDisconnected?.Invoke(SDL3JoyConPair.Id);
             }
         }
 
-        private void HandleJoyStickConnected(uint gamepadInstanceId)
+        private void HandleJoyStickConnected(SDL_JoystickID joystickId)
         {
             bool joyConPairConnected = false;
 
-            if (_gamepadsInstanceIdsMapping.ContainsKey(gamepadInstanceId))
+            if (_gamepadsInstanceIdsMapping.ContainsKey(joystickId))
             {
                 // Sometimes a JoyStick connected event fires after the app starts even though it was connected before
                 // so it is rejected to avoid doubling the entries.
                 return;
             }
 
-            string id = GenerateGamepadId(gamepadInstanceId);
+            string id = GenerateGamepadId(joystickId);
             if (id == null)
             {
                 return;
             }
 
-            if (_gamepadsInstanceIdsMapping.TryAdd(gamepadInstanceId, new GamepadInfo(id, SDL_OpenGamepad(gamepadInstanceId))))
+            if (_gamepadsInstanceIdsMapping.TryAdd(joystickId, id))
             {
                 lock (_lock)
                 {
-                    if (gamepadInstanceId <= _gamepadsIds.FindLastIndex(_ => true))
-                    {
-                        // _gamepadsIds.Insert(joystickDeviceId, id);
-                    }
-                    else
-                        _gamepadsIds.Add(id);
+                    _gamepadsIds.Add(id);
 
                     if (SDL3JoyConPair.IsCombinable(_gamepadsInstanceIdsMapping))
                     {
@@ -156,10 +135,10 @@ namespace Ryujinx.Input.SDl3
             }
         }
 
-        private void HandleJoyBatteryUpdated(uint joystickDeviceId, SDL_JoyBatteryEvent joyBatteryEvent)
+        private void HandleJoyBatteryUpdated(SDL_JoystickID joystickId, SDL_JoyBatteryEvent joyBatteryEvent)
         {
             Logger.Info?.Print(LogClass.Hid,
-                $"{SDL_GetGamepadNameForID(joystickDeviceId)}, Battery percent: {joyBatteryEvent.percent}");
+                $"{SDL_GetGamepadNameForID(joystickId)}, Battery percent: {joyBatteryEvent.percent}");
         }
 
         protected virtual void Dispose(bool disposing)
@@ -200,18 +179,14 @@ namespace Ryujinx.Input.SDl3
                 }
             }
 
-            var gamepadInfo = GetJoystickIndexByGamepadId(id);
-            if (gamepadInfo == null)
+            var gamepadInfo = GetGamepadInfoByGamepadId(id);
+
+            if (SDL3JoyCon.IsJoyCon(gamepadInfo.Key))
             {
-                return null;
+                return new SDL3JoyCon(gamepadInfo.Key, gamepadInfo.Value);
             }
 
-            if (SDL3JoyCon.IsJoyCon(gamepadInfo.gamepadHandle))
-            {
-                return new SDL3JoyCon(gamepadInfo);
-            }
-
-            return new SDL3Gamepad(gamepadInfo);
+            return new SDL3Gamepad(gamepadInfo.Key, gamepadInfo.Value);
         }
     }
 }

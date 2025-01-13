@@ -7,6 +7,7 @@ using System.IO;
 using System.Threading;
 using static SDL3.SDL;
 
+
 namespace Ryujinx.SDL3.Common
 {
     public class SDL3Driver : IDisposable
@@ -32,9 +33,9 @@ namespace Ryujinx.SDL3.Common
         private uint _refereceCount;
         private Thread _worker;
 
-        public event Action<uint> OnJoyStickConnected;
-        public event Action<uint> OnJoystickDisconnected;
-        public event Action<uint, SDL_JoyBatteryEvent> OnJoyBatteryUpdated;
+        public event Action<SDL_JoystickID> OnJoyStickConnected;
+        public event Action<SDL_JoystickID> OnJoystickDisconnected;
+        public event Action<SDL_JoystickID, SDL_JoyBatteryEvent> OnJoyBatteryUpdated;
 
         private ConcurrentDictionary<uint, Action<SDL_Event>> _registeredWindowHandlers;
 
@@ -54,11 +55,10 @@ namespace Ryujinx.SDL3.Common
                 }
 
                 SDL_SetHint(SDL_HINT_APP_NAME, "Ryujinx");
-                SDL_SetHint(SDL_HINT_JOYSTICK_HIDAPI_PS4_RUMBLE, "1");
-                SDL_SetHint(SDL_HINT_JOYSTICK_HIDAPI_PS5_RUMBLE, "1");
+                // SDL_SetHint(SDL_HINT_JOYSTICK_HIDAPI_PS4_RUMBLE, "1");
+                // SDL_SetHint(SDL_HINT_JOYSTICK_HIDAPI_PS5_RUMBLE, "1");
                 SDL_SetHint(SDL_HINT_JOYSTICK_ALLOW_BACKGROUND_EVENTS, "1");
                 SDL_SetHint(SDL_HINT_JOYSTICK_HIDAPI_SWITCH_HOME_LED, "0");
-                SDL_SetHint(SDL_HINT_JOYSTICK_HIDAPI_JOY_CONS, "1");
                 SDL_SetHint(SDL_HINT_VIDEO_ALLOW_SCREENSAVER, "1");
                 //
                 //
@@ -126,7 +126,7 @@ namespace Ryujinx.SDL3.Common
             var type = (SDL_EventType)evnt.type;
             if (type == SDL_EventType.SDL_EVENT_GAMEPAD_ADDED)
             {
-                uint instanceId = evnt.jdevice.which;
+                var instanceId = evnt.jdevice.which;
 
                 Logger.Debug?.Print(LogClass.Application, $"Added joystick instance id {instanceId}");
 
@@ -134,7 +134,7 @@ namespace Ryujinx.SDL3.Common
             }
             else if (type == SDL_EventType.SDL_EVENT_GAMEPAD_REMOVED)
             {
-                uint instanceId = evnt.jdevice.which;
+                var instanceId = evnt.jdevice.which;
 
                 Logger.Debug?.Print(LogClass.Application, $"Removed joystick instance id {instanceId}");
 

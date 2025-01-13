@@ -60,13 +60,13 @@ namespace Ryujinx.Input.SDL3
 
         private float _triggerThreshold;
 
-        public SDL3Gamepad(GamepadInfo gamepadInfo)
+        public SDL3Gamepad(SDL_JoystickID joystickId, string driverId)
         {
-            _gamepadHandle = gamepadInfo.gamepadHandle;
+            _gamepadHandle = SDL_OpenGamepad(joystickId);
             _buttonsUserMapping = new List<ButtonMappingEntry>(20);
 
             Name = SDL_GetGamepadName(_gamepadHandle);
-            Id = gamepadInfo.driverId;
+            Id = driverId;
             Features = GetFeaturesFlag();
             _triggerThreshold = 0.0f;
 
@@ -110,7 +110,7 @@ namespace Ryujinx.Input.SDL3
 
         public bool IsConnected => SDL_GamepadConnected(_gamepadHandle);
 
-        protected virtual void Dispose(bool disposing)
+        private void Dispose(bool disposing)
         {
             if (disposing && _gamepadHandle != nint.Zero)
             {
@@ -370,12 +370,13 @@ namespace Ryujinx.Input.SDL3
                         SDL_GamepadAxis.SDL_GAMEPAD_AXIS_RIGHT_TRIGGER)) > _triggerThreshold;
             }
 
-            if (_buttonsDriverMapping[(int)inputId] == SDL_GamepadButton.SDL_GAMEPAD_BUTTON_INVALID)
+            var button = _buttonsDriverMapping[(int)inputId];
+            if (button == SDL_GamepadButton.SDL_GAMEPAD_BUTTON_INVALID)
             {
                 return false;
             }
 
-            return SDL_GetGamepadButton(_gamepadHandle, _buttonsDriverMapping[(int)inputId]);
+            return SDL_GetGamepadButton(_gamepadHandle, button);
         }
     }
 }

@@ -70,7 +70,7 @@ namespace Ryujinx.Ava.UI.ViewModels.Input
             Image = ParentModel.Image;
         }
 
-        public void UpdateImage(string css)
+        public void UpdateImageCss(string css)
         {
             Image = new SvgImage { Source = ParentModel.Image.Source, Css = css };
         }

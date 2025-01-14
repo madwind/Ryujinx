@@ -316,6 +316,7 @@ namespace Ryujinx.Input.SDL3
                     // Do not touch state of button already pressed
                     if (!result.IsPressed(entry.To))
                     {
+                        
                         result.SetPressed(entry.To, rawState.IsPressed(entry.From));
                     }
                 }

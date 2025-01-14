@@ -16,6 +16,7 @@
     x:CompileBindings="True"
     mc:Ignorable="d"
     Focusable="True"
+
     Unloaded="Control_OnUnloaded"
     >
     <Design.DataContext>

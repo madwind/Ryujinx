@@ -10,6 +10,7 @@ namespace Ryujinx.Ava.UI.ViewModels.Input
         [ObservableProperty] private GamepadInputConfig _config;
 
         private bool _isLeft;
+
         public bool IsLeft
         {
             get => _isLeft;
@@ -22,6 +23,7 @@ namespace Ryujinx.Ava.UI.ViewModels.Input
         }
 
         private bool _isRight;
+
         public bool IsRight
         {
             get => _isRight;
@@ -38,7 +40,7 @@ namespace Ryujinx.Ava.UI.ViewModels.Input
         [ObservableProperty] private SvgImage _image;
 
         public readonly InputViewModel ParentModel;
-        
+
         [ObservableProperty] private string _leftStickPosition;
 
         [ObservableProperty] private string _rightStickPosition;
@@ -66,6 +68,11 @@ namespace Ryujinx.Ava.UI.ViewModels.Input
             IsLeft = ParentModel.IsLeft;
             IsRight = ParentModel.IsRight;
             Image = ParentModel.Image;
+        }
+
+        public void UpdateImage(string css)
+        {
+            Image = new SvgImage { Source = ParentModel.Image.Source, Css = css };
         }
     }
 }

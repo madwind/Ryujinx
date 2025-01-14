@@ -183,7 +183,6 @@ namespace Ryujinx.Ava.UI.ViewModels.Input
 
                     image.Source = source;
                 }
-
                 return image;
             }
         }

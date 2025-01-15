@@ -48,7 +48,8 @@ namespace Ryujinx.Audio.Backends.SDL3
 
         private static bool IsSupportedInternal()
         {
-            var device = OpenStream(SampleFormat.PcmInt16, Constants.TargetSampleRate, Constants.ChannelCountMax);
+            nint device = OpenStream(SampleFormat.PcmInt16, Constants.TargetSampleRate, Constants.ChannelCountMax,
+                Constants.TargetSampleCount, null);
 
             if (device != 0)
             {
@@ -99,7 +100,7 @@ namespace Ryujinx.Audio.Backends.SDL3
         }
 
         private static SDL_AudioSpec GetSDL3Spec(SampleFormat requestedSampleFormat, uint requestedSampleRate,
-            uint requestedChannelCount)
+            uint requestedChannelCount, uint sampleCount)
         {
             return new SDL_AudioSpec
             {
@@ -122,11 +123,13 @@ namespace Ryujinx.Audio.Backends.SDL3
         }
 
         internal static nint OpenStream(SampleFormat requestedSampleFormat, uint requestedSampleRate,
-            uint requestedChannelCount)
-        {       
-            SDL_AudioSpec spec = GetSDL3Spec(requestedSampleFormat, requestedSampleRate, requestedChannelCount);
+            uint requestedChannelCount, uint sampleCount, SDL_AudioStreamCallback callback)
+        {
+            SDL_AudioSpec desired = GetSDL3Spec(requestedSampleFormat, requestedSampleRate, requestedChannelCount,
+                sampleCount);
 
-            var stream = SDL_OpenAudioDeviceStream(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, ref spec,null,IntPtr.Zero);
+            nint stream =
+                SDL_OpenAudioDeviceStream(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, ref desired, callback, nint.Zero);
 
             if (stream == 0)
             {
@@ -136,6 +139,15 @@ namespace Ryujinx.Audio.Backends.SDL3
                 return 0;
             }
 
+            // bool isValid = got.format == desired.format && got.freq == desired.freq && got.channels == desired.channels;
+            //
+            // if (!isValid)
+            // {
+            //     Logger.Error?.Print(LogClass.Application, "SDL3 open audio device is not valid");
+            //     SDL_DestroyAudioStream(stream);
+            //
+            //     return 0;
+            // }
 
             return stream;
         }

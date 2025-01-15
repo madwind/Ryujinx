@@ -5,7 +5,6 @@ using Ryujinx.Memory;
 using Ryujinx.SDL3.Common;
 using System;
 using System.Collections.Concurrent;
-using System.Runtime.InteropServices;
 using System.Threading;
 using static Ryujinx.Audio.Integration.IHardwareDeviceDriver;
 using static SDL3.SDL;
@@ -54,7 +53,7 @@ namespace Ryujinx.Audio.Backends.SDL3
 
             if (device != 0)
             {
-                SDL_CloseAudioDevice(device);
+                SDL_DestroyAudioStream(device);
             }
 
             return device != 0;
@@ -123,15 +122,15 @@ namespace Ryujinx.Audio.Backends.SDL3
             };
         }
 
-        internal static uint OpenStream(SampleFormat requestedSampleFormat, uint requestedSampleRate,
+        internal static nint OpenStream(SampleFormat requestedSampleFormat, uint requestedSampleRate,
             uint requestedChannelCount, uint sampleCount, SDL_AudioStreamCallback callback)
-        {
-            SDL_AudioSpec desired = GetSDL3Spec(requestedSampleFormat, requestedSampleRate, requestedChannelCount,
+        {       
+            SDL_AudioSpec spec = GetSDL3Spec(requestedSampleFormat, requestedSampleRate, requestedChannelCount,
                 sampleCount);
-            SDL_AudioSpec desired2 = default;
-            var device = SDL_OpenAudioDevice(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK,  ref desired);
 
-            if (device == 0)
+            var stream = SDL_OpenAudioDeviceStream(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, ref spec,null,IntPtr.Zero);
+
+            if (stream == 0)
             {
                 Logger.Error?.Print(LogClass.Application,
                     $"SDL3 open audio device initialization failed with error \"{SDL_GetError()}\"");
@@ -139,22 +138,8 @@ namespace Ryujinx.Audio.Backends.SDL3
                 return 0;
             }
 
-            bool isValid = false;
-            if (SDL_GetAudioDeviceFormat(device, out SDL_AudioSpec got, out int i))
-            {
-                isValid = got.format == desired.format && got.freq == desired.freq &&
-                          got.channels == desired.channels;
-            }
 
-            // if (!isValid)
-            // {
-            //     Logger.Error?.Print(LogClass.Application, "SDL3 open audio device is not valid");
-            //     SDL_CloseAudioDevice(device);
-            //
-            //     return 0;
-            // }
-
-            return device;
+            return stream;
         }
 
         public void Dispose()

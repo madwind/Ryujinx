@@ -48,8 +48,7 @@
                         </ComboBoxItem>
                         <ComboBoxItem IsEnabled="{Binding IsSDL3Enabled}">
                             <TextBlock>
-                            <TextBlock Text="{ext:Locale SettingsTabSystemAudioBackendSDL2}" />
-                            <TextBlock Text="+1" />
+                            <TextBlock Text="{ext:Locale SettingsTabSystemAudioBackendSDL3}" />
                             </TextBlock>
                         </ComboBoxItem>
                     </ComboBox>

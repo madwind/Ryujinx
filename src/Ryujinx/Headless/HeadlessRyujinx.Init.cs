@@ -157,7 +157,7 @@ namespace Ryujinx.Headless
                     config = new StandardControllerInputConfig
                     {
                         Version = InputConfig.CurrentVersion,
-                        Backend = InputBackendType.GamepadSDL2,
+                        Backend = InputBackendType.GamepadSDL3,
                         Id = null,
                         ControllerType = ControllerType.JoyconPair,
                         DeadzoneLeft = 0.1f,

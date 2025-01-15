@@ -29,7 +29,7 @@ namespace Ryujinx.Audio.Backends.SDL3
 
             SDL3Driver.Instance.Initialize();
 
-            if (!SDL_GetAudioDeviceFormat(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, out var spec, out int sample_frames))
+            if (!SDL_GetAudioDeviceFormat(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, out var spec, out int _))
             {
                 Logger.Error?.Print(LogClass.Application,
                     $"SDL_GetDefaultAudioInfo failed with error \"{SDL_GetError()}\"");
@@ -48,8 +48,7 @@ namespace Ryujinx.Audio.Backends.SDL3
 
         private static bool IsSupportedInternal()
         {
-            var device = OpenStream(SampleFormat.PcmInt16, Constants.TargetSampleRate, Constants.ChannelCountMax,
-                Constants.TargetSampleCount, null);
+            var device = OpenStream(SampleFormat.PcmInt16, Constants.TargetSampleRate, Constants.ChannelCountMax);
 
             if (device != 0)
             {
@@ -100,7 +99,7 @@ namespace Ryujinx.Audio.Backends.SDL3
         }
 
         private static SDL_AudioSpec GetSDL3Spec(SampleFormat requestedSampleFormat, uint requestedSampleRate,
-            uint requestedChannelCount, uint sampleCount)
+            uint requestedChannelCount)
         {
             return new SDL_AudioSpec
             {
@@ -123,10 +122,9 @@ namespace Ryujinx.Audio.Backends.SDL3
         }
 
         internal static nint OpenStream(SampleFormat requestedSampleFormat, uint requestedSampleRate,
-            uint requestedChannelCount, uint sampleCount, SDL_AudioStreamCallback callback)
+            uint requestedChannelCount)
         {       
-            SDL_AudioSpec spec = GetSDL3Spec(requestedSampleFormat, requestedSampleRate, requestedChannelCount,
-                sampleCount);
+            SDL_AudioSpec spec = GetSDL3Spec(requestedSampleFormat, requestedSampleRate, requestedChannelCount);
 
             var stream = SDL_OpenAudioDeviceStream(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, ref spec,null,IntPtr.Zero);
 

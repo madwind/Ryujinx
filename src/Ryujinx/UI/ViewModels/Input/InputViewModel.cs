@@ -579,7 +579,7 @@ namespace Ryujinx.Ava.UI.ViewModels.Input
                 config = new StandardControllerInputConfig
                 {
                     Version = InputConfig.CurrentVersion,
-                    Backend = InputBackendType.GamepadSDL2,
+                    Backend = InputBackendType.GamepadSDL3,
                     Id = id,
                     ControllerType = ControllerType.ProController,
                     DeadzoneLeft = 0.1f,

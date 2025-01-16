@@ -405,10 +405,6 @@ namespace Ryujinx.Input.SDL3
                 return false;
             }
 
-            if (SDL_GetGamepadButton(_gamepadHandle, button))
-            {
-                Console.WriteLine(_gamepadType+": " + button+" => "+inputId);
-            }
             return SDL_GetGamepadButton(_gamepadHandle, button);
         }
 

@@ -384,7 +384,7 @@ namespace Ryujinx.Input.SDL3
             return inputId switch
             {
                 StickInputId.Left when _gamepadType == SDL_GamepadType.SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_LEFT => (resultY, -resultX),
-                StickInputId.Right when _gamepadType == SDL_GamepadType.SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_LEFT => (-resultY, resultX),
+                StickInputId.Right when _gamepadType == SDL_GamepadType.SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_RIGHT => (-resultY, resultX),
                 _ => (0.0f, 0.0f)
             };
         }

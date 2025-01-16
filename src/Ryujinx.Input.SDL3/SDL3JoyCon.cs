@@ -49,7 +49,7 @@ namespace Ryujinx.Input.SDL3
             { GamepadButtonInputId.SingleLeftTrigger1, SDL_GamepadButton.SDL_GAMEPAD_BUTTON_LEFT_SHOULDER }
         };
 
-        private static SDL_GamepadButton[] _buttonsDriverMapping;
+        private readonly SDL_GamepadButton[] _buttonsDriverMapping;
         private readonly Lock _userMappingLock = new();
 
         private readonly List<ButtonMappingEntry> _buttonsUserMapping;
@@ -91,6 +91,7 @@ namespace Ryujinx.Input.SDL3
             }
 
             _gamepadType = SDL_GetGamepadType(_gamepadHandle);
+
             _buttonsDriverMapping = _gamepadType switch
             {
                 SDL_GamepadType.SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_LEFT => ToSDLButtonMapping(
@@ -102,11 +103,11 @@ namespace Ryujinx.Input.SDL3
         }
 
         private static SDL_GamepadButton[] ToSDLButtonMapping(
-            Dictionary<GamepadButtonInputId, SDL_GamepadButton> buttonsDriverMapping)
+            Dictionary<GamepadButtonInputId, SDL_GamepadButton> buttonsDriverDict)
         {
             return Enumerable.Range(0, (int)GamepadButtonInputId.Count)
                 .Select(i =>
-                    buttonsDriverMapping.GetValueOrDefault((GamepadButtonInputId)i,
+                    buttonsDriverDict.GetValueOrDefault((GamepadButtonInputId)i,
                         SDL_GamepadButton.SDL_GAMEPAD_BUTTON_INVALID))
                 .ToArray();
         }
@@ -402,6 +403,11 @@ namespace Ryujinx.Input.SDL3
             if (button == SDL_GamepadButton.SDL_GAMEPAD_BUTTON_INVALID)
             {
                 return false;
+            }
+
+            if (SDL_GetGamepadButton(_gamepadHandle, button))
+            {
+                Console.WriteLine(_gamepadType+": " + button+" => "+inputId);
             }
             return SDL_GetGamepadButton(_gamepadHandle, button);
         }

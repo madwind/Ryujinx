@@ -21,7 +21,7 @@ namespace Ryujinx.Input.SDL3
 
         private StandardControllerInputConfig _configuration;
 
-        private readonly Dictionary<GamepadButtonInputId, SDL_GamepadButton> _leftButtonsDriverMapping = new()
+        private static readonly Dictionary<GamepadButtonInputId, SDL_GamepadButton> _leftButtonsDriverDict = new()
         {
             { GamepadButtonInputId.LeftStick, SDL_GamepadButton.SDL_GAMEPAD_BUTTON_LEFT_STICK },
             { GamepadButtonInputId.DpadUp, SDL_GamepadButton.SDL_GAMEPAD_BUTTON_WEST },
@@ -35,7 +35,7 @@ namespace Ryujinx.Input.SDL3
             { GamepadButtonInputId.SingleLeftTrigger0, SDL_GamepadButton.SDL_GAMEPAD_BUTTON_LEFT_SHOULDER },
         };
 
-        private readonly Dictionary<GamepadButtonInputId, SDL_GamepadButton> _rightButtonsDriverMapping = new()
+        private static readonly Dictionary<GamepadButtonInputId, SDL_GamepadButton> _rightButtonsDriverDict = new()
         {
             { GamepadButtonInputId.RightStick, SDL_GamepadButton.SDL_GAMEPAD_BUTTON_LEFT_STICK },
             { GamepadButtonInputId.A, SDL_GamepadButton.SDL_GAMEPAD_BUTTON_SOUTH },
@@ -49,7 +49,7 @@ namespace Ryujinx.Input.SDL3
             { GamepadButtonInputId.SingleLeftTrigger1, SDL_GamepadButton.SDL_GAMEPAD_BUTTON_LEFT_SHOULDER }
         };
 
-        private readonly SDL_GamepadButton[] _buttonsDriverMapping;
+        private static SDL_GamepadButton[] _buttonsDriverMapping;
         private readonly Lock _userMappingLock = new();
 
         private readonly List<ButtonMappingEntry> _buttonsUserMapping;
@@ -94,9 +94,9 @@ namespace Ryujinx.Input.SDL3
             _buttonsDriverMapping = _gamepadType switch
             {
                 SDL_GamepadType.SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_LEFT => ToSDLButtonMapping(
-                    _leftButtonsDriverMapping),
+                    _leftButtonsDriverDict),
                 SDL_GamepadType.SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_RIGHT => ToSDLButtonMapping(
-                    _rightButtonsDriverMapping),
+                    _rightButtonsDriverDict),
                 _ => throw new InvalidOperationException($"Unexpected JoyConType value: {_gamepadType}")
             };
         }

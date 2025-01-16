@@ -63,17 +63,9 @@ namespace Ryujinx.Input.SDL3
 
         private nint _gamepadHandle;
 
-        private enum JoyConType
-        {
-            Left, Right
-        }
+        private readonly SDL_GamepadType _gamepadType;
 
-        public const string LeftName = "Nintendo Switch Joy-Con (L)";
-        public const string RightName = "Nintendo Switch Joy-Con (R)";
-
-        private readonly JoyConType _joyConType;
-
-        public SDL3JoyCon(SDL_JoystickID joystickId, string driverId)
+        public SDL3JoyCon(uint joystickId, string driverId)
         {
             _gamepadHandle = SDL_OpenGamepad(joystickId);
             _buttonsUserMapping = new List<ButtonMappingEntry>(10);
@@ -98,24 +90,15 @@ namespace Ryujinx.Input.SDL3
                 }
             }
 
-            switch (Name)
+            _gamepadType = SDL_GetGamepadType(_gamepadHandle);
+            _buttonsDriverMapping = _gamepadType switch
             {
-                case LeftName:
-                    {
-                        _buttonsDriverMapping = ToSDLButtonMapping(_leftButtonsDriverMapping);
-                        _joyConType = JoyConType.Left;
-                        break;
-                    }
-                case RightName:
-                    {
-                        _buttonsDriverMapping = ToSDLButtonMapping(_rightButtonsDriverMapping);
-                        _joyConType = JoyConType.Right;
-                        break;
-                    }
-                default:
-                    throw new InvalidOperationException(
-                        $"Unexpected Name: {Name}. Expected '{LeftName}' or '{RightName}'.");
-            }
+                SDL_GamepadType.SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_LEFT => ToSDLButtonMapping(
+                    _leftButtonsDriverMapping),
+                SDL_GamepadType.SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_RIGHT => ToSDLButtonMapping(
+                    _rightButtonsDriverMapping),
+                _ => throw new InvalidOperationException($"Unexpected JoyConType value: {_gamepadType}")
+            };
         }
 
         private static SDL_GamepadButton[] ToSDLButtonMapping(
@@ -205,11 +188,11 @@ namespace Ryujinx.Input.SDL3
                     return Vector3.Zero;
                 }
 
-                Vector3 value = _joyConType switch
+                Vector3 value = _gamepadType switch
                 {
-                    JoyConType.Left => new Vector3(-values[2], values[1], values[0]),
-                    JoyConType.Right => new Vector3(values[2], values[1], -values[0]),
-                    _ => throw new ArgumentOutOfRangeException($"Unexpected JoyConType value: {_joyConType}")
+                    SDL_GamepadType.SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_LEFT => new Vector3(-values[2], values[1], values[0]),
+                    SDL_GamepadType.SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_RIGHT => new Vector3(values[2], values[1], -values[0]),
+                    _ => throw new ArgumentOutOfRangeException($"Unexpected JoyConType value: {_gamepadType}")
                 };
 
                 return inputId switch
@@ -237,9 +220,9 @@ namespace Ryujinx.Input.SDL3
                 _stickUserMapping[(int)StickInputId.Right] = (StickInputId)_configuration.RightJoyconStick.Joystick;
 
 
-                switch (_joyConType)
+                switch (_gamepadType)
                 {
-                    case JoyConType.Left:
+                    case SDL_GamepadType.SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_LEFT:
                         _buttonsUserMapping.Add(new ButtonMappingEntry(GamepadButtonInputId.LeftStick,
                             (GamepadButtonInputId)_configuration.LeftJoyconStick.StickButton));
                         _buttonsUserMapping.Add(new ButtonMappingEntry(GamepadButtonInputId.DpadUp,
@@ -261,7 +244,7 @@ namespace Ryujinx.Input.SDL3
                         _buttonsUserMapping.Add(new ButtonMappingEntry(GamepadButtonInputId.SingleLeftTrigger0,
                             (GamepadButtonInputId)_configuration.LeftJoycon.ButtonSl));
                         break;
-                    case JoyConType.Right:
+                    case SDL_GamepadType.SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_RIGHT:
                         _buttonsUserMapping.Add(new ButtonMappingEntry(GamepadButtonInputId.RightStick,
                             (GamepadButtonInputId)_configuration.RightJoyconStick.StickButton));
                         _buttonsUserMapping.Add(new ButtonMappingEntry(GamepadButtonInputId.A,
@@ -316,7 +299,6 @@ namespace Ryujinx.Input.SDL3
                     // Do not touch state of button already pressed
                     if (!result.IsPressed(entry.To))
                     {
-                        
                         result.SetPressed(entry.To, rawState.IsPressed(entry.From));
                     }
                 }
@@ -367,8 +349,8 @@ namespace Ryujinx.Input.SDL3
             if (inputId == StickInputId.Unbound)
                 return (0.0f, 0.0f);
 
-            if (inputId == StickInputId.Left && _joyConType == JoyConType.Right ||
-                inputId == StickInputId.Right && _joyConType == JoyConType.Left)
+            if (inputId == StickInputId.Left && _gamepadType == SDL_GamepadType.SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_RIGHT ||
+                inputId == StickInputId.Right && _gamepadType == SDL_GamepadType.SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_LEFT)
             {
                 return (0.0f, 0.0f);
             }
@@ -401,8 +383,8 @@ namespace Ryujinx.Input.SDL3
 
             return inputId switch
             {
-                StickInputId.Left when _joyConType == JoyConType.Left => (resultY, -resultX),
-                StickInputId.Right when _joyConType == JoyConType.Right => (-resultY, resultX),
+                StickInputId.Left when _gamepadType == SDL_GamepadType.SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_LEFT => (resultY, -resultX),
+                StickInputId.Right when _gamepadType == SDL_GamepadType.SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_LEFT => (-resultY, resultX),
                 _ => (0.0f, 0.0f)
             };
         }
@@ -421,18 +403,14 @@ namespace Ryujinx.Input.SDL3
             {
                 return false;
             }
-
-            // if (SDL_GetGamepadButton(_gamepadHandle, button))
-            // {
-            //     Console.WriteLine(inputId+", "+button);
-            // }
             return SDL_GetGamepadButton(_gamepadHandle, button);
         }
 
-        public static bool IsJoyCon(SDL_JoystickID joystickId)
+        public static bool IsJoyCon(uint joystickId)
         {
-            var gamepadName = SDL_GetGamepadNameForID(joystickId);
-            return gamepadName is LeftName or RightName;
+            var gamepadName = SDL_GetGamepadTypeForID(joystickId);
+            return gamepadName is SDL_GamepadType.SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_LEFT
+                or SDL_GamepadType.SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_RIGHT;
         }
     }
 }

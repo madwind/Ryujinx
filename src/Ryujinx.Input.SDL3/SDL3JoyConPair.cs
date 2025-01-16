@@ -11,21 +11,24 @@ namespace Ryujinx.Input.SDL3
     class SDL3JoyConPair(SDL3JoyCon left, SDL3JoyCon right) : IGamepad
     {
         private StandardControllerInputConfig _configuration;
+
         private readonly record struct ButtonMappingEntry(GamepadButtonInputId To, GamepadButtonInputId From)
         {
             public bool IsValid => To is not GamepadButtonInputId.Unbound && From is not GamepadButtonInputId.Unbound;
         }
+
         private readonly StickInputId[] _stickUserMapping = new StickInputId[(int)StickInputId.Count]
         {
             StickInputId.Unbound, StickInputId.Left, StickInputId.Right,
         };
+
         public GamepadFeaturesFlag Features => (left?.Features ?? GamepadFeaturesFlag.None) |
                                                (right?.Features ?? GamepadFeaturesFlag.None);
 
         public const string Id = "JoyConPair";
         private readonly Lock _userMappingLock = new();
 
-        private readonly List<ButtonMappingEntry> _buttonsUserMapping              = new List<ButtonMappingEntry>(20);
+        private readonly List<ButtonMappingEntry> _buttonsUserMapping = new List<ButtonMappingEntry>(20);
         string IGamepad.Id => Id;
 
         public string Name => "* Nintendo Switch Joy-Con (L/R)";
@@ -185,20 +188,21 @@ namespace Ryujinx.Input.SDL3
         {
         }
 
-        public static bool IsCombinable(Dictionary<SDL_JoystickID, string> gamepadsInstanceIdsMapping)
+        public static bool IsCombinable(Dictionary<uint, string> gamepadsInstanceIdsMapping)
         {
-            var gamepadNames = gamepadsInstanceIdsMapping.Keys.Select(id => SDL_GetGamepadNameForID(id)).ToArray();
-            return gamepadNames.Contains(SDL3JoyCon.LeftName) && gamepadNames.Contains(SDL3JoyCon.RightName);
+            var gamepadTypes = gamepadsInstanceIdsMapping.Keys.Select(SDL_GetGamepadTypeForID).ToArray();
+            return gamepadTypes.Contains(SDL_GamepadType.SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_LEFT) &&
+                   gamepadTypes.Contains(SDL_GamepadType.SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_RIGHT);
         }
 
-        public static IGamepad GetGamepad(Dictionary<SDL_JoystickID, string> gamepadsInstanceIdsMapping)
+        public static IGamepad GetGamepad(Dictionary<uint, string> gamepadsInstanceIdsMapping)
         {
             var leftPair =
                 gamepadsInstanceIdsMapping.FirstOrDefault(pair =>
-                    SDL_GetGamepadNameForID(pair.Key) == SDL3JoyCon.LeftName);
+                    SDL_GetGamepadTypeForID(pair.Key) == SDL_GamepadType.SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_LEFT);
             var rightPair =
                 gamepadsInstanceIdsMapping.FirstOrDefault(pair =>
-                    SDL_GetGamepadNameForID(pair.Key) == SDL3JoyCon.RightName);
+                    SDL_GetGamepadTypeForID(pair.Key) == SDL_GamepadType.SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_RIGHT);
             if (leftPair.Key == 0 || rightPair.Key == 0)
             {
                 return null;

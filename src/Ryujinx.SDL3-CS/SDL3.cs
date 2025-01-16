@@ -82,6 +82,10 @@ public static unsafe partial class SDL
 	[LibraryImport(nativeLibName)]
 	[UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
 	public static partial IntPtr SDL_malloc(UIntPtr size);
+    
+    [LibraryImport(nativeLibName)]
+    [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    public static partial IntPtr SDL_calloc(int nmemb, int size);
 
 	[LibraryImport(nativeLibName)]
 	[UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
@@ -752,6 +756,7 @@ public static unsafe partial class SDL
 	public static partial SDLBool SDL_WriteS64BE(IntPtr dst, long value);
 
 	// /usr/local/include/SDL3/SDL_audio.h
+    public const uint SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK = 0xFFFFFFFFu;
 
 	public enum SDL_AudioFormat
 	{
@@ -2615,6 +2620,7 @@ public static unsafe partial class SDL
 	public static partial SDL_PowerState SDL_GetPowerInfo(out int seconds, out int percent);
 
 	// /usr/local/include/SDL3/SDL_sensor.h
+    public const float SDL_STANDARD_GRAVITY = 9.80665f;
 
 	public enum SDL_SensorType
 	{
@@ -2693,7 +2699,7 @@ public static unsafe partial class SDL
 	public const string SDL_PROP_JOYSTICK_CAP_PLAYER_LED_BOOLEAN = "SDL.joystick.cap.player_led";
 	public const string SDL_PROP_JOYSTICK_CAP_RUMBLE_BOOLEAN = "SDL.joystick.cap.rumble";
 	public const string SDL_PROP_JOYSTICK_CAP_TRIGGER_RUMBLE_BOOLEAN = "SDL.joystick.cap.trigger_rumble";
-
+    
 	public enum SDL_JoystickType
 	{
 		SDL_JOYSTICK_TYPE_UNKNOWN = 0,
@@ -2749,7 +2755,7 @@ public static unsafe partial class SDL
 
 	[LibraryImport(nativeLibName)]
 	[UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-	public static partial SDL_GUID SDL_GetJoystickGUIDForID(SDL_JoystickID instance_id);
+	public static partial SDL_GUID SDL_GetJoystickGUIDForID(uint instance_id);
 
 	[LibraryImport(nativeLibName)]
 	[UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
@@ -4620,7 +4626,7 @@ public static unsafe partial class SDL
 		public SDL_EventType type;
 		public uint reserved;
 		public ulong timestamp;
-		public SDL_JoystickID which;
+		public uint which;
 	}
 
 	[StructLayout(LayoutKind.Sequential)]
@@ -4629,7 +4635,7 @@ public static unsafe partial class SDL
 		public SDL_EventType type;
 		public uint reserved;
 		public ulong timestamp;
-		public SDL_JoystickID which;
+		public uint which;
 		public SDL_PowerState state;
 		public int percent;
 	}
@@ -8048,19 +8054,4 @@ public static unsafe partial class SDL
 	[LibraryImport(nativeLibName)]
 	[UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
 	public static partial int SDL_EnterAppMainCallbacks(int argc, IntPtr argv, SDL_AppInit_func appinit, SDL_AppIterate_func appiter, SDL_AppEvent_func appevent, SDL_AppQuit_func appquit);
-
-    public const uint SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK = 0xFFFFFFFFu;
-    public const float SDL_STANDARD_GRAVITY = 9.80665f;
-    public record struct SDL_JoystickID
-    {
-        public uint Value;
-
-        public SDL_JoystickID(uint value)
-        {
-            Value = value;
-        }
-
-        public static implicit operator uint(SDL_JoystickID id) => id.Value;
-        public static implicit operator SDL_JoystickID(uint value) => new SDL_JoystickID(value);
-    }
 }

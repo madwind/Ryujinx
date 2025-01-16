@@ -4,7 +4,6 @@ using Ryujinx.Common.Logging;
 using Ryujinx.Common.Memory;
 using Ryujinx.Memory;
 using System;
-using System.Buffers;
 using System.Collections.Concurrent;
 using System.Threading;
 using static SDL3.SDL;
@@ -22,7 +21,6 @@ namespace Ryujinx.Audio.Backends.SDL3
         private bool _hasSetupError;
         private readonly SDL_AudioStreamCallback _callbackDelegate;
         private readonly int _bytesPerFrame;
-        private uint _sampleCount;
         private bool _started;
         private float _volume;
         private readonly SDL_AudioFormat _nativeSampleFormat;
@@ -38,7 +36,6 @@ namespace Ryujinx.Audio.Backends.SDL3
             _callbackDelegate = Update;
             _bytesPerFrame = BackendHelper.GetSampleSize(RequestedSampleFormat) * (int)RequestedChannelCount;
             _nativeSampleFormat = SDL3HardwareDeviceDriver.GetSDL3Format(RequestedSampleFormat);
-            _sampleCount = uint.MaxValue;
             _started = false;
             _volume = 1f;
         }
@@ -47,15 +44,12 @@ namespace Ryujinx.Audio.Backends.SDL3
         {
             uint bufferSampleCount = (uint)GetSampleCount(buffer);
             bool needAudioSetup = (_outputStream == 0 && !_hasSetupError) ||
-                                  (bufferSampleCount >= Constants.TargetSampleCount &&
-                                   bufferSampleCount < _sampleCount);
+                                  (bufferSampleCount >= Constants.TargetSampleCount);
 
             if (needAudioSetup)
             {
-                _sampleCount = Math.Max(Constants.TargetSampleCount, bufferSampleCount);
-
                 nint newOutputStream = SDL3HardwareDeviceDriver.OpenStream(RequestedSampleFormat, RequestedSampleRate,
-                    RequestedChannelCount, _sampleCount, _callbackDelegate);
+                    RequestedChannelCount, _callbackDelegate);
 
                 _hasSetupError = newOutputStream == 0;
 
@@ -68,18 +62,21 @@ namespace Ryujinx.Audio.Backends.SDL3
 
                     _outputStream = newOutputStream;
 
-                    // SDL_PauseAudioDevice(_outputStream, _started ? 0 : 1);
-                    SDL_ResumeAudioStreamDevice(_outputStream);
-
-                    Logger.Info?.Print(LogClass.Audio,
-                        $"New audio stream setup with a target sample count of {_sampleCount}");
+                    if (_started)
+                    {
+                        SDL_ResumeAudioStreamDevice(_outputStream);
+                    }
+                    else
+                    {
+                        SDL_PauseAudioStreamDevice(_outputStream);
+                    }
                 }
             }
         }
 
-        private unsafe void Update(nint userdata, nint stream, int additional_amount, int total_amount)
+        private unsafe void Update(nint userdata, nint stream, int additionalAmount, int totalAmount)
         {
-            int maxFrameCount = (int)GetSampleCount(additional_amount);
+            int maxFrameCount = (int)GetSampleCount(additionalAmount);
             int bufferedFrames = _ringBuffer.Length / _bytesPerFrame;
 
             int frameCount = Math.Min(bufferedFrames, maxFrameCount);
@@ -90,24 +87,22 @@ namespace Ryujinx.Audio.Backends.SDL3
             }
 
             using SpanOwner<byte> samplesOwner = SpanOwner<byte>.Rent(frameCount * _bytesPerFrame);
-            using SpanOwner<byte> destinationOwner = SpanOwner<byte>.Rent(frameCount * _bytesPerFrame);
 
             Span<byte> samples = samplesOwner.Span;
-            Span<byte> destinationBuffer = destinationOwner.Span;
+            int samplesLength = samples.Length;
+            _ringBuffer.Read(samples, 0, samplesLength);
 
-            _ringBuffer.Read(samples, 0, samples.Length);
-
-            fixed (byte* pSrc = samples, pDst = destinationBuffer)
+            fixed (byte* p = samples)
             {
-                nint pStreamSrc = (nint)pSrc;
-                nint pStreamDst = (nint)pDst;
-
+                nint pStreamSrc = (nint)p;
+                nint pStreamDst = SDL_calloc(1,samplesLength);
                 // Apply volume to written data
-                SDL_MixAudio(pStreamDst, pStreamSrc, _nativeSampleFormat, (uint)samples.Length, _driver.Volume);
-                SDL_PutAudioStreamData(stream, pStreamSrc, samples.Length);
+                SDL_MixAudio(pStreamDst, pStreamSrc, _nativeSampleFormat, (uint)samplesLength, _driver.Volume);
+                SDL_PutAudioStreamData(stream, pStreamDst, samplesLength);
+                SDL_free(pStreamDst);
             }
 
-            ulong sampleCount = GetSampleCount(samples.Length);
+            ulong sampleCount = GetSampleCount(samplesLength);
 
             ulong availaibleSampleCount = sampleCount;
 

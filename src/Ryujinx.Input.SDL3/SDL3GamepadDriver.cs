@@ -12,7 +12,7 @@ namespace Ryujinx.Input.SDl3
 {
     public class SDL3GamepadDriver : IGamepadDriver
     {
-        private readonly Dictionary<SDL_JoystickID, string> _gamepadsInstanceIdsMapping;
+        private readonly Dictionary<uint, string> _gamepadsInstanceIdsMapping;
         private readonly List<string> _gamepadsIds;
         private readonly Lock _lock = new();
 
@@ -34,7 +34,7 @@ namespace Ryujinx.Input.SDl3
 
         public SDL3GamepadDriver()
         {
-            _gamepadsInstanceIdsMapping = new Dictionary<SDL_JoystickID, string>();
+            _gamepadsInstanceIdsMapping = new Dictionary<uint, string>();
             _gamepadsIds = new List<string>();
 
             SDL3Driver.Instance.Initialize();
@@ -43,7 +43,7 @@ namespace Ryujinx.Input.SDl3
             SDL3Driver.Instance.OnJoyBatteryUpdated += HandleJoyBatteryUpdated;
         }
 
-        private string GenerateGamepadId(SDL_JoystickID joystickId)
+        private string GenerateGamepadId(uint joystickId)
         {
             int bufferSize = 33;
             Span<byte> pszGuid = stackalloc byte[bufferSize];
@@ -65,7 +65,7 @@ namespace Ryujinx.Input.SDl3
             return id;
         }
 
-        private KeyValuePair<SDL_JoystickID,string> GetGamepadInfoByGamepadId(string id)
+        private KeyValuePair<uint,string> GetGamepadInfoByGamepadId(string id)
         {
             lock (_lock)
             {
@@ -73,7 +73,7 @@ namespace Ryujinx.Input.SDl3
             }
         }
 
-        private void HandleJoyStickDisconnected(SDL_JoystickID joystickId)
+        private void HandleJoyStickDisconnected(uint joystickId)
         {
             bool joyConPairDisconnected = false;
             if (!_gamepadsInstanceIdsMapping.Remove(joystickId, out string id))
@@ -96,7 +96,7 @@ namespace Ryujinx.Input.SDl3
             }
         }
 
-        private void HandleJoyStickConnected(SDL_JoystickID joystickId)
+        private void HandleJoyStickConnected(uint joystickId)
         {
             bool joyConPairConnected = false;
 
@@ -135,7 +135,7 @@ namespace Ryujinx.Input.SDl3
             }
         }
 
-        private void HandleJoyBatteryUpdated(SDL_JoystickID joystickId, SDL_JoyBatteryEvent joyBatteryEvent)
+        private void HandleJoyBatteryUpdated(uint joystickId, SDL_JoyBatteryEvent joyBatteryEvent)
         {
             Logger.Info?.Print(LogClass.Hid,
                 $"{SDL_GetGamepadNameForID(joystickId)}, Battery percent: {joyBatteryEvent.percent}");

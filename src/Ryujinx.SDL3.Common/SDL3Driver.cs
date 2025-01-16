@@ -33,9 +33,9 @@ namespace Ryujinx.SDL3.Common
         private uint _refereceCount;
         private Thread _worker;
 
-        public event Action<SDL_JoystickID> OnJoyStickConnected;
-        public event Action<SDL_JoystickID> OnJoystickDisconnected;
-        public event Action<SDL_JoystickID, SDL_JoyBatteryEvent> OnJoyBatteryUpdated;
+        public event Action<uint> OnJoyStickConnected;
+        public event Action<uint> OnJoystickDisconnected;
+        public event Action<uint, SDL_JoyBatteryEvent> OnJoyBatteryUpdated;
 
         private ConcurrentDictionary<uint, Action<SDL_Event>> _registeredWindowHandlers;
 
@@ -123,8 +123,7 @@ namespace Ryujinx.SDL3.Common
 
         private void HandleSDLEvent(ref SDL_Event evnt)
         {
-            var type = (SDL_EventType)evnt.type;
-            if (type == SDL_EventType.SDL_EVENT_GAMEPAD_ADDED)
+            if (evnt.type == (uint)SDL_EventType.SDL_EVENT_GAMEPAD_ADDED)
             {
                 var instanceId = evnt.jdevice.which;
 
@@ -132,7 +131,7 @@ namespace Ryujinx.SDL3.Common
 
                 OnJoyStickConnected?.Invoke(instanceId);
             }
-            else if (type == SDL_EventType.SDL_EVENT_GAMEPAD_REMOVED)
+            else if (evnt.type == (uint)SDL_EventType.SDL_EVENT_GAMEPAD_REMOVED)
             {
                 var instanceId = evnt.jdevice.which;
 
@@ -140,13 +139,13 @@ namespace Ryujinx.SDL3.Common
 
                 OnJoystickDisconnected?.Invoke(instanceId);
             }
-            else if (type == SDL_EventType.SDL_EVENT_JOYSTICK_BATTERY_UPDATED)
+            else if (evnt.type == (uint)SDL_EventType.SDL_EVENT_JOYSTICK_BATTERY_UPDATED)
             {
                 OnJoyBatteryUpdated?.Invoke(evnt.jbattery.which, evnt.jbattery);
             }
-            else if (type is >= SDL_EventType.SDL_EVENT_WINDOW_FIRST and <= SDL_EventType.SDL_EVENT_WINDOW_LAST
-                     or SDL_EventType.SDL_EVENT_MOUSE_BUTTON_DOWN
-                     or SDL_EventType.SDL_EVENT_MOUSE_BUTTON_UP)
+            else if (evnt.type is >= (uint)SDL_EventType.SDL_EVENT_WINDOW_FIRST and <= (uint)SDL_EventType.SDL_EVENT_WINDOW_LAST
+                     or (uint)SDL_EventType.SDL_EVENT_MOUSE_BUTTON_DOWN
+                     or (uint)SDL_EventType.SDL_EVENT_MOUSE_BUTTON_UP)
             {
                 if (_registeredWindowHandlers.TryGetValue(evnt.window.windowID, out Action<SDL_Event> handler))
                 {

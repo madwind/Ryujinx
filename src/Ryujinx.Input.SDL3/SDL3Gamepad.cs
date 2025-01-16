@@ -60,7 +60,7 @@ namespace Ryujinx.Input.SDL3
 
         private float _triggerThreshold;
 
-        public SDL3Gamepad(SDL_JoystickID joystickId, string driverId)
+        public SDL3Gamepad(uint joystickId, string driverId)
         {
             _gamepadHandle = SDL_OpenGamepad(joystickId);
             _buttonsUserMapping = new List<ButtonMappingEntry>(20);

@@ -216,7 +216,7 @@ namespace Ryujinx.Input.SDL3
                 Key.AltRight => SDL_Keymod.SDL_KMOD_RALT,
                 Key.WinLeft => SDL_Keymod.SDL_KMOD_LGUI,
                 Key.WinRight => SDL_Keymod.SDL_KMOD_RGUI,
-                // NOTE: Menu key isn't supported by SDL2.
+                // NOTE: Menu key isn't supported by SDL3.
                 _ => SDL_Keymod.SDL_KMOD_NONE,
             };
         }

@@ -1,5 +1,4 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
-using ExCSS;
 using Gommon;
 using Ryujinx.Ava.Utilities.AppLibrary;
 using System.Collections.Generic;

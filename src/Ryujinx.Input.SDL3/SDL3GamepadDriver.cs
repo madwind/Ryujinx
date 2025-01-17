@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading;
 using static SDL3.SDL;
 
-namespace Ryujinx.Input.SDl3
+namespace Ryujinx.Input.SDL3
 {
     public class SDL3GamepadDriver : IGamepadDriver
     {

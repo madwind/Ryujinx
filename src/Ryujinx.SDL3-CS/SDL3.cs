@@ -1998,7 +1998,19 @@ public static unsafe partial class SDL
 	public const string SDL_PROP_WINDOW_X11_DISPLAY_POINTER = "SDL.window.x11.display";
 	public const string SDL_PROP_WINDOW_X11_SCREEN_NUMBER = "SDL.window.x11.screen";
 	public const string SDL_PROP_WINDOW_X11_WINDOW_NUMBER = "SDL.window.x11.window";
-
+    
+    [Flags]
+    public enum SDL_GLProfile
+    {
+        SDL_GL_CONTEXT_PROFILE_COMPATIBILITY = 2
+    }
+    
+    [Flags]
+    public enum SDL_GLcontext
+    {
+        SDL_GL_CONTEXT_DEBUG_FLAG = 1,
+    }
+    
 	public enum SDL_SystemTheme
 	{
 		SDL_SYSTEM_THEME_UNKNOWN = 0,
@@ -8054,4 +8066,14 @@ public static unsafe partial class SDL
 	[LibraryImport(nativeLibName)]
 	[UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
 	public static partial int SDL_EnterAppMainCallbacks(int argc, IntPtr argv, SDL_AppInit_func appinit, SDL_AppIterate_func appiter, SDL_AppEvent_func appevent, SDL_AppQuit_func appquit);
+    
+    // include/SDL3/SDL_vulkan.h
+    [LibraryImport(nativeLibName)]
+    [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    public static partial SDLBool SDL_Vulkan_CreateSurface(IntPtr window, IntPtr instance, IntPtr allocator,
+        out ulong surface);
+    
+    [LibraryImport(nativeLibName)]
+    [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    public static partial IntPtr SDL_Vulkan_GetInstanceExtensions(out uint count);
 }

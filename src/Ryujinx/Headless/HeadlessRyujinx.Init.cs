@@ -1,6 +1,6 @@
 using DiscordRPC;
 using LibHac.Tools.FsSystem;
-using Ryujinx.Audio.Backends.SDL2;
+using Ryujinx.Audio.Backends.SDL3;
 using Ryujinx.Ava;
 using Ryujinx.Ava.Utilities.Configuration;
 using Ryujinx.Common.Configuration;
@@ -335,7 +335,7 @@ namespace Ryujinx.Headless
                 _accountManager,
                 _userChannelPersistence,
                 renderer,
-                new SDL2HardwareDeviceDriver(),
+                new SDL3HardwareDeviceDriver(),
                 options.DramSize,
                 window,
                 options.SystemLanguage,

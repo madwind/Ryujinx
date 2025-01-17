@@ -1,10 +1,10 @@
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Logging;
 using Ryujinx.Input.HLE;
-using Ryujinx.SDL2.Common;
+using Ryujinx.SDL3.Common;
 using System;
 using System.Runtime.InteropServices;
-using static SDL2.SDL;
+using static SDL3.SDL;
 
 namespace Ryujinx.Headless
 {
@@ -53,7 +53,7 @@ namespace Ryujinx.Headless
 
             void CreateSurface()
             {
-                if (SDL_Vulkan_CreateSurface(WindowHandle, instance, out surfaceHandle) == SDL_bool.SDL_FALSE)
+                if (!SDL_Vulkan_CreateSurface(WindowHandle, instance, IntPtr.Zero, out surfaceHandle))
                 {
                     string errorMessage = $"SDL_Vulkan_CreateSurface failed with error \"{SDL_GetError()}\"";
 
@@ -63,9 +63,9 @@ namespace Ryujinx.Headless
                 }
             }
 
-            if (SDL2Driver.MainThreadDispatcher != null)
+            if (SDL3Driver.MainThreadDispatcher != null)
             {
-                SDL2Driver.MainThreadDispatcher(CreateSurface);
+                SDL3Driver.MainThreadDispatcher(CreateSurface);
             }
             else
             {
@@ -77,23 +77,19 @@ namespace Ryujinx.Headless
 
         public unsafe string[] GetRequiredInstanceExtensions()
         {
-            if (SDL_Vulkan_GetInstanceExtensions(WindowHandle, out uint extensionsCount, nint.Zero) == SDL_bool.SDL_TRUE)
+            nint rawExtensions = SDL_Vulkan_GetInstanceExtensions(out uint count);
+            IntPtr[] extensionPointers = new IntPtr[count];
+
+            Marshal.Copy(rawExtensions, extensionPointers, 0, (int)count);
+            if (rawExtensions != nint.Zero)
             {
-                nint[] rawExtensions = new nint[(int)extensionsCount];
-                string[] extensions = new string[(int)extensionsCount];
-
-                fixed (nint* rawExtensionsPtr = rawExtensions)
+                string[] extensions = new string[(int)count];
+                for (int i = 0; i < extensions.Length; i++)
                 {
-                    if (SDL_Vulkan_GetInstanceExtensions(WindowHandle, out extensionsCount, (nint)rawExtensionsPtr) == SDL_bool.SDL_TRUE)
-                    {
-                        for (int i = 0; i < extensions.Length; i++)
-                        {
-                            extensions[i] = Marshal.PtrToStringUTF8(rawExtensions[i]);
-                        }
-
-                        return extensions;
-                    }
+                    extensions[i] = Marshal.PtrToStringUTF8(extensionPointers[i]);
                 }
+
+                return extensions;
             }
 
             string errorMessage = $"SDL_Vulkan_GetInstanceExtensions failed with error \"{SDL_GetError()}\"";

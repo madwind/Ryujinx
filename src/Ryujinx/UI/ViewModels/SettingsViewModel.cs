@@ -5,7 +5,6 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using Gommon;
 using LibHac.Tools.FsSystem;
 using Ryujinx.Audio.Backends.OpenAL;
-using Ryujinx.Audio.Backends.SDL2;
 using Ryujinx.Audio.Backends.SDL3;
 using Ryujinx.Audio.Backends.SoundIo;
 using Ryujinx.Ava.Common.Locale;
@@ -212,7 +211,6 @@ namespace Ryujinx.Ava.UI.ViewModels
         public bool EnableDebug { get; set; }
         public bool IsOpenAlEnabled { get; set; }
         public bool IsSoundIoEnabled { get; set; }
-        public bool IsSDL2Enabled { get; set; }
         public bool IsSDL3Enabled { get; set; }
         public bool IsCustomResolutionScaleActive => _resolutionScale == 4;
         public bool IsScalingFilterActive => _scalingFilter == (int)Ryujinx.Common.Configuration.ScalingFilter.Fsr;
@@ -374,14 +372,13 @@ namespace Ryujinx.Ava.UI.ViewModels
         {
             IsOpenAlEnabled = OpenALHardwareDeviceDriver.IsSupported;
             IsSoundIoEnabled = SoundIoHardwareDeviceDriver.IsSupported;
-            IsSDL2Enabled = SDL2HardwareDeviceDriver.IsSupported;
             IsSDL3Enabled = SDL3HardwareDeviceDriver.IsSupported;
 
             await Dispatcher.UIThread.InvokeAsync(() =>
             {
                 OnPropertyChanged(nameof(IsOpenAlEnabled));
                 OnPropertyChanged(nameof(IsSoundIoEnabled));
-                OnPropertyChanged(nameof(IsSDL2Enabled));
+                OnPropertyChanged(nameof(IsSDL3Enabled));
             });
         }
 

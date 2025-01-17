@@ -8,7 +8,6 @@ using LibHac.Ns;
 using LibHac.Tools.FsSystem;
 using Ryujinx.Audio.Backends.Dummy;
 using Ryujinx.Audio.Backends.OpenAL;
-using Ryujinx.Audio.Backends.SDL2;
 using Ryujinx.Audio.Backends.SDL3;
 using Ryujinx.Audio.Backends.SoundIo;
 using Ryujinx.Audio.Integration;
@@ -959,7 +958,6 @@ namespace Ryujinx.Ava
             var availableBackends = new List<AudioBackend>
             {
                 AudioBackend.SDL3,
-                AudioBackend.SDL2,
                 AudioBackend.SoundIo,
                 AudioBackend.OpenAl,
                 AudioBackend.Dummy,
@@ -999,7 +997,6 @@ namespace Ryujinx.Ava
                 deviceDriver = currentBackend switch
                 {
                     AudioBackend.SDL3 => InitializeAudioBackend<SDL3HardwareDeviceDriver>(AudioBackend.SDL3, nextBackend),
-                    AudioBackend.SDL2 => InitializeAudioBackend<SDL2HardwareDeviceDriver>(AudioBackend.SDL2, nextBackend),
                     AudioBackend.SoundIo => InitializeAudioBackend<SoundIoHardwareDeviceDriver>(AudioBackend.SoundIo, nextBackend),
                     AudioBackend.OpenAl => InitializeAudioBackend<OpenALHardwareDeviceDriver>(AudioBackend.OpenAl, nextBackend),
                     _ => new DummyHardwareDeviceDriver(),

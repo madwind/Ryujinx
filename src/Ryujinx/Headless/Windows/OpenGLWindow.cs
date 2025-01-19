@@ -106,7 +106,7 @@ namespace Ryujinx.Headless
                 }
             }
         }
-
+        
         private readonly GraphicsDebugLevel _glLogLevel;
         private SDL3OpenGLContext _openGLContext;
 
@@ -119,10 +119,9 @@ namespace Ryujinx.Headless
             bool ignoreControllerApplet)
             : base(inputManager, glLogLevel, aspectRatio, enableMouse, hideCursorMode, ignoreControllerApplet)
         {
-            _glLogLevel = glLogLevel;
         }
 
-        public override SDL_WindowFlags GetWindowFlags() => SDL_WindowFlags.SDL_WINDOW_OPENGL;
+        public override SDL_WindowFlags WindowFlags() => SDL_WindowFlags.SDL_WINDOW_OPENGL;
 
         protected override void InitializeWindowRenderer()
         {

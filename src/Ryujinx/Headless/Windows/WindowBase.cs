@@ -1,12 +1,12 @@
 using Humanizer;
-using LibHac.Util;
 using Ryujinx.Ava;
+using Ryujinx.Ava.UI.Models;
+using Ryujinx.Common;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Configuration.Hid;
 using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.GAL.Multithreading;
-using Ryujinx.Graphics.Gpu;
 using Ryujinx.Graphics.OpenGL;
 using Ryujinx.HLE.HOS.Applets;
 using Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.ApplicationProxy.Types;
@@ -43,6 +43,10 @@ namespace Ryujinx.Headless
 
         private static readonly ConcurrentQueue<Action> _mainThreadActions = new();
 
+        [LibraryImport("SDL2")]
+        // TODO: Remove this as soon as SDL2-CS was updated to expose this method publicly
+        private static partial nint SDL_LoadBMP_RW(nint src, int freesrc);
+
         public static void QueueMainThreadAction(Action action)
         {
             _mainThreadActions.Enqueue(action);
@@ -72,7 +76,7 @@ namespace Ryujinx.Headless
         protected SDL3MouseDriver MouseDriver;
         private readonly InputManager _inputManager;
         private readonly IKeyboard _keyboardInterface;
-        private readonly GraphicsDebugLevel _glLogLevel;
+        protected readonly GraphicsDebugLevel GlLogLevel;
         private readonly Stopwatch _chrono;
         private readonly long _ticksPerFrame;
         private readonly CancellationTokenSource _gpuCancellationTokenSource;
@@ -104,7 +108,7 @@ namespace Ryujinx.Headless
             NpadManager = _inputManager.CreateNpadManager();
             TouchScreenManager = _inputManager.CreateTouchScreenManager();
             _keyboardInterface = (IKeyboard)_inputManager.KeyboardDriver.GetGamepad("0");
-            _glLogLevel = glLogLevel;
+            GlLogLevel = glLogLevel;
             _chrono = new Stopwatch();
             _ticksPerFrame = Stopwatch.Frequency / TargetFps;
             _gpuCancellationTokenSource = new CancellationTokenSource();
@@ -137,7 +141,7 @@ namespace Ryujinx.Headless
 
         private void SetWindowIcon()
         {
-            Stream iconStream = typeof(Program).Assembly.GetManifestResourceStream("HeadlessLogo");
+            Stream iconStream = EmbeddedResources.GetStream("Ryujinx/Assets/UIImages/Logo_Ryujinx.png");
             byte[] iconBytes = new byte[iconStream!.Length];
 
             if (iconStream.Read(iconBytes, 0, iconBytes.Length) != iconBytes.Length)
@@ -169,15 +173,9 @@ namespace Ryujinx.Headless
             var nacp = activeProcess.ApplicationControlProperties;
             int desiredLanguage = (int)Device.System.State.DesiredTitleLanguage;
 
-            string titleNameSection = string.IsNullOrWhiteSpace(nacp.Title[desiredLanguage].NameString.ToString())
-                ? string.Empty
-                : $" - {nacp.Title[desiredLanguage].NameString.ToString()}";
-            string titleVersionSection = string.IsNullOrWhiteSpace(nacp.DisplayVersionString.ToString())
-                ? string.Empty
-                : $" v{nacp.DisplayVersionString.ToString()}";
-            string titleIdSection = string.IsNullOrWhiteSpace(activeProcess.ProgramIdText)
-                ? string.Empty
-                : $" ({activeProcess.ProgramIdText.ToUpper()})";
+            string titleNameSection = string.IsNullOrWhiteSpace(nacp.Title[desiredLanguage].NameString.ToString()) ? string.Empty : $" - {nacp.Title[desiredLanguage].NameString.ToString()}";
+            string titleVersionSection = string.IsNullOrWhiteSpace(nacp.DisplayVersionString.ToString()) ? string.Empty : $" v{nacp.DisplayVersionString.ToString()}";
+            string titleIdSection = string.IsNullOrWhiteSpace(activeProcess.ProgramIdText) ? string.Empty : $" ({activeProcess.ProgramIdText.ToUpper()})";
             string titleArchSection = activeProcess.Is64Bit ? " (64-bit)" : " (32-bit)";
 
             Width = DefaultWidth;
@@ -197,10 +195,7 @@ namespace Ryujinx.Headless
                 FullscreenFlag = SDL_WindowFlags.SDL_WINDOW_FULLSCREEN;
             }
 
-            WindowHandle =
-                SDL_CreateWindow(
-                    $"Ryujinx {Program.Version}{titleNameSection}{titleVersionSection}{titleIdSection}{titleArchSection}",
-                    Width, Height, DefaultFlags | FullscreenFlag | GetWindowFlags());
+            WindowHandle = SDL_CreateWindow($"Ryujinx {Program.Version}{titleNameSection}{titleVersionSection}{titleIdSection}{titleArchSection}", Width, Height, DefaultFlags | FullscreenFlag | WindowFlags());
 
             if (WindowHandle == nint.Zero)
             {
@@ -236,7 +231,6 @@ namespace Ryujinx.Headless
                             Renderer?.Window.SetSize(Width, Height);
                             MouseDriver.SetClientSize(Width, Height);
                         }
-
                         break;
 
                     case SDL_EventType.SDL_EVENT_WINDOW_CLOSE_REQUESTED:
@@ -258,7 +252,7 @@ namespace Ryujinx.Headless
 
         protected abstract void SwapBuffers();
 
-        public abstract SDL_WindowFlags GetWindowFlags();
+        public abstract SDL_WindowFlags WindowFlags { get; }
 
         private string GetGpuDriverName()
         {
@@ -280,7 +274,7 @@ namespace Ryujinx.Headless
         {
             InitializeWindowRenderer();
 
-            Device.Gpu.Renderer.Initialize(_glLogLevel);
+            Device.Gpu.Renderer.Initialize(GlLogLevel);
 
             InitializeRenderer();
 
@@ -320,21 +314,6 @@ namespace Ryujinx.Headless
 
                     if (_ticks >= _ticksPerFrame)
                     {
-                        string dockedMode = Device.System.State.DockedMode ? "Docked" : "Handheld";
-                        float scale = GraphicsConfig.ResScale;
-                        if (scale != 1)
-                        {
-                            dockedMode += $" ({scale}x)";
-                        }
-
-                        StatusUpdatedEvent?.Invoke(this, new StatusUpdatedEventArgs(
-                            Device.VSyncMode.ToString(),
-                            dockedMode,
-                            Device.Configuration.AspectRatio.ToText(),
-                            $"{Device.Statistics.GetGameFrameRate():00.00} FPS ({Device.Statistics.GetGameFrameTime():00.00} ms)",
-                            $"FIFO: {Device.Statistics.GetFifoPercent():0.00} %",
-                            $"GPU: {_gpuDriverName}"));
-
                         _ticks = Math.Min(_ticks - _ticksPerFrame, _ticksPerFrame);
                     }
                 }
@@ -434,9 +413,7 @@ namespace Ryujinx.Headless
             // Get screen touch position
             if (!_enableMouse)
             {
-                hasTouch = TouchScreenManager.Update(true,
-                    (_inputManager.MouseDriver as SDL3MouseDriver).IsButtonPressed(MouseButton.Button1),
-                    _aspectRatio.ToFloat());
+                hasTouch = TouchScreenManager.Update(true, (_inputManager.MouseDriver as SDL3MouseDriver).IsButtonPressed(MouseButton.Button1), _aspectRatio.ToFloat());
             }
 
             if (!hasTouch)
@@ -459,13 +436,19 @@ namespace Ryujinx.Headless
 
             InitializeWindow();
 
-            Thread renderLoopThread = new(Render) { Name = "GUI.RenderLoop", };
+            Thread renderLoopThread = new(Render)
+            {
+                Name = "GUI.RenderLoop",
+            };
             renderLoopThread.Start();
 
             Thread nvidiaStutterWorkaround = null;
             if (Renderer is OpenGLRenderer)
             {
-                nvidiaStutterWorkaround = new Thread(NvidiaStutterWorkaround) { Name = "GUI.NvidiaStutterWorkaround", };
+                nvidiaStutterWorkaround = new Thread(NvidiaStutterWorkaround)
+                {
+                    Name = "GUI.NvidiaStutterWorkaround",
+                };
                 nvidiaStutterWorkaround.Start();
             }
 
@@ -505,24 +488,20 @@ namespace Ryujinx.Headless
 
         public void DisplayCabinetMessageDialog()
         {
-            SDL_ShowSimpleMessageBox(SDL_MessageBoxFlags.SDL_MESSAGEBOX_INFORMATION, "Cabinet Dialog",
-                "Please scan your Amiibo now.", WindowHandle);
+            SDL_ShowSimpleMessageBox(SDL_MessageBoxFlags.SDL_MESSAGEBOX_INFORMATION, "Cabinet Dialog", "Please scan your Amiibo now.", WindowHandle);
         }
 
         public bool DisplayMessageDialog(ControllerAppletUIArgs args)
         {
             if (_ignoreControllerApplet) return false;
+            
+            string playerCount = args.PlayerCountMin == args.PlayerCountMax ? $"exactly {args.PlayerCountMin}" : $"{args.PlayerCountMin}-{args.PlayerCountMax}";
 
-            string playerCount = args.PlayerCountMin == args.PlayerCountMax
-                ? $"exactly {args.PlayerCountMin}"
-                : $"{args.PlayerCountMin}-{args.PlayerCountMax}";
-
-            string message =
-                $"Application requests {playerCount} {"player".ToQuantity(args.PlayerCountMin + args.PlayerCountMax, ShowQuantityAs.None)} with:\n\n"
-                + $"TYPES: {args.SupportedStyles}\n\n"
-                + $"PLAYERS: {string.Join(", ", args.SupportedPlayers)}\n\n"
-                + (args.IsDocked ? "Docked mode set. Handheld is also invalid.\n\n" : string.Empty)
-                + "Please reconfigure Input now and then press OK.";
+            string message = $"Application requests {playerCount} {"player".ToQuantity(args.PlayerCountMin + args.PlayerCountMax, ShowQuantityAs.None)} with:\n\n"
+                           + $"TYPES: {args.SupportedStyles}\n\n"
+                           + $"PLAYERS: {string.Join(", ", args.SupportedPlayers)}\n\n"
+                           + (args.IsDocked ? "Docked mode set. Handheld is also invalid.\n\n" : string.Empty)
+                           + "Please reconfigure Input now and then press OK.";
 
             return DisplayMessageDialog("Controller Applet", message);
         }

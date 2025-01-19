@@ -1,6 +1,6 @@
 using Humanizer;
+using LibHac.Util;
 using Ryujinx.Ava;
-using Ryujinx.Ava.UI.Models;
 using Ryujinx.Common;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Configuration.Hid;
@@ -34,11 +34,7 @@ namespace Ryujinx.Headless
         protected const int DefaultWidth = 1280;
         protected const int DefaultHeight = 720;
         private const int TargetFps = 60;
-
-        private SDL_WindowFlags DefaultFlags = SDL_WindowFlags.SDL_WINDOW_HIGH_PIXEL_DENSITY |
-                                               SDL_WindowFlags.SDL_WINDOW_RESIZABLE |
-                                               SDL_WindowFlags.SDL_WINDOW_INPUT_FOCUS;
-
+        private SDL_WindowFlags DefaultFlags = SDL_WindowFlags.SDL_WINDOW_HIGH_PIXEL_DENSITY | SDL_WindowFlags.SDL_WINDOW_RESIZABLE | SDL_WindowFlags.SDL_WINDOW_INPUT_FOCUS;
         private SDL_WindowFlags FullscreenFlag = 0;
 
         private static readonly ConcurrentQueue<Action> _mainThreadActions = new();
@@ -56,8 +52,6 @@ namespace Ryujinx.Headless
         public TouchScreenManager TouchScreenManager { get; }
         public Switch Device { get; private set; }
         public IRenderer Renderer { get; private set; }
-
-        public event EventHandler<StatusUpdatedEventArgs> StatusUpdatedEvent;
 
         protected nint WindowHandle { get; set; }
 
@@ -195,7 +189,7 @@ namespace Ryujinx.Headless
                 FullscreenFlag = SDL_WindowFlags.SDL_WINDOW_FULLSCREEN;
             }
 
-            WindowHandle = SDL_CreateWindow($"Ryujinx {Program.Version}{titleNameSection}{titleVersionSection}{titleIdSection}{titleArchSection}", Width, Height, DefaultFlags | FullscreenFlag | WindowFlags());
+            WindowHandle = SDL_CreateWindow($"Ryujinx {Program.Version}{titleNameSection}{titleVersionSection}{titleIdSection}{titleArchSection}", Width, Height, DefaultFlags | FullscreenFlag | WindowFlags);
 
             if (WindowHandle == nint.Zero)
             {

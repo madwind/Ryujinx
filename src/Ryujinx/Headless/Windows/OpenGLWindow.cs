@@ -106,8 +106,7 @@ namespace Ryujinx.Headless
                 }
             }
         }
-        
-        private readonly GraphicsDebugLevel _glLogLevel;
+
         private SDL3OpenGLContext _openGLContext;
 
         public OpenGLWindow(
@@ -121,12 +120,12 @@ namespace Ryujinx.Headless
         {
         }
 
-        public override SDL_WindowFlags WindowFlags() => SDL_WindowFlags.SDL_WINDOW_OPENGL;
+        public override SDL_WindowFlags WindowFlags => SDL_WindowFlags.SDL_WINDOW_OPENGL;
 
         protected override void InitializeWindowRenderer()
         {
             // Ensure to not share this context with other contexts before this point.
-            SetupOpenGLAttributes(false, _glLogLevel);
+            SetupOpenGLAttributes(false, GlLogLevel);
             nint context = SDL_GL_CreateContext(WindowHandle);
             CheckResult(SDL_GL_SetSwapInterval(1));
 
@@ -159,7 +158,7 @@ namespace Ryujinx.Headless
             else if (IsFullscreen)
             {
                 // NOTE: grabbing the main display's dimensions directly as OpenGL doesn't scale along like the VulkanWindow.
-                if (SDL_GetDisplayBounds((uint)DisplayId, out SDL_Rect displayBounds))
+                if (!SDL_GetDisplayBounds((uint)DisplayId, out SDL_Rect displayBounds))
                 {
                     Logger.Warning?.Print(LogClass.Application, $"Could not retrieve display bounds: {SDL_GetError()}");
 

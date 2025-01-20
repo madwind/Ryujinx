@@ -182,4 +182,10 @@
     <Folder Include="Assets\Fonts\Mono\" />
     <Folder Include="bin\Debug\net9.0\" />
   </ItemGroup>
+  <ItemGroup>
+    <Compile Update="UI\Applet\UserSelectorDialog.axaml.cs">
+      <DependentUpon>UserSelectorDialog.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+  </ItemGroup>
 </Project>

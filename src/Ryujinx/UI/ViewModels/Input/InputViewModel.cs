@@ -34,8 +34,8 @@ namespace Ryujinx.Ava.UI.ViewModels.Input
     public partial class InputViewModel : BaseModel, IDisposable
     {
         private const string Disabled = "disabled";
-        private const string ProControllerResource = "Ryujinx/Assets/Icons/Controller_ProCon.svg";
-        private const string JoyConPairResource = "Ryujinx/Assets/Icons/Controller_JoyConPair.svg";
+        private const string ProControllerResource = "Ryujinx/Assets/Icons/Controller_ProCon_Settings.svg";
+        private const string JoyConPairResource = "Ryujinx/Assets/Icons/Controller_JoyConPair_Settings.svg";
         private const string JoyConLeftResource = "Ryujinx/Assets/Icons/Controller_JoyConLeft_Settings.svg";
         private const string JoyConRightResource = "Ryujinx/Assets/Icons/Controller_JoyConRight_Settings.svg";
         private const string KeyboardString = "keyboard";
@@ -596,8 +596,8 @@ namespace Ryujinx.Ava.UI.ViewModels.Input
                         ButtonMinus = ConfigGamepadInputId.Minus,
                         ButtonL = ConfigGamepadInputId.LeftShoulder,
                         ButtonZl = ConfigGamepadInputId.LeftTrigger,
-                        ButtonSl = ConfigGamepadInputId.Unbound,
-                        ButtonSr = ConfigGamepadInputId.Unbound,
+                        ButtonSl = ConfigGamepadInputId.SingleLeftTrigger0,
+                        ButtonSr = ConfigGamepadInputId.SingleRightTrigger0,
                     },
                     LeftJoyconStick = new JoyconConfigControllerStick<ConfigGamepadInputId, ConfigStickInputId>
                     {
@@ -615,8 +615,8 @@ namespace Ryujinx.Ava.UI.ViewModels.Input
                         ButtonPlus = ConfigGamepadInputId.Plus,
                         ButtonR = ConfigGamepadInputId.RightShoulder,
                         ButtonZr = ConfigGamepadInputId.RightTrigger,
-                        ButtonSl = ConfigGamepadInputId.Unbound,
-                        ButtonSr = ConfigGamepadInputId.Unbound,
+                        ButtonSl = ConfigGamepadInputId.SingleLeftTrigger1,
+                        ButtonSr = ConfigGamepadInputId.SingleRightTrigger1,
                     },
                     RightJoyconStick = new JoyconConfigControllerStick<ConfigGamepadInputId, ConfigStickInputId>
                     {

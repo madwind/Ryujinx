@@ -13,7 +13,6 @@ using Ryujinx.HLE.HOS.Services.Hid;
 using Ryujinx.Input;
 using Ryujinx.Input.Assigner;
 using Ryujinx.Input.HLE;
-using System;
 using System.Text;
 using System.Threading.Tasks;
 using StickInputId = Ryujinx.Common.Configuration.Hid.Controller.StickInputId;
@@ -24,6 +23,7 @@ namespace Ryujinx.Ava.UI.Views.Input
     {
         private ButtonKeyAssigner _currentAssigner;
         private volatile bool _isRunning = true;
+        private const float StickMaxPosition = 3;
 
         public ControllerInputView()
         {
@@ -267,9 +267,9 @@ namespace Ryujinx.Ava.UI.Views.Input
             }
 
             sb.Append(
-            $"#LeftStick{{transform: translate ({(float)leftPosition.Dx / short.MaxValue * 10} {-(float)leftPosition.Dy / short.MaxValue * 10});}}");
+                $"#LeftStick{{transform: translate ({(float)leftPosition.Dx / short.MaxValue * StickMaxPosition} {-(float)leftPosition.Dy / short.MaxValue * StickMaxPosition});}}");
             sb.Append(
-            $"#RightStick{{transform: translate ({(float)rightPosition.Dx / short.MaxValue * 10} {-(float)rightPosition.Dy / short.MaxValue * 10});}}");
+                $"#RightStick{{transform: translate ({(float)rightPosition.Dx / short.MaxValue * StickMaxPosition} {-(float)rightPosition.Dy / short.MaxValue * StickMaxPosition});}}");
             return sb.ToString();
         }
 
@@ -306,7 +306,7 @@ namespace Ryujinx.Ava.UI.Views.Input
                         viewModel.UpdateImageCss(BuildSvgCss(gamepad, config, leftPosition, rightposition));
                     }
 
-                    await Task.Delay(100);
+                    await Task.Delay(10);
                 }
             });
         }

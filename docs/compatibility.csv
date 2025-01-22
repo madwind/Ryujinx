@@ -2681,7 +2681,7 @@
 01005EA01C0FC000,"SONIC X SHADOW GENERATIONS",crash,ingame,2025-01-07 04:20:45
 010064F00C212000,"Soul Axiom Rebooted",nvdec;slow,ingame,2020-09-04 12:41:01
 0100F2100F0B2000,"Soul Searching",,playable,2020-07-09 18:39:07
-01008F2005154000,"South Park™: The Fractured but Whole™ - Standard Edition",slow;online-broken,playable,2024-07-08 17:47:28
+01008F2005154000,"South Park™: The Fractured but Whole™ - Standard Edition",slow;online-broken;vulkan-backend-bug;gpu,ingame,2025-01-21 17:35:10
 0100B9F00C162000,"Space Blaze",,playable,2020-08-30 16:18:05
 010005500E81E000,"Space Cows",UE4;crash,menus,2020-06-15 11:33:20
 0100707011722000,"Space Elite Force",,playable,2020-11-27 15:21:05

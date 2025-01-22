@@ -46,6 +46,7 @@ namespace Ryujinx.Ava.UI.Views.Input
             }
 
             StartUpdatingData();
+
         }
 
         protected override void OnPointerReleased(PointerReleasedEventArgs e)
@@ -294,6 +295,18 @@ namespace Ryujinx.Ava.UI.Views.Input
                             viewModel.LeftStickPosition = $"{leftPosition.Dx}, {leftPosition.Dy}";
                         }
 
+                        // 假设你已获得加速度计和陀螺仪数据
+                        var accelerometerData = gamepad.GetMotionData(MotionInputId.Accelerometer);
+                        var gyroscopeData = gamepad.GetMotionData(MotionInputId.Gyroscope);
+                        
+                        LeftCubeCanvas.UpdateRotationFromMotionData(accelerometerData, gyroscopeData);
+                        LeftCubeCanvas.InvalidateVisual();
+
+                        // var rightAccelerometer = gamepad.GetMotionData(MotionInputId.SecondAccelerometer);
+                        // var rightGyroscope = gamepad.GetMotionData(MotionInputId.SecondGyroscope);
+                        //
+                        // RightCubeCanvas.UpdateRotationFromMotionData(rightAccelerometer, rightGyroscope);
+                        // RightCubeCanvas.InvalidateVisual();
                         if (config.RightJoystick != StickInputId.Unbound)
                         {
                             var stickInputId = (Ryujinx.Input.StickInputId)(int)config.RightJoystick;
@@ -302,11 +315,11 @@ namespace Ryujinx.Ava.UI.Views.Input
                                 config.DeadzoneRight, config.RangeRight);
                             viewModel.RightStickPosition = $"{rightposition.Dx}, {rightposition.Dy}";
                         }
-
+                        
                         viewModel.UpdateImageCss(BuildSvgCss(gamepad, config, leftPosition, rightposition));
                     }
 
-                    await Task.Delay(10);
+                    await Task.Delay(16);
                 }
             });
         }

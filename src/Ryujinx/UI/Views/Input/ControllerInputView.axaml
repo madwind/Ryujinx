@@ -7,7 +7,6 @@
     xmlns:controls="clr-namespace:Ryujinx.Ava.UI.Controls"
     xmlns:viewModels="clr-namespace:Ryujinx.Ava.UI.ViewModels.Input"
     xmlns:helpers="clr-namespace:Ryujinx.Ava.UI.Helpers"
-    xmlns:viewModels1="clr-namespace:Ryujinx.Ava.UI.ViewModels"
     HorizontalAlignment="Stretch"
     VerticalAlignment="Stretch"
     d:DesignHeight="800"
@@ -332,7 +331,7 @@
                     VerticalAlignment="Stretch"
                     Source="{Binding Image}" />
                 <Canvas>
-                    <viewModels1:Motion
+                    <controls:Motion
                         x:Name="LeftCubeCanvas"
                         Width="60"
                         Height="60"
@@ -340,7 +339,7 @@
                         Canvas.Bottom="5"
                         ZIndex="1" />
 
-                    <viewModels1:Motion
+                    <controls:Motion
                         x:Name="RightCubeCanvas"
                         Width="60"
                         Height="60"

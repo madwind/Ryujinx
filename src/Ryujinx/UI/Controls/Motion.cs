@@ -5,7 +5,7 @@ using System;
 using System.Linq;
 using System.Numerics;
 
-namespace Ryujinx.Ava.UI.ViewModels
+namespace Ryujinx.Ava.UI.Controls
 {
     public class Motion : Control
     {

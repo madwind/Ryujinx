@@ -251,7 +251,7 @@ namespace Ryujinx.Ava.UI.Controls
         {
             if (sender is MenuItem { DataContext: MainWindowViewModel { SelectedApplication: not null } viewModel })
             {
-                string shaderCacheDir = Path.Combine(AppDataManager.GamesDirPath, viewModel.SelectedApplication.IdString, "cache", "shader");
+                string shaderCacheDir = Path.Combine(AppDataManager.GamesDirPath, viewModel.SelectedApplication.IdString.ToLower(), "cache", "shader");
 
                 if (!Directory.Exists(shaderCacheDir))
                 {

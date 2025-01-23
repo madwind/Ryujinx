@@ -13,6 +13,7 @@ using Ryujinx.HLE.HOS.Services.Hid;
 using Ryujinx.Input;
 using Ryujinx.Input.Assigner;
 using Ryujinx.Input.HLE;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 using StickInputId = Ryujinx.Common.Configuration.Hid.Controller.StickInputId;
@@ -46,7 +47,6 @@ namespace Ryujinx.Ava.UI.Views.Input
             }
 
             StartUpdatingData();
-
         }
 
         protected override void OnPointerReleased(PointerReleasedEventArgs e)
@@ -258,9 +258,9 @@ namespace Ryujinx.Ava.UI.Views.Input
         {
             gamepad.SetConfiguration(config.GetConfig());
             StringBuilder sb = new();
-            for (var i = 0; i < (int)GamepadInputId.Count; i++)
+            for (int i = 0; i < (int)GamepadInputId.Count; i++)
             {
-                var button = (GamepadButtonInputId)i;
+                GamepadButtonInputId button = (GamepadButtonInputId)i;
                 if (gamepad.GetMappedStateSnapshot().IsPressed(button))
                 {
                     sb.Append($"#{button}{{fill:#00bbdb;}}");
@@ -295,28 +295,30 @@ namespace Ryujinx.Ava.UI.Views.Input
                             viewModel.LeftStickPosition = $"{leftPosition.Dx}, {leftPosition.Dy}";
                         }
 
-                        // 假设你已获得加速度计和陀螺仪数据
-                        var accelerometerData = gamepad.GetMotionData(MotionInputId.Accelerometer);
-                        var gyroscopeData = gamepad.GetMotionData(MotionInputId.Gyroscope);
-                        
-                        LeftCubeCanvas.UpdateRotationFromMotionData(accelerometerData, gyroscopeData);
-                        LeftCubeCanvas.InvalidateVisual();
-
-                        // var rightAccelerometer = gamepad.GetMotionData(MotionInputId.SecondAccelerometer);
-                        // var rightGyroscope = gamepad.GetMotionData(MotionInputId.SecondGyroscope);
-                        //
-                        // RightCubeCanvas.UpdateRotationFromMotionData(rightAccelerometer, rightGyroscope);
-                        // RightCubeCanvas.InvalidateVisual();
                         if (config.RightJoystick != StickInputId.Unbound)
                         {
-                            var stickInputId = (Ryujinx.Input.StickInputId)(int)config.RightJoystick;
-                            (float rightAxisX, float rightAxisY) = gamepad.GetStick(stickInputId);
+                            StickInputId stickInputId = config.RightJoystick;
+                            (float rightAxisX, float rightAxisY) =
+                                gamepad.GetStick((Ryujinx.Input.StickInputId)stickInputId);
                             rightposition = NpadController.GetJoystickPosition(rightAxisX, rightAxisY,
                                 config.DeadzoneRight, config.RangeRight);
                             viewModel.RightStickPosition = $"{rightposition.Dx}, {rightposition.Dy}";
                         }
-                        
+
                         viewModel.UpdateImageCss(BuildSvgCss(gamepad, config, leftPosition, rightposition));
+
+                        // 假设你已获得加速度计和陀螺仪数据
+                        Vector3 accelerometerData = gamepad.GetMotionData(MotionInputId.Accelerometer);
+                        Vector3 gyroscopeData = gamepad.GetMotionData(MotionInputId.Gyroscope);
+
+                        LeftCubeCanvas.UpdateRotationFromMotionData(accelerometerData, gyroscopeData);
+                        LeftCubeCanvas.InvalidateVisual();
+
+                        Vector3 rightAccelerometer = gamepad.GetMotionData(MotionInputId.SecondAccelerometer);
+                        Vector3 rightGyroscope = gamepad.GetMotionData(MotionInputId.SecondGyroscope);
+
+                        RightCubeCanvas.UpdateRotationFromMotionData(rightAccelerometer, rightGyroscope, true);
+                        RightCubeCanvas.InvalidateVisual();
                     }
 
                     await Task.Delay(16);

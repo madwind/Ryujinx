@@ -4,29 +4,30 @@ using Avalonia.Media;
 using System;
 using System.Linq;
 using System.Numerics;
-using Vector = Avalonia.Vector;
 
 namespace Ryujinx.Ava.UI.ViewModels
 {
     public class Motion : Control
     {
-        public double XRotation { get; set; }
-        public double YRotation { get; set; }
+        private double _XRotation = 0;
+        private double _YRotation = 0;
+        private double _ZRotation = 0;
+        private bool _isRight;
 
-        private double controllerPitch = 0;
-        private double controllerYaw = 0;
-
-        public void UpdateRotationFromMotionData(Vector3 accelerometerData, Vector3 gyroscopeData)
+        public void UpdateRotationFromMotionData(Vector3 accelerometerData, Vector3 gyroData, bool isRight = false)
         {
-            controllerPitch = Math.Atan2(accelerometerData.Y, -accelerometerData.Z) * (180 / Math.PI);
-            controllerYaw = Math.Atan2(accelerometerData.X, accelerometerData.Y) * (180 / Math.PI);
+            _XRotation = -Math.Atan2(accelerometerData.Y, -accelerometerData.Z) * 180 / Math.PI;
+
+            //TODO: issue
+            //_YRotation = Math.Atan2(accelerometerData.Y, -accelerometerData.X) * 180 / Math.PI;
+
+            _ZRotation = Math.Atan2(accelerometerData.X, -accelerometerData.Z) * 180 / Math.PI;
+            _isRight = isRight;
         }
 
         public override void Render(DrawingContext context)
         {
             base.Render(context);
-            XRotation = controllerPitch;
-            YRotation = controllerYaw;
             var width = Bounds.Width;
             var height = Bounds.Height;
             DrawCube(context, width, height);
@@ -34,12 +35,12 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         private void DrawCube(DrawingContext context, double canvasWidth, double canvasHeight)
         {
-            Point3D[] cubeVertices = new Point3D[]
-            {
-                new Point3D(-17, -48, -8), new Point3D(17, -48, -8), new Point3D(17, 48, -8),
-                new Point3D(-17, 48, -8), new Point3D(-17, -48, 8), new Point3D(17, -48, 8), new Point3D(17, 48, 8),
-                new Point3D(-17, 48, 8)
-            };
+            Point3D[] cubeVertices =
+            [
+                new(-11, -27, -4), new(11, -27, -4), new(11, 27, -4),
+                new(-11, 27, -4), new(-11, -27, 4), new(11, -27, 4), new(11, 27, 4),
+                new(-11, 27, 4)
+            ];
 
             double centerX = canvasWidth / 2;
             double centerY = canvasHeight / 2;
@@ -49,7 +50,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             Point3D[] rotatedVertices = new Point3D[cubeVertices.Length];
             for (int i = 0; i < cubeVertices.Length; i++)
             {
-                Point3D rotatedPoint = RotatePoint(cubeVertices[i], XRotation, YRotation);
+                Point3D rotatedPoint = RotatePoint(cubeVertices[i]);
                 rotatedVertices[i] = rotatedPoint;
 
                 double projectedX = centerX + rotatedPoint.X / (1 - rotatedPoint.Z / 200);
@@ -58,16 +59,21 @@ namespace Ryujinx.Ava.UI.ViewModels
                 projectedPoints[i] = new Point(projectedX, projectedY);
             }
 
-            int[][] cubeFaces = new int[][]
-            {
-                new int[] { 0, 1, 2, 3 }, new int[] { 4, 5, 6, 7 }, new int[] { 0, 1, 5, 4 },
-                new int[] { 2, 3, 7, 6 }, new int[] { 0, 3, 7, 4 }, new int[] { 1, 2, 6, 5 }
-            };
+            int[][] cubeFaces =
+            [
+                [0, 1, 2, 3], [4, 5, 6, 7], [0, 1, 5, 4], [2, 3, 7, 6],
+                [0, 3, 7, 4], [1, 2, 6, 5]
+            ];
 
-            IImmutableSolidColorBrush[] faceColors = new IImmutableSolidColorBrush[]
-            {
-                Brushes.DimGray, Brushes.SkyBlue, Brushes.DimGray, Brushes.SkyBlue, Brushes.SkyBlue, Brushes.DimGray
-            };
+            IImmutableSolidColorBrush[] faceColors = _isRight
+                ?
+                [
+                    Brushes.DimGray, Brushes.IndianRed, Brushes.DimGray, Brushes.IndianRed, Brushes.DimGray, Brushes.IndianRed
+                ]
+                :
+                [
+                    Brushes.DimGray, Brushes.SkyBlue, Brushes.DimGray, Brushes.SkyBlue, Brushes.SkyBlue, Brushes.DimGray
+                ];
 
 
             var sortedFaces = cubeFaces
@@ -82,11 +88,11 @@ namespace Ryujinx.Ava.UI.ViewModels
 
             foreach (var faceData in sortedFaces)
             {
-                var face = faceData.Face;
-                var color = faceData.Color;
+                int[] face = faceData.Face;
+                IImmutableSolidColorBrush color = faceData.Color;
 
-                PathGeometry faceGeometry = new PathGeometry();
-                PathFigure faceFigure = new PathFigure
+                PathGeometry faceGeometry = new();
+                PathFigure faceFigure = new()
                 {
                     StartPoint = projectedPoints[face[0]], IsClosed = true, IsFilled = true
                 };
@@ -102,23 +108,21 @@ namespace Ryujinx.Ava.UI.ViewModels
             }
         }
 
-        private Point3D RotatePoint(Point3D point, double xAngle, double yAngle)
+        private Point3D RotatePoint(Point3D point)
         {
-            double cosX = Math.Cos(xAngle * Math.PI / 180);
-            double sinX = Math.Sin(xAngle * Math.PI / 180);
-            double cosY = Math.Cos(yAngle * Math.PI / 180);
-            double sinY = Math.Sin(yAngle * Math.PI / 180);
+            double radX = _XRotation * Math.PI / 180;
+            double radY = _YRotation * Math.PI / 180;
+            double radZ = _ZRotation * Math.PI / 180;
 
-            double newY = point.Y * cosX - point.Z * sinX;
-            double newZ = point.Y * sinX + point.Z * cosX;
+            double cosX = Math.Cos(radX), sinX = Math.Sin(radX);
+            double cosY = Math.Cos(radY), sinY = Math.Sin(radY);
+            double cosZ = Math.Cos(radZ), sinZ = Math.Sin(radZ);
 
-            double newX = point.X * cosY + newZ * sinY;
-            newZ = -point.X * sinY + newZ * cosY;
-            if (xAngle < 0)
-            {
-                newX = -newX;
-                newZ = -newZ;
-            }
+            double newX = cosY * cosZ * point.X + (cosY * sinZ * point.Y) - (sinY * point.Z);
+            double newY = (sinX * sinY * cosZ - cosX * sinZ) * point.X + (sinX * sinY * sinZ + cosX * cosZ) * point.Y +
+                          sinX * cosY * point.Z;
+            double newZ = (cosX * sinY * cosZ + sinX * sinZ) * point.X + (cosX * sinY * sinZ - sinX * cosZ) * point.Y +
+                          cosX * cosY * point.Z;
 
             return new Point3D(newX, newY, newZ);
         }

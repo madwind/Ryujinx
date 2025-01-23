@@ -24,10 +24,5 @@ namespace Ryujinx.Input
         /// <remarks>Also named sixaxis</remarks>
         /// </summary>
         Motion,
-        
-        /// <summary>
-        ///     The LED on the back of modern PlayStation controllers (DualSense &amp; DualShock 4).
-        /// </summary>
-        Led,
     }
 }

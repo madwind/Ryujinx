@@ -13,6 +13,7 @@ using Ryujinx.HLE.HOS.Services.Hid;
 using Ryujinx.Input;
 using Ryujinx.Input.Assigner;
 using Ryujinx.Input.HLE;
+using System;
 using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;

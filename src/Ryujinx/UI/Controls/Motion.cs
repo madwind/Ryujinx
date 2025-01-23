@@ -16,12 +16,13 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public void UpdateRotationFromMotionData(Vector3 accelerometerData, Vector3 gyroData, bool isRight = false)
         {
-            _XRotation = -Math.Atan2(accelerometerData.Y, -accelerometerData.Z) * 180 / Math.PI;
+            _XRotation = Math.Atan2(-accelerometerData.Y, -accelerometerData.Z) * 180 / Math.PI;
 
             //TODO: issue
-            //_YRotation = Math.Atan2(accelerometerData.Y, -accelerometerData.X) * 180 / Math.PI;
+             //_YRotation = Math.Atan2(-accelerometerData.X, -accelerometerData.Y) * 180 / Math.PI;
 
-            _ZRotation = Math.Atan2(accelerometerData.X, -accelerometerData.Z) * 180 / Math.PI;
+            _ZRotation = -Math.Atan2(-accelerometerData.X, -accelerometerData.Z) * 180 / Math.PI;
+  
             _isRight = isRight;
         }
 

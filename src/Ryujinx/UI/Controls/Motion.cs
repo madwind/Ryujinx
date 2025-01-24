@@ -13,45 +13,57 @@ namespace Ryujinx.Ava.UI.Controls
         private double _YRotation = 0;
         private double _ZRotation = 0;
         private bool _isRight;
+        double length = 11;
+        double width = 4;
+        double height = 27;
 
         public void UpdateRotationFromMotionData(Vector3 accelerometerData, Vector3 gyroData, bool isRight = false)
         {
             _XRotation = Math.Atan2(-accelerometerData.Y, -accelerometerData.Z) * 180 / Math.PI;
 
             //TODO: issue
-             //_YRotation = Math.Atan2(-accelerometerData.X, -accelerometerData.Y) * 180 / Math.PI;
+            _YRotation = Math.Atan2(-accelerometerData.X, -accelerometerData.Y) * 180 / Math.PI;
 
-            _ZRotation = -Math.Atan2(-accelerometerData.X, -accelerometerData.Z) * 180 / Math.PI;
-  
+            _ZRotation = Math.Atan2(accelerometerData.X, -accelerometerData.Z) * 180 / Math.PI;
+
             _isRight = isRight;
         }
 
         public override void Render(DrawingContext context)
         {
             base.Render(context);
-            var width = Bounds.Width;
-            var height = Bounds.Height;
-            DrawCube(context, width, height);
+
+            double size = new[] { length, width, height }.Max();
+            var centerX = _isRight ? -size : size;
+
+            DrawCube(context, centerX, size, _XRotation, 0, 0);
+            if (_isRight)
+            {
+                DrawCube(context, centerX, 4 * size, -_YRotation - 90, 180, 90);
+            }
+            else
+            {
+                DrawCube(context, centerX, 4 * size, _YRotation + 90, 0, 90);
+            }
+            DrawCube(context, centerX, 7 * size, 0, 0, _ZRotation);
         }
 
-        private void DrawCube(DrawingContext context, double canvasWidth, double canvasHeight)
+        private void DrawCube(DrawingContext context, double centerX, double centerY, double xRotation,
+            double yRotation, double zRotation)
         {
             Point3D[] cubeVertices =
             [
-                new(-11, -27, -4), new(11, -27, -4), new(11, 27, -4),
-                new(-11, 27, -4), new(-11, -27, 4), new(11, -27, 4), new(11, 27, 4),
-                new(-11, 27, 4)
+                new(-length, -height, -width), new(length, -height, -width), new(length, height, -width),
+                new(-length, height, -width), new(-length, -height, width), new(length, -height, width),
+                new(length, height, width), new(-length, height, width)
             ];
-
-            double centerX = canvasWidth / 2;
-            double centerY = canvasHeight / 2;
 
             Point[] projectedPoints = new Point[cubeVertices.Length];
 
             Point3D[] rotatedVertices = new Point3D[cubeVertices.Length];
             for (int i = 0; i < cubeVertices.Length; i++)
             {
-                Point3D rotatedPoint = RotatePoint(cubeVertices[i]);
+                Point3D rotatedPoint = RotatePoint(cubeVertices[i], xRotation, yRotation, zRotation);
                 rotatedVertices[i] = rotatedPoint;
 
                 double projectedX = centerX + rotatedPoint.X / (1 - rotatedPoint.Z / 200);
@@ -69,7 +81,8 @@ namespace Ryujinx.Ava.UI.Controls
             IImmutableSolidColorBrush[] faceColors = _isRight
                 ?
                 [
-                    Brushes.DimGray, Brushes.IndianRed, Brushes.DimGray, Brushes.IndianRed, Brushes.DimGray, Brushes.IndianRed
+                    Brushes.DimGray, Brushes.IndianRed, Brushes.DimGray, Brushes.IndianRed, Brushes.DimGray,
+                    Brushes.IndianRed
                 ]
                 :
                 [
@@ -109,11 +122,11 @@ namespace Ryujinx.Ava.UI.Controls
             }
         }
 
-        private Point3D RotatePoint(Point3D point)
+        private Point3D RotatePoint(Point3D point, double xRotation, double yRotation, double zRotation)
         {
-            double radX = _XRotation * Math.PI / 180;
-            double radY = _YRotation * Math.PI / 180;
-            double radZ = _ZRotation * Math.PI / 180;
+            double radX = xRotation * Math.PI / 180;
+            double radY = yRotation * Math.PI / 180;
+            double radZ = zRotation * Math.PI / 180;
 
             double cosX = Math.Cos(radX), sinX = Math.Sin(radX);
             double cosY = Math.Cos(radY), sinY = Math.Sin(radY);

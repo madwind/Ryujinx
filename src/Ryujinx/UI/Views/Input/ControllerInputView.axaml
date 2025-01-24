@@ -323,6 +323,19 @@
                 Grid.Column="1"
                 HorizontalAlignment="Stretch"
                 VerticalAlignment="Stretch">
+                <Canvas>
+                    <controls:Motion
+                        x:Name="LeftCubeCanvas"
+                        Canvas.Left="5"
+                        Canvas.Top="5"
+                        ZIndex="1" />
+
+                    <controls:Motion
+                        x:Name="RightCubeCanvas"
+                        Canvas.Right="5"
+                        Canvas.Top="5"
+                        ZIndex="1" />
+                </Canvas>
                 <!-- Controller Picture -->
                 <Image
                     Margin="0,10"
@@ -330,23 +343,6 @@
                     HorizontalAlignment="Stretch"
                     VerticalAlignment="Stretch"
                     Source="{Binding Image}" />
-                <Canvas>
-                    <controls:Motion
-                        x:Name="LeftCubeCanvas"
-                        Width="60"
-                        Height="60"
-                        Canvas.Left="5"
-                        Canvas.Bottom="5"
-                        ZIndex="1" />
-
-                    <controls:Motion
-                        x:Name="RightCubeCanvas"
-                        Width="60"
-                        Height="60"
-                        Canvas.Right="5"
-                        Canvas.Bottom="5"
-                        ZIndex="1" />
-                </Canvas>
                 <Border
                     BorderBrush="{DynamicResource ThemeControlBorderColor}"
                     BorderThickness="1"

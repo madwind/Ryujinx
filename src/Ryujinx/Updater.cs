@@ -118,6 +118,8 @@ namespace Ryujinx.Ava
                                     OpenHelper.OpenUrl(ReleaseInformation.GetChangelogForVersion(currentVersion));
                                 }
                             }
+                            
+                            Logger.Info?.Print(LogClass.Application, "Up to date.");
 
                             _running = false;
 
@@ -188,6 +190,8 @@ namespace Ryujinx.Ava
                         OpenHelper.OpenUrl(ReleaseInformation.GetChangelogForVersion(currentVersion));
                     }
                 }
+                
+                Logger.Info?.Print(LogClass.Application, "Up to date.");
 
                 _running = false;
 

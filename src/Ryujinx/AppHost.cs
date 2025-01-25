@@ -587,6 +587,11 @@ namespace Ryujinx.Ava
                 return;
             }
 
+            foreach (IGamepad gamepad in RyujinxApp.MainWindow.InputManager.GamepadDriver.GetGamepads())
+            {
+                gamepad?.ClearLed();
+            }
+
             _isStopped = true;
             Stop();
         }
@@ -1151,8 +1156,8 @@ namespace Ryujinx.Ava
                 LocaleManager.Instance[LocaleKeys.VolumeShort] + $": {(int)(Device.GetVolume() * 100)}%",
                 dockedMode,
                 ConfigurationState.Instance.Graphics.AspectRatio.Value.ToText(),
-                $"{Device.Statistics.GetGameFrameRate():00.00} FPS ({Device.Statistics.GetGameFrameTime():00.00} ms)",
-                $"FIFO: {Device.Statistics.GetFifoPercent():00.00} %",
+                Device.Statistics.FormatGameFrameRate(),
+                Device.Statistics.FormatFifoPercent(),
                 _displayCount));
         }
 

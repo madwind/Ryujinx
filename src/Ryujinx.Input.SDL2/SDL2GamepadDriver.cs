@@ -214,5 +214,16 @@ namespace Ryujinx.Input.SDL2
 
             return new SDL2Gamepad(gamepadHandle, id);
         }
+
+        public IEnumerable<IGamepad> GetGamepads()
+        {
+            lock (_gamepadsIds)
+            {
+                foreach (string gamepadId in _gamepadsIds)
+                {
+                    yield return GetGamepad(gamepadId);
+                }
+            }
+        }
     }
 }

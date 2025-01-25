@@ -1,6 +1,5 @@
 using Ryujinx.Common.Configuration.Hid;
 using Ryujinx.Common.Configuration.Hid.Keyboard;
-using Ryujinx.Common.Logging;
 using Ryujinx.Input;
 using System;
 using System.Collections.Generic;
@@ -142,11 +141,6 @@ namespace Ryujinx.Ava.Input
                 _buttonsUserMapping.Add(new ButtonMappingEntry(GamepadButtonInputId.SingleLeftTrigger1,  (Key)_configuration.RightJoycon.ButtonSl));
 #pragma warning restore IDE0055
             }
-        }
-
-        public void SetLed(uint packedRgb)
-        {
-            Logger.Info?.Print(LogClass.UI, "SetLed called on an AvaloniaKeyboard");
         }
 
         public void SetTriggerThreshold(float triggerThreshold) { }

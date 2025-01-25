@@ -1,6 +1,5 @@
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Logging;
-using Ryujinx.Common.Utilities;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -178,8 +177,6 @@ namespace Ryujinx.SDL2.Common
                         HandleSDLEvent(ref evnt);
                     }
                 });
-                
-                Rainbow.Tick();
 
                 waitHandle.Wait(WaitTimeMs);
             }

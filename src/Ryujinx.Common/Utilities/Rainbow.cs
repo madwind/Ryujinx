@@ -5,29 +5,17 @@ namespace Ryujinx.Common.Utilities
 {
     public class Rainbow
     {
-        public static float Speed { get; set; } = 1;
+        public const float Speed = 1;
         
         public static Color Color { get; private set; } = Color.Blue;
 
-        private static float _lastHue;
-
         public static void Tick()
         {
-            float currentHue = Color.GetHue();
-            float nextHue = currentHue;
-
-            if (currentHue >= 360)
-                nextHue = 0;
-            else
-                nextHue += Speed;
-            
             Color = HsbToRgb(
-                nextHue / 360,
+                (Color.GetHue() + Speed) / 360,
                 1, 
                 1
                 );
-
-            _lastHue = currentHue;
             
             RainbowColorUpdated?.Invoke(Color.ToArgb());
         }

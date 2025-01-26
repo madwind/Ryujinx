@@ -80,8 +80,8 @@ namespace Ryujinx.Input.SDL3
             {
                 MotionInputId.Accelerometer or
                     MotionInputId.Gyroscope => left.GetMotionData(inputId),
-                MotionInputId.SecondAccelerometer => right.GetMotionData(MotionInputId.Accelerometer),
-                MotionInputId.SecondGyroscope => right.GetMotionData(MotionInputId.Gyroscope),
+                MotionInputId.RightAccelerometer => right.GetMotionData(MotionInputId.Accelerometer),
+                MotionInputId.RightGyroscope => right.GetMotionData(MotionInputId.Gyroscope),
                 _ => Vector3.Zero
             };
         }

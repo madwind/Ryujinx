@@ -301,8 +301,8 @@ namespace Ryujinx.Input.HLE
                             {
                                 if (gamepad.Id== "JoyConPair")
                                 {
-                                    Vector3 rightAccelerometer = gamepad.GetMotionData(MotionInputId.SecondAccelerometer);
-                                    Vector3 rightGyroscope = gamepad.GetMotionData(MotionInputId.SecondGyroscope);
+                                    Vector3 rightAccelerometer = gamepad.GetMotionData(MotionInputId.RightAccelerometer);
+                                    Vector3 rightGyroscope = gamepad.GetMotionData(MotionInputId.RightGyroscope);
 
                                     rightAccelerometer = new Vector3(rightAccelerometer.X, -rightAccelerometer.Z, rightAccelerometer.Y);
                                     rightGyroscope = new Vector3(rightGyroscope.X, -rightGyroscope.Z, rightGyroscope.Y);

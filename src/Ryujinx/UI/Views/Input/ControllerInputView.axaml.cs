@@ -315,8 +315,8 @@ namespace Ryujinx.Ava.UI.Views.Input
                         LeftCubeCanvas.UpdateRotationFromMotionData(accelerometerData, gyroscopeData);
                         LeftCubeCanvas.InvalidateVisual();
 
-                        Vector3 rightAccelerometer = gamepad.GetMotionData(MotionInputId.SecondAccelerometer);
-                        Vector3 rightGyroscope = gamepad.GetMotionData(MotionInputId.SecondGyroscope);
+                        Vector3 rightAccelerometer = gamepad.GetMotionData(MotionInputId.RightAccelerometer);
+                        Vector3 rightGyroscope = gamepad.GetMotionData(MotionInputId.RightGyroscope);
 
                         RightCubeCanvas.UpdateRotationFromMotionData(rightAccelerometer, rightGyroscope, true);
                         RightCubeCanvas.InvalidateVisual();

@@ -103,6 +103,9 @@ cmake --build build/ --config Release
 $SUDO cmake --install build/ --prefix install_output --config Release
 popd
 
+# Ensure the directory exists
+mkdir -p ../runtimes/$NAME
+
 # Move build lib into correct folders
 if [[ $RUNNER_OS == 'Windows' ]]; then
     cp SDL/install_output/bin/SDL3.dll ../runtimes/$NAME/SDL3.dll

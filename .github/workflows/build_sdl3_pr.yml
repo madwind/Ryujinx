@@ -67,7 +67,7 @@ jobs:
           user_id: ${{ steps.get_uid.outputs.uid }}
 
       - name: Compress native directory
-        run: tar -cf native-${{ matrix.platform.name }}.tar native/${{ matrix.platform.name }}
+        run: tar -cf native-${{ matrix.platform.name }}.tar src/Ryujinx.SDL3-CS/runtimes/${{ matrix.platform.name }}
 
       - name: Upload native artifact
         uses: actions/upload-artifact@v4
@@ -88,12 +88,12 @@ jobs:
         run: xcodebuild -project src/Ryujinx.SDL3-CS/external/SDL/Xcode/SDL/SDL.xcodeproj -target SDL3.xcframework -configuration Release
 
       - name: Prepare release directory (iOS)
-        run: mkdir -p native/ios
+        run: mkdir -p -project src/Ryujinx.SDL3-CS/runtimes/ios
 
       - name: Prepare release (iOS)
         run: |
-          mkdir -p native/ios/SDL3.xcframework/ios-arm64/SDL3.framework;
-          mkdir -p native/ios/SDL3.xcframework/ios-arm64_x86_64-simulator/SDL3.framework;
+          mkdir -p src/Ryujinx.SDL3-CS/runtimes/ios/SDL3.xcframework/ios-arm64/SDL3.framework;
+          mkdir -p src/Ryujinx.SDL3-CS/runtimes/ios/SDL3.xcframework/ios-arm64_x86_64-simulator/SDL3.framework;
           cp src/Ryujinx.SDL3-CS/external/SDL/Xcode/SDL/build/SDL3.xcframework/Info.plist                                           src/Ryujinx.SDL3-CS/runtimes/ios/SDL3.xcframework/Info.plist;
           cp src/Ryujinx.SDL3-CS/external/SDL/Xcode/SDL/build/SDL3.xcframework/ios-arm64/SDL3.framework/SDL3                        src/Ryujinx.SDL3-CS/runtimes/ios/SDL3.xcframework/ios-arm64/SDL3.framework/SDL3;
           cp src/Ryujinx.SDL3-CS/external/SDL/Xcode/SDL/build/SDL3.xcframework/ios-arm64/SDL3.framework/Info.plist                  src/Ryujinx.SDL3-CS/runtimes/ios/SDL3.xcframework/ios-arm64/SDL3.framework/Info.plist;
@@ -101,7 +101,7 @@ jobs:
           cp src/Ryujinx.SDL3-CS/external/SDL/Xcode/SDL/build/SDL3.xcframework/ios-arm64_x86_64-simulator/SDL3.framework/Info.plist src/Ryujinx.SDL3-CS/runtimes/ios/SDL3.xcframework/ios-arm64_x86_64-simulator/SDL3.framework/Info.plist;
 
       - name: Compress native directory
-        run: tar -cf native-ios.tar native/ios
+        run: tar -cf native-ios.tar src/Ryujinx.SDL3-CS/runtimes/ios
 
       - name: Upload native artifact
         uses: actions/upload-artifact@v4
@@ -142,7 +142,7 @@ jobs:
       - name: Build (Android)
         run: |
           export PATH=$ANDROID_HOME/ndk/$NDK_VER:$PATH
-          export OUTPUT=$PWD/native/android
+          export OUTPUT=$PWD/src/Ryujinx.SDL3-CS/runtimes/android
           rm -rf $OUTPUT && mkdir -p $OUTPUT
 
           # Build SDL3
@@ -161,7 +161,7 @@ jobs:
           jar cvf $OUTPUT/SDL3AndroidBridge.jar org/libsdl/app/*.class
 
       - name: Compress native directory
-        run: tar -cf native-android.tar native/android
+        run: tar -cf native-android.tar src/Ryujinx.SDL3-CS/runtimes/android
 
       - name: Upload native artifact
         uses: actions/upload-artifact@v4

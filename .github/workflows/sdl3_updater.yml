@@ -152,7 +152,7 @@ jobs:
         run: |
           export JAVA_HOME=$JAVA_HOME_11_X64
           export PATH=$JAVA_HOME_11_X64/bin:$PATH
-          export OUTPUT=$PWD/SDL3-CS/Jars/
+          export OUTPUT=$PWD/src/Ryujinx.SDL3-CS/runtimes/android/Jars/
           rm -rf $OUTPUT && mkdir -p $OUTPUT
 
           # Build SDL3 Android Java part

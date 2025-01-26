@@ -88,7 +88,7 @@ jobs:
         run: xcodebuild -project src/Ryujinx.SDL3-CS/external/SDL/Xcode/SDL/SDL.xcodeproj -target SDL3.xcframework -configuration Release
 
       - name: Prepare release directory (iOS)
-        run: mkdir -p -project src/Ryujinx.SDL3-CS/runtimes/ios
+        run: mkdir -p src/Ryujinx.SDL3-CS/runtimes/ios
 
       - name: Prepare release (iOS)
         run: |

@@ -34,15 +34,15 @@ jobs:
             github.rest.git.createRef({
               owner: "${{ env.RYUJINX_TARGET_RELEASE_CHANNEL_OWNER }}",
               repo: "${{ env.RYUJINX_TARGET_RELEASE_CHANNEL_REPO }}",
-              ref: 'refs/tags/${{ steps.version_info.outputs.build_version }}',
+              ref: 'refs/tags/${{ steps.version_info.outputs.build_version }}-SDL3',
               sha: context.sha
             })
 
       - name: Create release
         uses: ncipollo/release-action@v1
         with:
-          name: ${{ steps.version_info.outputs.build_version }}
-          tag: ${{ steps.version_info.outputs.build_version }}
+          name: ${{ steps.version_info.outputs.build_version }}-SDL3
+          tag: ${{ steps.version_info.outputs.build_version }}-SDL3
           body: |
             # Stable builds:
             | Platform | Artifact |
@@ -161,9 +161,9 @@ jobs:
       - name: Pushing new release
         uses: ncipollo/release-action@v1
         with:
-          name: ${{ steps.version_info.outputs.build_version }}
+          name: ${{ steps.version_info.outputs.build_version }}-SDL3
           artifacts: "release_output/*.tar.gz,release_output/*.zip,release_output/*AppImage*"
-          tag: ${{ steps.version_info.outputs.build_version }}
+          tag: ${{ steps.version_info.outputs.build_version }}-SDL3
           body: |
             # Stable builds:
             | Platform | Artifact |
@@ -233,9 +233,9 @@ jobs:
       - name: Pushing new release
         uses: ncipollo/release-action@v1
         with:
-          name: ${{ steps.version_info.outputs.build_version }}
+          name: ${{ steps.version_info.outputs.build_version }}-SDL3
           artifacts: "publish/*.tar.gz"
-          tag: ${{ steps.version_info.outputs.build_version }}
+          tag: ${{ steps.version_info.outputs.build_version }}-SDL3
           body: ""
           omitBodyDuringUpdate: true
           allowUpdates: true

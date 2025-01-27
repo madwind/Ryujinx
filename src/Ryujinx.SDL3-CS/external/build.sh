@@ -108,11 +108,11 @@ mkdir -p ../runtimes/$NAME
 
 # Move build lib into correct folders
 if [[ $RUNNER_OS == 'Windows' ]]; then
-    cp SDL/install_output/bin/SDL3.dll ../runtimes/$NAME/SDL3.dll
+    cp SDL/install_output/bin/SDL3.dll ../runtimes/$NAME/native/SDL3.dll
 elif [[ $RUNNER_OS == 'Linux' ]]; then
-    cp SDL/install_output/lib/libSDL3.so ../runtimes/$NAME/libSDL3.so
+    cp SDL/install_output/lib/libSDL3.so ../runtimes/$NAME/native/libSDL3.so
 elif [[ $RUNNER_OS == 'macOS' ]]; then
-    cp SDL/install_output/lib/libSDL3.dylib ../runtimes/$NAME/libSDL3.dylib
+    cp SDL/install_output/lib/libSDL3.dylib ../runtimes/$NAME/native/libSDL3.dylib
 fi
 
 popd

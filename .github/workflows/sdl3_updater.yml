@@ -92,13 +92,13 @@ jobs:
 
       - name: Prepare release (iOS)
         run: |
-          mkdir -p src/Ryujinx.SDL3-CS/runtimes/ios/SDL3.xcframework/ios-arm64/SDL3.framework;
-          mkdir -p src/Ryujinx.SDL3-CS/runtimes/ios/SDL3.xcframework/ios-arm64_x86_64-simulator/SDL3.framework;
-          cp src/Ryujinx.SDL3-CS/external/SDL/Xcode/SDL/build/SDL3.xcframework/Info.plist                                           src/Ryujinx.SDL3-CS/runtimes/ios/SDL3.xcframework/Info.plist;
-          cp src/Ryujinx.SDL3-CS/external/SDL/Xcode/SDL/build/SDL3.xcframework/ios-arm64/SDL3.framework/SDL3                        src/Ryujinx.SDL3-CS/runtimes/ios/SDL3.xcframework/ios-arm64/SDL3.framework/SDL3;
-          cp src/Ryujinx.SDL3-CS/external/SDL/Xcode/SDL/build/SDL3.xcframework/ios-arm64/SDL3.framework/Info.plist                  src/Ryujinx.SDL3-CS/runtimes/ios/SDL3.xcframework/ios-arm64/SDL3.framework/Info.plist;
-          cp src/Ryujinx.SDL3-CS/external/SDL/Xcode/SDL/build/SDL3.xcframework/ios-arm64_x86_64-simulator/SDL3.framework/SDL3       src/Ryujinx.SDL3-CS/runtimes/ios/SDL3.xcframework/ios-arm64_x86_64-simulator/SDL3.framework/SDL3;
-          cp src/Ryujinx.SDL3-CS/external/SDL/Xcode/SDL/build/SDL3.xcframework/ios-arm64_x86_64-simulator/SDL3.framework/Info.plist src/Ryujinx.SDL3-CS/runtimes/ios/SDL3.xcframework/ios-arm64_x86_64-simulator/SDL3.framework/Info.plist;
+          mkdir -p src/Ryujinx.SDL3-CS/runtimes/ios/native/SDL3.xcframework/ios-arm64/SDL3.framework;
+          mkdir -p src/Ryujinx.SDL3-CS/runtimes/ios/native/SDL3.xcframework/ios-arm64_x86_64-simulator/SDL3.framework;
+          cp src/Ryujinx.SDL3-CS/external/SDL/Xcode/SDL/build/SDL3.xcframework/Info.plist                                           src/Ryujinx.SDL3-CS/runtimes/ios/native/SDL3.xcframework/Info.plist;
+          cp src/Ryujinx.SDL3-CS/external/SDL/Xcode/SDL/build/SDL3.xcframework/ios-arm64/SDL3.framework/SDL3                        src/Ryujinx.SDL3-CS/runtimes/ios/native/SDL3.xcframework/ios-arm64/SDL3.framework/SDL3;
+          cp src/Ryujinx.SDL3-CS/external/SDL/Xcode/SDL/build/SDL3.xcframework/ios-arm64/SDL3.framework/Info.plist                  src/Ryujinx.SDL3-CS/runtimes/ios/native/SDL3.xcframework/ios-arm64/SDL3.framework/Info.plist;
+          cp src/Ryujinx.SDL3-CS/external/SDL/Xcode/SDL/build/SDL3.xcframework/ios-arm64_x86_64-simulator/SDL3.framework/SDL3       src/Ryujinx.SDL3-CS/runtimes/ios/native/SDL3.xcframework/ios-arm64_x86_64-simulator/SDL3.framework/SDL3;
+          cp src/Ryujinx.SDL3-CS/external/SDL/Xcode/SDL/build/SDL3.xcframework/ios-arm64_x86_64-simulator/SDL3.framework/Info.plist src/Ryujinx.SDL3-CS/runtimes/ios/native/SDL3.xcframework/ios-arm64_x86_64-simulator/SDL3.framework/Info.plist;
 
       - name: Compress native directory
         run: tar -cf native-ios.tar src/Ryujinx.SDL3-CS/runtimes/ios

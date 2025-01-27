@@ -74,9 +74,12 @@ public static unsafe partial class SDL
 			return value.GetHashCode();
 		}
 	}
-
+    
+#if Windows
 	private const string nativeLibName = "SDL3";
-
+#else
+    private const string nativeLibName = "libSDL3";
+#endif
 	// /usr/local/include/SDL3/SDL_stdinc.h
 
 	[LibraryImport(nativeLibName)]

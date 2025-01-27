@@ -11,7 +11,7 @@
   <ItemGroup>
     <None Include="runtimes/linux-x64/native/libSDL3.so" Condition="'$(RuntimeIdentifier)' == 'linux-x64'">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <Link>libSDL3.sol</Link>
+      <Link>libSDL3.so</Link>
     </None>
     <None Include="runtimes/linux-arm64/native/libSDL3.so" Condition="'$(RuntimeIdentifier)' == 'linux-arm64'">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

@@ -101,14 +101,14 @@ jobs:
 
       - name: Publish
         run: |
-          dotnet publish -c Release -r "${{ matrix.platform.name }}" -o ./publish/${{ matrix.platform.name }} -p:Version="${{ steps.version_info.outputs.build_version }}" -p:SourceRevisionId="${{ steps.version_info.outputs.git_short_hash }}" -p:DebugType=embedded src/Ryujinx --self-contained
+          dotnet publish -c Release -r "${{ matrix.platform.name }}" -o ./publish -p:Version="${{ steps.version_info.outputs.build_version }}" -p:SourceRevisionId="${{ steps.version_info.outputs.git_short_hash }}" -p:DebugType=embedded src/Ryujinx --self-contained
 
       - name: Packing Windows builds
         if: matrix.platform.os == 'windows-latest'
         run: |
           pushd publish
           rm libarmeilleure-jitsupport.dylib
-          7z a ../release_output/ryujinx-${{ steps.version_info.outputs.build_version }}-${{ matrix.platform.zip_os_name }}.zip ../publish/${{ matrix.platform.name }}
+          7z a ../release_output/ryujinx-${{ steps.version_info.outputs.build_version }}-${{ matrix.platform.zip_os_name }}.zip ../publish
           popd
         shell: bash
 
@@ -117,7 +117,7 @@ jobs:
         run: |
           pushd publish
           chmod +x Ryujinx.sh Ryujinx
-          tar -czvf ../release_output/ryujinx-${{ steps.version_info.outputs.build_version }}-${{ matrix.platform.zip_os_name }}.tar.gz ../publish/${{ matrix.platform.name }}
+          tar -czvf ../release_output/ryujinx-${{ steps.version_info.outputs.build_version }}-${{ matrix.platform.zip_os_name }}.tar.gz ../publish
           popd
         shell: bash
 

@@ -3,7 +3,6 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Ryujinx.Input;
 using System;
-using System.Collections.Generic;
 using System.Numerics;
 using MouseButton = Ryujinx.Input.MouseButton;
 using Size = System.Drawing.Size;
@@ -134,8 +133,6 @@ namespace Ryujinx.Ava.Input
         {
             return new AvaloniaMouse(this);
         }
-
-        public IEnumerable<IGamepad> GetGamepads() => [GetGamepad("0")];
 
         public void Dispose()
         {

@@ -43,8 +43,10 @@
                         <ComboBoxItem IsEnabled="{Binding IsSoundIoEnabled}">
                             <TextBlock Text="{ext:Locale SettingsTabSystemAudioBackendSoundIO}" />
                         </ComboBoxItem>
-                        <ComboBoxItem IsEnabled="{Binding IsSDL2Enabled}">
-                            <TextBlock Text="{ext:Locale SettingsTabSystemAudioBackendSDL2}" />
+                        <ComboBoxItem IsEnabled="{Binding IsSDL3Enabled}">
+                            <TextBlock>
+                            <TextBlock Text="{ext:Locale SettingsTabSystemAudioBackendSDL3}" />
+                            </TextBlock>
                         </ComboBoxItem>
                     </ComboBox>
                 </StackPanel>

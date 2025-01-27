@@ -5,15 +5,15 @@ using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.OpenGL;
 using Ryujinx.Input.HLE;
 using System;
-using static SDL2.SDL;
+using static SDL3.SDL;
 
 namespace Ryujinx.Headless
 {
     class OpenGLWindow : WindowBase
     {
-        private static void CheckResult(int result)
+        private static void CheckResult(bool result)
         {
-            if (result < 0)
+            if (!result)
             {
                 throw new InvalidOperationException($"SDL_GL function returned an error: {SDL_GetError()}");
             }
@@ -21,21 +21,21 @@ namespace Ryujinx.Headless
 
         private static void SetupOpenGLAttributes(bool sharedContext, GraphicsDebugLevel debugLevel)
         {
-            CheckResult(SDL_GL_SetAttribute(SDL_GLattr.SDL_GL_CONTEXT_MAJOR_VERSION, 3));
-            CheckResult(SDL_GL_SetAttribute(SDL_GLattr.SDL_GL_CONTEXT_MINOR_VERSION, 3));
-            CheckResult(SDL_GL_SetAttribute(SDL_GLattr.SDL_GL_CONTEXT_PROFILE_MASK, SDL_GLprofile.SDL_GL_CONTEXT_PROFILE_COMPATIBILITY));
-            CheckResult(SDL_GL_SetAttribute(SDL_GLattr.SDL_GL_CONTEXT_FLAGS, debugLevel != GraphicsDebugLevel.None ? (int)SDL_GLcontext.SDL_GL_CONTEXT_DEBUG_FLAG : 0));
-            CheckResult(SDL_GL_SetAttribute(SDL_GLattr.SDL_GL_SHARE_WITH_CURRENT_CONTEXT, sharedContext ? 1 : 0));
+            CheckResult(SDL_GL_SetAttribute(SDL_GLAttr.SDL_GL_CONTEXT_MAJOR_VERSION, 3));
+            CheckResult(SDL_GL_SetAttribute(SDL_GLAttr.SDL_GL_CONTEXT_MINOR_VERSION, 3));
+            CheckResult(SDL_GL_SetAttribute(SDL_GLAttr.SDL_GL_CONTEXT_PROFILE_MASK, (int)SDL_GLProfile.SDL_GL_CONTEXT_PROFILE_COMPATIBILITY));
+            CheckResult(SDL_GL_SetAttribute(SDL_GLAttr.SDL_GL_CONTEXT_FLAGS, debugLevel != GraphicsDebugLevel.None ? (int)SDL_GLcontext.SDL_GL_CONTEXT_DEBUG_FLAG : 0));
+            CheckResult(SDL_GL_SetAttribute(SDL_GLAttr.SDL_GL_SHARE_WITH_CURRENT_CONTEXT, sharedContext ? 1 : 0));
 
-            CheckResult(SDL_GL_SetAttribute(SDL_GLattr.SDL_GL_ACCELERATED_VISUAL, 1));
-            CheckResult(SDL_GL_SetAttribute(SDL_GLattr.SDL_GL_RED_SIZE, 8));
-            CheckResult(SDL_GL_SetAttribute(SDL_GLattr.SDL_GL_GREEN_SIZE, 8));
-            CheckResult(SDL_GL_SetAttribute(SDL_GLattr.SDL_GL_BLUE_SIZE, 8));
-            CheckResult(SDL_GL_SetAttribute(SDL_GLattr.SDL_GL_ALPHA_SIZE, 8));
-            CheckResult(SDL_GL_SetAttribute(SDL_GLattr.SDL_GL_DEPTH_SIZE, 16));
-            CheckResult(SDL_GL_SetAttribute(SDL_GLattr.SDL_GL_STENCIL_SIZE, 0));
-            CheckResult(SDL_GL_SetAttribute(SDL_GLattr.SDL_GL_DOUBLEBUFFER, 1));
-            CheckResult(SDL_GL_SetAttribute(SDL_GLattr.SDL_GL_STEREO, 0));
+            CheckResult(SDL_GL_SetAttribute(SDL_GLAttr.SDL_GL_ACCELERATED_VISUAL, 1));
+            CheckResult(SDL_GL_SetAttribute(SDL_GLAttr.SDL_GL_RED_SIZE, 8));
+            CheckResult(SDL_GL_SetAttribute(SDL_GLAttr.SDL_GL_GREEN_SIZE, 8));
+            CheckResult(SDL_GL_SetAttribute(SDL_GLAttr.SDL_GL_BLUE_SIZE, 8));
+            CheckResult(SDL_GL_SetAttribute(SDL_GLAttr.SDL_GL_ALPHA_SIZE, 8));
+            CheckResult(SDL_GL_SetAttribute(SDL_GLAttr.SDL_GL_DEPTH_SIZE, 16));
+            CheckResult(SDL_GL_SetAttribute(SDL_GLAttr.SDL_GL_STENCIL_SIZE, 0));
+            CheckResult(SDL_GL_SetAttribute(SDL_GLAttr.SDL_GL_DOUBLEBUFFER, 1));
+            CheckResult(SDL_GL_SetAttribute(SDL_GLAttr.SDL_GL_STEREO, 0));
         }
 
         private class OpenToolkitBindingsContext : IBindingsContext
@@ -46,35 +46,35 @@ namespace Ryujinx.Headless
             }
         }
 
-        private class SDL2OpenGLContext : IOpenGLContext
+        private class SDL3OpenGLContext : IOpenGLContext
         {
             private readonly nint _context;
             private readonly nint _window;
             private readonly bool _shouldDisposeWindow;
 
-            public SDL2OpenGLContext(nint context, nint window, bool shouldDisposeWindow = true)
+            public SDL3OpenGLContext(nint context, nint window, bool shouldDisposeWindow = true)
             {
                 _context = context;
                 _window = window;
                 _shouldDisposeWindow = shouldDisposeWindow;
             }
 
-            public static SDL2OpenGLContext CreateBackgroundContext(SDL2OpenGLContext sharedContext)
+            public static SDL3OpenGLContext CreateBackgroundContext(SDL3OpenGLContext sharedContext)
             {
                 sharedContext.MakeCurrent();
 
                 // Ensure we share our contexts.
                 SetupOpenGLAttributes(true, GraphicsDebugLevel.None);
-                nint windowHandle = SDL_CreateWindow("Ryujinx background context window", 0, 0, 1, 1, SDL_WindowFlags.SDL_WINDOW_OPENGL | SDL_WindowFlags.SDL_WINDOW_HIDDEN);
+                nint windowHandle = SDL_CreateWindow("Ryujinx background context window",  1, 1, SDL_WindowFlags.SDL_WINDOW_OPENGL | SDL_WindowFlags.SDL_WINDOW_HIDDEN);
                 nint context = SDL_GL_CreateContext(windowHandle);
 
                 GL.LoadBindings(new OpenToolkitBindingsContext());
 
-                CheckResult(SDL_GL_SetAttribute(SDL_GLattr.SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 0));
+                CheckResult(SDL_GL_SetAttribute(SDL_GLAttr.SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 0));
 
                 CheckResult(SDL_GL_MakeCurrent(windowHandle, nint.Zero));
 
-                return new SDL2OpenGLContext(context, windowHandle);
+                return new SDL3OpenGLContext(context, windowHandle);
             }
 
             public void MakeCurrent()
@@ -84,9 +84,7 @@ namespace Ryujinx.Headless
                     return;
                 }
 
-                int res = SDL_GL_MakeCurrent(_window, _context);
-
-                if (res != 0)
+                if (!SDL_GL_MakeCurrent(_window, _context))
                 {
                     string errorMessage = $"SDL_GL_CreateContext failed with error \"{SDL_GetError()}\"";
 
@@ -100,7 +98,7 @@ namespace Ryujinx.Headless
 
             public void Dispose()
             {
-                SDL_GL_DeleteContext(_context);
+                SDL_GL_DestroyContext(_context);
 
                 if (_shouldDisposeWindow)
                 {
@@ -108,8 +106,8 @@ namespace Ryujinx.Headless
                 }
             }
         }
-        
-        private SDL2OpenGLContext _openGLContext;
+
+        private SDL3OpenGLContext _openGLContext;
 
         public OpenGLWindow(
             InputManager inputManager,
@@ -141,10 +139,10 @@ namespace Ryujinx.Headless
             }
 
             // NOTE: The window handle needs to be disposed by the thread that created it and is handled separately.
-            _openGLContext = new SDL2OpenGLContext(context, WindowHandle, false);
+            _openGLContext = new SDL3OpenGLContext(context, WindowHandle, false);
 
             // First take exclusivity on the OpenGL context.
-            ((OpenGLRenderer)Renderer).InitializeBackgroundContext(SDL2OpenGLContext.CreateBackgroundContext(_openGLContext));
+            ((OpenGLRenderer)Renderer).InitializeBackgroundContext(SDL3OpenGLContext.CreateBackgroundContext(_openGLContext));
 
             _openGLContext.MakeCurrent();
 
@@ -160,7 +158,7 @@ namespace Ryujinx.Headless
             else if (IsFullscreen)
             {
                 // NOTE: grabbing the main display's dimensions directly as OpenGL doesn't scale along like the VulkanWindow.
-                if (SDL_GetDisplayBounds(DisplayId, out SDL_Rect displayBounds) < 0)
+                if (!SDL_GetDisplayBounds((uint)DisplayId, out SDL_Rect displayBounds))
                 {
                     Logger.Warning?.Print(LogClass.Application, $"Could not retrieve display bounds: {SDL_GetError()}");
 

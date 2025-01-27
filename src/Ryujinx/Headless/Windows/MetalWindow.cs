@@ -1,9 +1,9 @@
 using Ryujinx.Common.Configuration;
 using Ryujinx.Input.HLE;
-using Ryujinx.SDL2.Common;
+using Ryujinx.SDL3.Common;
 using SharpMetal.QuartzCore;
 using System.Runtime.Versioning;
-using static SDL2.SDL;
+using static SDL3.SDL;
 
 namespace Ryujinx.Headless
 {
@@ -35,7 +35,7 @@ namespace Ryujinx.Headless
                 _caMetalLayer = new CAMetalLayer(SDL_Metal_GetLayer(SDL_Metal_CreateView(WindowHandle)));
             }
 
-            SDL2Driver.MainThreadDispatcher?.Invoke(CreateLayer);
+            SDL3Driver.MainThreadDispatcher?.Invoke(CreateLayer);
         }
 
         protected override void InitializeRenderer() { }

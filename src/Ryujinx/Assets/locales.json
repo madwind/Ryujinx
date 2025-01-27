@@ -4298,12 +4298,12 @@
       }
     },
     {
-      "ID": "SettingsTabSystemAudioBackendSDL2",
+      "ID": "SettingsTabSystemAudioBackendSDL3",
       "Translations": {
         "ar_SA": "",
         "de_DE": "",
         "el_GR": "",
-        "en_US": "SDL2",
+        "en_US": "SDL3",
         "es_ES": "",
         "fr_FR": "",
         "he_IL": "",

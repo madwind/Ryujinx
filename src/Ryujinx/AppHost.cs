@@ -9,7 +9,7 @@ using LibHac.Ns;
 using LibHac.Tools.FsSystem;
 using Ryujinx.Audio.Backends.Dummy;
 using Ryujinx.Audio.Backends.OpenAL;
-using Ryujinx.Audio.Backends.SDL2;
+using Ryujinx.Audio.Backends.SDL3;
 using Ryujinx.Audio.Backends.SoundIo;
 using Ryujinx.Audio.Integration;
 using Ryujinx.Ava.Common;
@@ -502,8 +502,6 @@ namespace Ryujinx.Ava
             _renderingThread.Start();
 
             _viewModel.Volume = ConfigurationState.Instance.System.AudioVolume.Value;
-            
-            Rainbow.Enable();
 
             MainLoop();
 
@@ -589,17 +587,6 @@ namespace Ryujinx.Ava
             {
                 return;
             }
-
-            foreach (IGamepad gamepad in RyujinxApp.MainWindow.InputManager.GamepadDriver.GetGamepads())
-            {
-                gamepad?.ClearLed();
-                gamepad?.Dispose();
-            }
-
-            DiscordIntegrationModule.GuestAppStartedAt = null;
-            
-            Rainbow.Disable();
-            Rainbow.Reset();
 
             _isStopped = true;
             Stop();
@@ -977,7 +964,7 @@ namespace Ryujinx.Ava
         {
             List<AudioBackend> availableBackends =
             [
-                AudioBackend.SDL2,
+                AudioBackend.SDL3,
                 AudioBackend.SoundIo,
                 AudioBackend.OpenAl,
                 AudioBackend.Dummy
@@ -1016,7 +1003,7 @@ namespace Ryujinx.Ava
 
                 deviceDriver = currentBackend switch
                 {
-                    AudioBackend.SDL2 => InitializeAudioBackend<SDL2HardwareDeviceDriver>(AudioBackend.SDL2, nextBackend),
+                    AudioBackend.SDL3 => InitializeAudioBackend<SDL3HardwareDeviceDriver>(AudioBackend.SDL3, nextBackend),
                     AudioBackend.SoundIo => InitializeAudioBackend<SoundIoHardwareDeviceDriver>(AudioBackend.SoundIo, nextBackend),
                     AudioBackend.OpenAl => InitializeAudioBackend<OpenALHardwareDeviceDriver>(AudioBackend.OpenAl, nextBackend),
                     _ => new DummyHardwareDeviceDriver(),

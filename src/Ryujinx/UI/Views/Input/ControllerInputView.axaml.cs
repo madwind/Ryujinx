@@ -4,12 +4,19 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
-using FluentAvalonia.UI.Controls;
+using Avalonia.Threading;
 using Ryujinx.Ava.UI.Helpers;
+using Ryujinx.Ava.UI.Models.Input;
 using Ryujinx.Ava.UI.ViewModels.Input;
 using Ryujinx.Common.Configuration.Hid.Controller;
+using Ryujinx.HLE.HOS.Services.Hid;
 using Ryujinx.Input;
 using Ryujinx.Input.Assigner;
+using Ryujinx.Input.HLE;
+using System;
+using System.Numerics;
+using System.Text;
+using System.Threading.Tasks;
 using Button = Ryujinx.Input.Button;
 using StickInputId = Ryujinx.Common.Configuration.Hid.Controller.StickInputId;
 
@@ -18,6 +25,8 @@ namespace Ryujinx.Ava.UI.Views.Input
     public partial class ControllerInputView : UserControl
     {
         private ButtonKeyAssigner _currentAssigner;
+        private volatile bool _isRunning = true;
+        private const float StickMaxPosition = 3;
 
         public ControllerInputView()
         {
@@ -38,6 +47,8 @@ namespace Ryujinx.Ava.UI.Views.Input
                         break;
                 }
             }
+
+            StartUpdatingData();
         }
 
         protected override void OnPointerReleased(PointerReleasedEventArgs e)
@@ -222,7 +233,7 @@ namespace Ryujinx.Ava.UI.Views.Input
         {
             IButtonAssigner assigner;
 
-            ControllerInputViewModel controllerInputViewModel = DataContext as ControllerInputViewModel;
+            var controllerInputViewModel = DataContext as ControllerInputViewModel;
 
             assigner = new GamepadButtonAssigner(
                 controllerInputViewModel.ParentModel.SelectedGamepad,
@@ -235,14 +246,86 @@ namespace Ryujinx.Ava.UI.Views.Input
         protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
         {
             base.OnDetachedFromVisualTree(e);
-            
-            foreach (IGamepad gamepad in RyujinxApp.MainWindow.InputManager.GamepadDriver.GetGamepads())
-            {
-                gamepad?.ClearLed();
-            }
-            
             _currentAssigner?.Cancel();
             _currentAssigner = null;
+        }
+
+        private void Control_OnUnloaded(object sender, RoutedEventArgs e)
+        {
+            _isRunning = false;
+        }
+
+        private string BuildSvgCss(IGamepad gamepad, GamepadInputConfig config, JoystickPosition leftPosition,
+            JoystickPosition rightPosition)
+        {
+            gamepad.SetConfiguration(config.GetConfig());
+            StringBuilder sb = new();
+            for (int i = 0; i < (int)GamepadInputId.Count; i++)
+            {
+                GamepadButtonInputId button = (GamepadButtonInputId)i;
+                if (gamepad.GetMappedStateSnapshot().IsPressed(button))
+                {
+                    sb.Append($"#{button}{{fill:#00bbdb;}}");
+                }
+            }
+
+            sb.Append(
+                $"#LeftStick{{transform: translate ({(float)leftPosition.Dx / short.MaxValue * StickMaxPosition} {-(float)leftPosition.Dy / short.MaxValue * StickMaxPosition});}}");
+            sb.Append(
+                $"#RightStick{{transform: translate ({(float)rightPosition.Dx / short.MaxValue * StickMaxPosition} {-(float)rightPosition.Dy / short.MaxValue * StickMaxPosition});}}");
+            return sb.ToString();
+        }
+
+        private void StartUpdatingData()
+        {
+            Dispatcher.UIThread.InvokeAsync(async () =>
+            {
+                while (_isRunning)
+                {
+                    var viewModel = DataContext as ControllerInputViewModel;
+                    if (viewModel != null)
+                    {
+                        IGamepad gamepad = viewModel.ParentModel.SelectedGamepad;
+                        var config = viewModel.Config;
+                        JoystickPosition leftPosition = default, rightposition = default;
+                        if (config.LeftJoystick != StickInputId.Unbound)
+                        {
+                            var stickInputId = (Ryujinx.Input.StickInputId)(int)config.LeftJoystick;
+                            (float leftAxisX, float leftAxisY) = gamepad.GetStick(stickInputId);
+                            leftPosition = NpadController.GetJoystickPosition(leftAxisX, leftAxisY,
+                                config.DeadzoneLeft, config.RangeLeft);
+                            viewModel.LeftStickPosition = $"{leftPosition.Dx}, {leftPosition.Dy}";
+                        }
+
+                        if (config.RightJoystick != StickInputId.Unbound)
+                        {
+                            StickInputId stickInputId = config.RightJoystick;
+                            (float rightAxisX, float rightAxisY) =
+                                gamepad.GetStick((Ryujinx.Input.StickInputId)stickInputId);
+                            rightposition = NpadController.GetJoystickPosition(rightAxisX, rightAxisY,
+                                config.DeadzoneRight, config.RangeRight);
+                            viewModel.RightStickPosition = $"{rightposition.Dx}, {rightposition.Dy}";
+                        }
+
+                        viewModel.UpdateImageCss(BuildSvgCss(gamepad, config, leftPosition, rightposition));
+
+                        // 假设你已获得加速度计和陀螺仪数据
+                        Vector3 accelerometerData = gamepad.GetMotionData(MotionInputId.Accelerometer);
+                        Vector3 gyroscopeData = gamepad.GetMotionData(MotionInputId.Gyroscope);
+
+                        LeftCubeCanvas.UpdateRotationFromMotionData(accelerometerData, gyroscopeData);
+                        LeftCubeCanvas.InvalidateVisual();
+
+                        Vector3 rightAccelerometer = gamepad.GetMotionData(MotionInputId.RightAccelerometer);
+                        Vector3 rightGyroscope = gamepad.GetMotionData(MotionInputId.RightGyroscope);
+
+                        RightCubeCanvas.UpdateRotationFromMotionData(rightAccelerometer, rightGyroscope, true);
+                        RightCubeCanvas.InvalidateVisual();
+                    }
+
+                    await Task.Delay(16);
+                }
+            });
         }
     }
 }

@@ -3,7 +3,6 @@ using Avalonia.Controls;
 using Avalonia.Svg.Skia;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
-using Gommon;
 using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.Input;
 using Ryujinx.Ava.UI.Helpers;
@@ -35,10 +34,10 @@ namespace Ryujinx.Ava.UI.ViewModels.Input
     public partial class InputViewModel : BaseModel, IDisposable
     {
         private const string Disabled = "disabled";
-        private const string ProControllerResource = "Ryujinx/Assets/Icons/Controller_ProCon.svg";
-        private const string JoyConPairResource = "Ryujinx/Assets/Icons/Controller_JoyConPair.svg";
-        private const string JoyConLeftResource = "Ryujinx/Assets/Icons/Controller_JoyConLeft.svg";
-        private const string JoyConRightResource = "Ryujinx/Assets/Icons/Controller_JoyConRight.svg";
+        private const string ProControllerResource = "Ryujinx/Assets/Icons/Controller_ProCon_Settings.svg";
+        private const string JoyConPairResource = "Ryujinx/Assets/Icons/Controller_JoyConPair_Settings.svg";
+        private const string JoyConLeftResource = "Ryujinx/Assets/Icons/Controller_JoyConLeft_Settings.svg";
+        private const string JoyConRightResource = "Ryujinx/Assets/Icons/Controller_JoyConRight_Settings.svg";
         private const string KeyboardString = "keyboard";
         private const string ControllerString = "controller";
         private readonly MainWindow _mainWindow;
@@ -55,18 +54,7 @@ namespace Ryujinx.Ava.UI.ViewModels.Input
         private static readonly InputConfigJsonSerializerContext _serializerContext = new(JsonHelper.GetDefaultSerializerOptions());
 
         public IGamepadDriver AvaloniaKeyboardDriver { get; }
-
-        private IGamepad _selectedGamepad;
-
-        public IGamepad SelectedGamepad
-        {
-            get => _selectedGamepad;
-            private set
-            {
-                _selectedGamepad = value;
-                OnPropertiesChanged(nameof(HasLed), nameof(CanClearLed));
-            }
-        }
+        public IGamepad SelectedGamepad { get; private set; }
 
         public ObservableCollection<PlayerModel> PlayerIndexes { get; set; }
         public ObservableCollection<(DeviceType Type, string Id, string Name)> Devices { get; set; }
@@ -80,9 +68,6 @@ namespace Ryujinx.Ava.UI.ViewModels.Input
         public bool IsKeyboard => !IsController;
         public bool IsRight { get; set; }
         public bool IsLeft { get; set; }
-
-        public bool HasLed => SelectedGamepad.Features.HasFlag(GamepadFeaturesFlag.Led);
-        public bool CanClearLed => SelectedGamepad.Name.ContainsIgnoreCase("DualSense");
 
         public bool IsModified { get; set; }
         public event Action NotifyChangesEvent;
@@ -198,7 +183,6 @@ namespace Ryujinx.Ava.UI.ViewModels.Input
 
                     image.Source = source;
                 }
-
                 return image;
             }
         }
@@ -595,7 +579,7 @@ namespace Ryujinx.Ava.UI.ViewModels.Input
                 config = new StandardControllerInputConfig
                 {
                     Version = InputConfig.CurrentVersion,
-                    Backend = InputBackendType.GamepadSDL2,
+                    Backend = InputBackendType.GamepadSDL3,
                     Id = id,
                     ControllerType = ControllerType.ProController,
                     DeadzoneLeft = 0.1f,
@@ -612,8 +596,8 @@ namespace Ryujinx.Ava.UI.ViewModels.Input
                         ButtonMinus = ConfigGamepadInputId.Minus,
                         ButtonL = ConfigGamepadInputId.LeftShoulder,
                         ButtonZl = ConfigGamepadInputId.LeftTrigger,
-                        ButtonSl = ConfigGamepadInputId.Unbound,
-                        ButtonSr = ConfigGamepadInputId.Unbound,
+                        ButtonSl = ConfigGamepadInputId.SingleLeftTrigger0,
+                        ButtonSr = ConfigGamepadInputId.SingleRightTrigger0,
                     },
                     LeftJoyconStick = new JoyconConfigControllerStick<ConfigGamepadInputId, ConfigStickInputId>
                     {
@@ -631,8 +615,8 @@ namespace Ryujinx.Ava.UI.ViewModels.Input
                         ButtonPlus = ConfigGamepadInputId.Plus,
                         ButtonR = ConfigGamepadInputId.RightShoulder,
                         ButtonZr = ConfigGamepadInputId.RightTrigger,
-                        ButtonSl = ConfigGamepadInputId.Unbound,
-                        ButtonSr = ConfigGamepadInputId.Unbound,
+                        ButtonSl = ConfigGamepadInputId.SingleLeftTrigger1,
+                        ButtonSr = ConfigGamepadInputId.SingleRightTrigger1,
                     },
                     RightJoyconStick = new JoyconConfigControllerStick<ConfigGamepadInputId, ConfigStickInputId>
                     {

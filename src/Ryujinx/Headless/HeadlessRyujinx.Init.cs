@@ -1,6 +1,6 @@
 using DiscordRPC;
 using LibHac.Tools.FsSystem;
-using Ryujinx.Audio.Backends.SDL2;
+using Ryujinx.Audio.Backends.SDL3;
 using Ryujinx.Ava;
 using Ryujinx.Ava.Utilities.Configuration;
 using Ryujinx.Common.Configuration;
@@ -157,7 +157,7 @@ namespace Ryujinx.Headless
                     config = new StandardControllerInputConfig
                     {
                         Version = InputConfig.CurrentVersion,
-                        Backend = InputBackendType.GamepadSDL2,
+                        Backend = InputBackendType.GamepadSDL3,
                         Id = null,
                         ControllerType = ControllerType.JoyconPair,
                         DeadzoneLeft = 0.1f,
@@ -335,7 +335,7 @@ namespace Ryujinx.Headless
                 _accountManager,
                 _userChannelPersistence,
                 renderer,
-                new SDL2HardwareDeviceDriver(),
+                new SDL3HardwareDeviceDriver(),
                 options.DramSize,
                 window,
                 options.SystemLanguage,

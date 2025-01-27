@@ -11,6 +11,7 @@
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <DefaultItemExcludes>$(DefaultItemExcludes);._*</DefaultItemExcludes>
+    <CETCompat>false</CETCompat>
   </PropertyGroup>
 
   <Target Name="BuildValidationProj" BeforeTargets="BeforeBuild">
@@ -70,12 +71,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Ryujinx.Audio.Backends.SDL2\Ryujinx.Audio.Backends.SDL2.csproj" />
+    <ProjectReference Include="..\Ryujinx.Audio.Backends.SDL3\Ryujinx.Audio.Backends.SDL3.csproj" />
     <ProjectReference Include="..\Ryujinx.Graphics.Vulkan\Ryujinx.Graphics.Vulkan.csproj" />
     <ProjectReference Include="..\Ryujinx.Graphics.OpenGL\Ryujinx.Graphics.OpenGL.csproj" />
     <ProjectReference Include="..\Ryujinx.Graphics.Metal\Ryujinx.Graphics.Metal.csproj" />
     <ProjectReference Include="..\Ryujinx.Input\Ryujinx.Input.csproj" />
-    <ProjectReference Include="..\Ryujinx.Input.SDL2\Ryujinx.Input.SDL2.csproj" />
+    <ProjectReference Include="..\Ryujinx.Input.SDL3\Ryujinx.Input.SDL3.csproj" />
     <ProjectReference Include="..\Ryujinx.Audio.Backends.OpenAL\Ryujinx.Audio.Backends.OpenAL.csproj" />
     <ProjectReference Include="..\Ryujinx.Audio.Backends.SoundIo\Ryujinx.Audio.Backends.SoundIo.csproj" />
     <ProjectReference Include="..\Ryujinx.Common\Ryujinx.Common.csproj" />
@@ -134,6 +135,10 @@
     <None Remove="Assets\Icons\Controller_JoyConPair.svg" />
     <None Remove="Assets\Icons\Controller_JoyConRight.svg" />
     <None Remove="Assets\Icons\Controller_ProCon.svg" />
+    <None Remove="Assets\Icons\Controller_JoyConLeft_Settings.svg" />
+    <None Remove="Assets\Icons\Controller_JoyConPair_Settings.svg" />
+    <None Remove="Assets\Icons\Controller_JoyConRight_Settings.svg" />
+    <None Remove="Assets\Icons\Controller_ProCon_Settings.svg" />
   </ItemGroup>
 
   <ItemGroup>
@@ -156,6 +161,10 @@
     <EmbeddedResource Include="Assets\Icons\Controller_JoyConPair.svg" />
     <EmbeddedResource Include="Assets\Icons\Controller_JoyConRight.svg" />
     <EmbeddedResource Include="Assets\Icons\Controller_ProCon.svg" />
+    <EmbeddedResource Include="Assets\Icons\Controller_JoyConLeft_Settings.svg" />
+    <EmbeddedResource Include="Assets\Icons\Controller_JoyConPair_Settings.svg" />
+    <EmbeddedResource Include="Assets\Icons\Controller_JoyConRight_Settings.svg" />
+    <EmbeddedResource Include="Assets\Icons\Controller_ProCon_Settings.svg" />
     <EmbeddedResource Include="Assets\UIImages\Icon_NCA.png" />
     <EmbeddedResource Include="Assets\UIImages\Icon_NRO.png" />
     <EmbeddedResource Include="Assets\UIImages\Icon_NSO.png" />
@@ -174,6 +183,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Assets\Fonts\Mono\" />
+    <Folder Include="bin\Debug\net9.0\" />
   </ItemGroup>
 
 </Project>

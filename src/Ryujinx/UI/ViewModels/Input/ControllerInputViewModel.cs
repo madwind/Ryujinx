@@ -5,7 +5,6 @@ using FluentAvalonia.UI.Controls;
 using Ryujinx.Ava.UI.Helpers;
 using Ryujinx.Ava.UI.Models.Input;
 using Ryujinx.Ava.UI.Views.Input;
-using Ryujinx.UI.Views.Input;
 
 namespace Ryujinx.Ava.UI.ViewModels.Input
 {
@@ -41,7 +40,11 @@ namespace Ryujinx.Ava.UI.ViewModels.Input
 
         [ObservableProperty] private SvgImage _image;
 
-        public InputViewModel ParentModel { get; }
+        public readonly InputViewModel ParentModel;
+
+        [ObservableProperty] private string _leftStickPosition;
+
+        [ObservableProperty] private string _rightStickPosition;
 
         public ControllerInputViewModel(InputViewModel model, GamepadInputConfig config)
         {
@@ -60,17 +63,17 @@ namespace Ryujinx.Ava.UI.ViewModels.Input
         {
             await RumbleInputView.Show(this);
         }
-        
-        public async void ShowLedConfig()
-        {
-            await LedInputView.Show(this);
-        }
 
         public void OnParentModelChanged()
         {
             IsLeft = ParentModel.IsLeft;
             IsRight = ParentModel.IsRight;
             Image = ParentModel.Image;
+        }
+
+        public void UpdateImageCss(string css)
+        {
+            Image = new SvgImage { Source = ParentModel.Image.Source, Css = css };
         }
     }
 }

@@ -6,9 +6,12 @@
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <RuntimeIdentifiers>win-x64;linux-x64;linux-arm64;osx-x64</RuntimeIdentifiers>
-    <UseCurrentRuntimeIdentifier>true</UseCurrentRuntimeIdentifier>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+    <UseCurrentRuntimeIdentifier>true</UseCurrentRuntimeIdentifier>
+  </PropertyGroup>
+  
   <ItemGroup>
     <None Include="runtimes/win-x64/native/libSDL3.dll" Condition="'$(RuntimeIdentifier)' == 'win-x64'">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

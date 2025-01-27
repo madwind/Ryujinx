@@ -9,6 +9,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Include="runtimes/win-x64/native/libSDL3.dll" Condition="'$(RuntimeIdentifier)' == 'win-x64'">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Link>libSDL3.dll</Link>
+    </None>
     <None Include="runtimes/linux-x64/native/libSDL3.so" Condition="'$(RuntimeIdentifier)' == 'linux-x64'">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <Link>libSDL3.so</Link>
@@ -21,5 +25,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <Link>libSDL3.dylib</Link>
     </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="runtimes\win-x64\native\" />
   </ItemGroup>
 </Project>

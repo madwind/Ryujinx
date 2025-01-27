@@ -75,13 +75,9 @@ public static unsafe partial class SDL
 		}
 	}
     
-#if Windows
-	private const string nativeLibName = "SDL3";
-#else
-    private const string nativeLibName = "libSDL3";
-#endif
-	// /usr/local/include/SDL3/SDL_stdinc.h
+	private const string nativeLibName = "libSDL3";
 
+    // /usr/local/include/SDL3/SDL_stdinc.h
 	[LibraryImport(nativeLibName)]
 	[UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
 	public static partial IntPtr SDL_malloc(UIntPtr size);

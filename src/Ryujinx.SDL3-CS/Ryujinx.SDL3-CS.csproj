@@ -22,7 +22,7 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <Link>libSDL3.so</Link>
     </None>
-    <None Include="runtimes/osx-x64/native/libSDL3.dylib" Condition="'$(RuntimeIdentifier)' == 'osx-x64'">
+    <None Include="runtimes/osx-x64/native/libSDL3.dylib" Condition="'$(RuntimeIdentifier)' == 'osx-arm64'">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <Link>libSDL3.dylib</Link>
     </None>

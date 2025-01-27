@@ -104,7 +104,7 @@ $SUDO cmake --install build/ --prefix install_output --config Release
 popd
 
 # Ensure the directory exists
-mkdir -p ../runtimes/$NAME
+mkdir -p ../runtimes/$NAME/native
 
 # Move build lib into correct folders
 if [[ $RUNNER_OS == 'Windows' ]]; then

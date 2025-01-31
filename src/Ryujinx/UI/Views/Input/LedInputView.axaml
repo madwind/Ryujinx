@@ -36,14 +36,13 @@
                     Height="32"
                     Padding="0,-5"
                     TickFrequency="0.25"
-                    LargeChange="1"
-                    SmallChange="0.25"
+                    IsSnapToTickEnabled="True"
                     VerticalAlignment="Center"
                     Minimum="1"
                     Maximum="10" />
             <TextBlock Margin="5,0"
                        MinWidth="75"
-                       Text="{Binding RainbowSpeedText}" />
+                       Text="{Binding RainbowSpeed}"/>
         </StackPanel>
         <StackPanel Orientation="Horizontal" IsEnabled="{Binding ShowLedColorPicker}">
             <TextBlock MinWidth="75" MaxWidth="200" Text="{ext:Locale ControllerSettingsLedColor}" />

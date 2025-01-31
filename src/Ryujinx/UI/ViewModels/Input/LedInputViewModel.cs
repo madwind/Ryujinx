@@ -25,7 +25,7 @@ namespace Ryujinx.Ava.UI.ViewModels.Input
         [ObservableProperty] private bool _enableLedChanging;
         [ObservableProperty] private Color _ledColor;
 
-        public string RainbowSpeedText => RainbowSpeed.ToString(CultureInfo.CurrentCulture).Truncate(4, string.Empty);
+        public string RainbowSpeedText => RainbowSpeed.ToString(CultureInfo.CurrentCulture);
         
         public float RainbowSpeed
         {

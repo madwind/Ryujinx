@@ -11,7 +11,7 @@
 [![Latest release](https://img.shields.io/github/v/release/GreemDev/Ryujinx)](https://github.com/Ryubing/Ryujinx/releases/latest)
   <br>
 [![Canary workflow](https://github.com/Ryubing/Ryujinx/actions/workflows/canary.yml/badge.svg)](https://github.com/Ryubing/Ryujinx/actions/workflows/canary.yml)
-[![Latest canary release](https://img.shields.io/github/v/release/Ryubing/Canary-Releases?label=canary)](https://github.com/Ryubing/Canary-Releases/releases/latest)
+[![Latest canary release](https://img.shields.io/github/v/release/GreemDev/Canary-Releases?label=canary)](https://github.com/Ryubing/Canary-Releases/releases/latest)
         </td>
     </tr>
 </table>

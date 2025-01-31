@@ -140,7 +140,6 @@ namespace Ryujinx.Ava.Utilities.Configuration
             Hid.EnableMouse.Value = cff.EnableMouse;
             Hid.Hotkeys.Value = cff.Hotkeys;
             Hid.InputConfig.Value = cff.InputConfig ?? [];
-            Hid.RainbowSpeed.Value = cff.RainbowSpeed;
 
             Multiplayer.LanInterfaceId.Value = cff.MultiplayerLanInterfaceId;
             Multiplayer.Mode.Value = cff.MultiplayerMode;
@@ -428,8 +427,7 @@ namespace Ryujinx.Ava.Utilities.Configuration
                             LedColor = new Color(255, 5, 1, 253).ToUInt32()
                         };
                     }
-                }),
-                (62, static cff => cff.RainbowSpeed = 1f)
+                })
             );
     }
 }

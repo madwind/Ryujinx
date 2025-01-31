@@ -204,8 +204,8 @@ namespace Ryujinx.Ava.Utilities.Configuration
             Multiplayer.LanInterfaceId.Value = "0";
             Multiplayer.Mode.Value = MultiplayerMode.Disabled;
             Multiplayer.DisableP2p.Value = false;
-            Multiplayer.LdnPassphrase.Value = "";
-            Multiplayer.LdnServer.Value = "";
+            Multiplayer.LdnPassphrase.Value = string.Empty;
+            Multiplayer.LdnServer.Value = string.Empty;
             UI.GuiColumns.FavColumn.Value = true;
             UI.GuiColumns.IconColumn.Value = true;
             UI.GuiColumns.AppColumn.Value = true;

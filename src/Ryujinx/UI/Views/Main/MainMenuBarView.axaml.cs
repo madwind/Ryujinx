@@ -2,7 +2,6 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Layout;
 using Avalonia.Threading;
-using CommunityToolkit.Mvvm.Input;
 using Gommon;
 using LibHac.Common;
 using LibHac.Ns;

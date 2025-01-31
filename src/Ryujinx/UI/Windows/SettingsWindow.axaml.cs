@@ -1,7 +1,6 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
-using FluentAvalonia.Core;
 using FluentAvalonia.UI.Controls;
 using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.UI.ViewModels;
@@ -29,7 +28,6 @@ namespace Ryujinx.Ava.UI.Windows
 #if DEBUG
             this.AttachDevTools(new KeyGesture(Key.F12, KeyModifiers.Alt));
 #endif
-            
         }
 
         public SettingsWindow()

@@ -21,7 +21,6 @@ using Ryujinx.SDL3.Common;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 
@@ -110,7 +109,11 @@ namespace Ryujinx.Ava
             // Hook unhandled exception and process exit events.
             AppDomain.CurrentDomain.UnhandledException += (sender, e)
                 => ProcessUnhandledException(sender, e.ExceptionObject as Exception, e.IsTerminating);
+            TaskScheduler.UnobservedTaskException += (sender, e)
+                => ProcessUnhandledException(sender, e.Exception, false); 
             AppDomain.CurrentDomain.ProcessExit += (_, _) => Exit();
+
+
             
             // Setup base data directory.
             AppDataManager.Initialize(CommandLineState.BaseDirPathArg);
@@ -204,6 +207,16 @@ namespace Ryujinx.Ava
                     _ => ConfigurationState.Instance.Graphics.GraphicsBackend
                 };
 
+            // Check if backend threading was overridden
+            if (CommandLineState.OverrideBackendThreading is not null)
+                ConfigurationState.Instance.Graphics.BackendThreading.Value = CommandLineState.OverrideBackendThreading.ToLower() switch
+                {
+                    "auto" => BackendThreading.Auto,
+                    "off" => BackendThreading.Off,
+                    "on" => BackendThreading.On,
+                    _ => ConfigurationState.Instance.Graphics.BackendThreading
+                };
+
             // Check if docked mode was overriden.
             if (CommandLineState.OverrideDockedMode.HasValue)
                 ConfigurationState.Instance.System.EnableDockedMode.Value = CommandLineState.OverrideDockedMode.Value;
@@ -270,9 +283,7 @@ namespace Ryujinx.Ava
                     log.PrintMsg(LogClass.Application, message);
             }
             
-
-
-
+            
             if (isTerminating)
                 Exit();
         }

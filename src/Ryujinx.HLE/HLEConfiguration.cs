@@ -192,7 +192,6 @@ namespace Ryujinx.HLE
         /// <summary>
         ///     The desired hacky workarounds.
         /// </summary>
-        /// <remarks>This cannot be changed after <see cref="Switch"/> instantiation.</remarks>
         public EnabledDirtyHack[] Hacks { internal get; set; }
 
         public HLEConfiguration(VirtualFileSystem virtualFileSystem,

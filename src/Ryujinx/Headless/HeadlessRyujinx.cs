@@ -5,7 +5,6 @@ using Ryujinx.Ava.Utilities.Configuration;
 using Ryujinx.Common;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Configuration.Hid;
-using Ryujinx.Common.Configuration.Hid.Controller;
 using Ryujinx.Common.GraphicsDriver;
 using Ryujinx.Common.Logging;
 using Ryujinx.Common.Logging.Targets;
@@ -27,7 +26,6 @@ using Ryujinx.SDL2.Common;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Threading;
 
 namespace Ryujinx.Headless
@@ -288,9 +286,6 @@ namespace Ryujinx.Headless
             GraphicsConfig.EnableMacroHLE = !option.DisableMacroHLE;
 
             DriverUtilities.InitDriverConfig(option.BackendThreading == BackendThreading.Off);
-            
-            if (_inputConfiguration.OfType<StandardControllerInputConfig>().Any(ic => ic.Led.UseRainbow))
-                Rainbow.Enable();
 
             while (true)
             {

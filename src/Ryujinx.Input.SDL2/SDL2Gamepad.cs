@@ -2,6 +2,8 @@ using Ryujinx.Common.Configuration.Hid;
 using Ryujinx.Common.Configuration.Hid.Controller;
 using Ryujinx.Common.Logging;
 using Ryujinx.Common.Utilities;
+using Ryujinx.HLE.HOS.Services.Hid;
+using SDL2;
 using System;
 using System.Collections.Generic;
 using System.Numerics;
@@ -10,7 +12,7 @@ using static SDL2.SDL;
 
 namespace Ryujinx.Input.SDL2
 {
-    public class SDL2Gamepad : IGamepad
+    class SDL2Gamepad : IGamepad
     {
         private bool HasConfiguration => _configuration != null;
 

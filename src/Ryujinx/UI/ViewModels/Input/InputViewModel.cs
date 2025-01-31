@@ -20,10 +20,10 @@ using Ryujinx.Common.Configuration.Hid.Keyboard;
 using Ryujinx.Common.Logging;
 using Ryujinx.Common.Utilities;
 using Ryujinx.Input;
+using Ryujinx.Input.SDL2;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
@@ -69,7 +69,7 @@ namespace Ryujinx.Ava.UI.ViewModels.Input
                 _selectedGamepad = value;
 
                 if (ConfigViewModel is ControllerInputViewModel { Config.UseRainbowLed: true })
-                    Rainbow.Updated += (ref Color color) => _selectedGamepad.SetLed((uint)color.ToArgb());
+                    Rainbow.Updated += color => _selectedGamepad.SetLed((uint)color);
                 
                 OnPropertiesChanged(nameof(HasLed), nameof(CanClearLed));
             }

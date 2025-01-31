@@ -1,5 +1,4 @@
 ﻿using Gommon;
-using Ryujinx.Common.Helper;
 using System;
 using System.Drawing;
 using System.Threading;
@@ -56,7 +55,7 @@ namespace Ryujinx.Common.Utilities
             {
                 _color = HsbToRgb((_color.GetHue() + Speed) / 360);
             
-                _updatedHandler.Call(ref _color);
+                _updatedHandler.Call(_color.ToArgb());
             }
         }
 
@@ -68,13 +67,13 @@ namespace Ryujinx.Common.Utilities
                 _color = Color.Blue;
         }
 
-        public static event RefEvent<Color>.Handler Updated
+        public static event Action<int> Updated
         {
             add => _updatedHandler.Add(value);
             remove => _updatedHandler.Remove(value);
         }
 
-        private static readonly RefEvent<Color> _updatedHandler = new();
+        private static readonly Event<int> _updatedHandler = new();
 
         private static Color HsbToRgb(float hue, float saturation = 1, float brightness = 1)
         {

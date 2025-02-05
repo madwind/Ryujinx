@@ -130,8 +130,6 @@ namespace Ryujinx.Ava.Utilities.Configuration
                 EnableKeyboard = Hid.EnableKeyboard,
                 EnableMouse = Hid.EnableMouse,
                 Hotkeys = Hid.Hotkeys,
-                KeyboardConfig = [],
-                ControllerConfig = [],
                 InputConfig = Hid.InputConfig,
                 GraphicsBackend = Graphics.GraphicsBackend,
                 PreferredGpu = Graphics.PreferredGpu,

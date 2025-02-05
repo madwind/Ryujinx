@@ -2,7 +2,7 @@ using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
-using Gommon;
+using CommunityToolkit.Mvvm.Input;
 using LibHac.Tools.FsSystem;
 using Ryujinx.Audio.Backends.OpenAL;
 using Ryujinx.Audio.Backends.SDL3;
@@ -16,6 +16,7 @@ using Ryujinx.Ava.Utilities.Configuration.System;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Configuration.Multiplayer;
 using Ryujinx.Common.GraphicsDriver;
+using Ryujinx.Common.Helper;
 using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.Vulkan;
@@ -27,8 +28,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Net.NetworkInformation;
-using System.Runtime.InteropServices;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using TimeZone = Ryujinx.Ava.UI.Models.TimeZone;
 
@@ -115,10 +114,6 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public bool IsOpenGLAvailable => !OperatingSystem.IsMacOS();
 
-        public bool IsAppleSiliconMac => OperatingSystem.IsMacOS() && RuntimeInformation.ProcessArchitecture == Architecture.Arm64;
-
-        public bool IsMacOS => OperatingSystem.IsMacOS();
-
         public bool EnableDiscordIntegration { get; set; }
         public bool CheckUpdatesOnStart { get; set; }
         public bool ShowConfirmExit { get; set; }
@@ -200,7 +195,7 @@ namespace Ryujinx.Ava.UI.ViewModels
         public bool EnableTextureRecompression { get; set; }
         public bool EnableMacroHLE { get; set; }
         public bool EnableColorSpacePassthrough { get; set; }
-        public bool ColorSpacePassthroughAvailable => IsMacOS;
+        public bool ColorSpacePassthroughAvailable => RunningPlatform.IsMacOS;
         public bool EnableFileLog { get; set; }
         public bool EnableStub { get; set; }
         public bool EnableInfo { get; set; }
@@ -296,6 +291,8 @@ namespace Ryujinx.Ava.UI.ViewModels
             }
         }
 
+        [ObservableProperty] private bool _matchSystemTime;
+
         public DateTimeOffset CurrentDate { get; set; }
 
         public TimeSpan CurrentTime { get; set; }
@@ -329,9 +326,6 @@ namespace Ryujinx.Ava.UI.ViewModels
                 _multiplayerModeIndex = value;
             }
         }
-
-        [GeneratedRegex("Ryujinx-[0-9a-f]{8}")]
-        private static partial Regex LdnPassphraseRegex();
 
         public bool IsInvalidLdnPassphraseVisible { get; set; }
 
@@ -414,17 +408,6 @@ namespace Ryujinx.Ava.UI.ViewModels
             Dispatcher.UIThread.Post(() => OnPropertyChanged(nameof(PreferredGpuIndex)));
         }
 
-        public void MatchSystemTime()
-        {
-            (DateTimeOffset dto, TimeSpan timeOfDay) = DateTimeOffset.Now.Extract();
-            
-            CurrentDate = dto;
-            CurrentTime = timeOfDay;
-            
-            OnPropertyChanged(nameof(CurrentDate));
-            OnPropertyChanged(nameof(CurrentTime));
-        }
-
         public async Task LoadTimeZones()
         {
             _timeZoneContentManager = new TimeZoneContentManager();
@@ -470,7 +453,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         private bool ValidateLdnPassphrase(string passphrase)
         {
-            return string.IsNullOrEmpty(passphrase) || (passphrase.Length == 16 && LdnPassphraseRegex().IsMatch(passphrase));
+            return string.IsNullOrEmpty(passphrase) || (passphrase.Length == 16 && Patterns.LdnPassphrase.IsMatch(passphrase));
         }
 
         public void ValidateAndSetTimeZone(string location)
@@ -526,7 +509,9 @@ namespace Ryujinx.Ava.UI.ViewModels
             CurrentDate = currentDateTime.Date;
             CurrentTime = currentDateTime.TimeOfDay;
 
-            EnableCustomVSyncInterval = config.Graphics.EnableCustomVSyncInterval.Value;
+            MatchSystemTime = config.System.MatchSystemTime;
+
+            EnableCustomVSyncInterval = config.Graphics.EnableCustomVSyncInterval;
             CustomVSyncInterval = config.Graphics.CustomVSyncInterval;
             VSyncMode = config.Graphics.VSyncMode;
             EnableFsIntegrityChecks = config.System.EnableFsIntegrityChecks;
@@ -631,6 +616,7 @@ namespace Ryujinx.Ava.UI.ViewModels
                 config.System.TimeZone.Value = TimeZone;
             }
 
+            config.System.MatchSystemTime.Value = MatchSystemTime;
             config.System.SystemTimeOffset.Value = Convert.ToInt64((CurrentDate.ToUnixTimeSeconds() + CurrentTime.TotalSeconds) - DateTimeOffset.Now.ToUnixTimeSeconds());
             config.System.EnableFsIntegrityChecks.Value = EnableFsIntegrityChecks;
             config.System.DramSize.Value = DramSize;
@@ -733,6 +719,25 @@ namespace Ryujinx.Ava.UI.ViewModels
             SaveSettings();
             CloseWindow?.Invoke();
         }
+
+        [ObservableProperty] private bool _wantsToReset;
+
+        public AsyncRelayCommand ResetButton => Commands.Create(async () =>
+        {
+            if (!WantsToReset) return;
+            
+            CloseWindow?.Invoke();
+            ConfigurationState.Instance.LoadDefault();
+            ConfigurationState.Instance.ToFileFormat().SaveConfig(Program.ConfigurationPath);
+            RyujinxApp.MainWindow.LoadApplications();
+
+            await ContentDialogHelper.CreateInfoDialog(
+                $"Your {RyujinxApp.FullAppName} configuration has been reset.",
+                "",
+                string.Empty,
+                LocaleManager.Instance[LocaleKeys.SettingsButtonClose],
+                "Configuration Reset");
+        });
 
         public void CancelButton()
         {

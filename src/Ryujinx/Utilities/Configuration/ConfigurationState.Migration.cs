@@ -1,3 +1,4 @@
+using Avalonia.Media;
 using Gommon;
 using Ryujinx.Ava.Utilities.Configuration.System;
 using Ryujinx.Ava.Utilities.Configuration.UI;
@@ -263,15 +264,12 @@ namespace Ryujinx.Ava.Utilities.Configuration
                         }),
                 (30, static cff =>
                 {
-                    foreach (InputConfig config in cff.InputConfig)
+                    foreach (StandardControllerInputConfig config in cff.InputConfig.OfType<StandardControllerInputConfig>())
                     {
-                        if (config is StandardControllerInputConfig controllerConfig)
+                        config.Rumble = new RumbleConfigController
                         {
-                            controllerConfig.Rumble = new RumbleConfigController
-                            {
-                                EnableRumble = false, StrongRumble = 1f, WeakRumble = 1f,
-                            };
-                        }
+                            EnableRumble = false, StrongRumble = 1f, WeakRumble = 1f,
+                        };
                     }
                 }),
                 (31, static cff => cff.BackendThreading = BackendThreading.Auto),
@@ -416,7 +414,8 @@ namespace Ryujinx.Ava.Utilities.Configuration
                     // so as a compromise users who want to use it will simply need to re-enable it once after updating.
                     cff.IgnoreApplet = false;
                 }),
-                (60, static cff => cff.StartNoUI = false)
+                (60, static cff => cff.StartNoUI = false),
+                (61, static cff => cff.MatchSystemTime = false)
             );
     }
 }

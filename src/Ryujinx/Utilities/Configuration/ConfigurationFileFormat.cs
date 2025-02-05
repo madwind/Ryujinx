@@ -1,6 +1,5 @@
 using Ryujinx.Ava.Utilities.Configuration.System;
 using Ryujinx.Ava.Utilities.Configuration.UI;
-using Ryujinx.Common;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Configuration.Hid;
 using Ryujinx.Common.Configuration.Multiplayer;
@@ -8,7 +7,6 @@ using Ryujinx.Common.Logging;
 using Ryujinx.Common.Utilities;
 using Ryujinx.HLE;
 using System.Collections.Generic;
-using System.Text.Json.Nodes;
 
 namespace Ryujinx.Ava.Utilities.Configuration
 {
@@ -17,7 +15,7 @@ namespace Ryujinx.Ava.Utilities.Configuration
         /// <summary>
         /// The current version of the file format
         /// </summary>
-        public const int CurrentVersion = 60;
+        public const int CurrentVersion = 1000;
 
         /// <summary>
         /// Version of the configuration file format
@@ -143,6 +141,11 @@ namespace Ryujinx.Ava.Utilities.Configuration
         /// Change System Time Offset in seconds
         /// </summary>
         public long SystemTimeOffset { get; set; }
+        
+        /// <summary>
+        /// Instead of setting the time via configuration, use the values provided by the system.
+        /// </summary>
+        public bool MatchSystemTime { get; set; }
 
         /// <summary>
         /// Enables or disables Docked Mode
@@ -377,23 +380,10 @@ namespace Ryujinx.Ava.Utilities.Configuration
         public KeyboardHotkeys Hotkeys { get; set; }
 
         /// <summary>
-        /// Legacy keyboard control bindings
-        /// </summary>
-        /// <remarks>Kept for file format compatibility (to avoid possible failure when parsing configuration on old versions)</remarks>
-        /// TODO: Remove this when those older versions aren't in use anymore.
-        public List<JsonObject> KeyboardConfig { get; set; }
-
-        /// <summary>
-        /// Legacy controller control bindings
-        /// </summary>
-        /// <remarks>Kept for file format compatibility (to avoid possible failure when parsing configuration on old versions)</remarks>
-        /// TODO: Remove this when those older versions aren't in use anymore.
-        public List<JsonObject> ControllerConfig { get; set; }
-
-        /// <summary>
         /// Input configurations
         /// </summary>
         public List<InputConfig> InputConfig { get; set; }
+        
 
         /// <summary>
         /// Graphics backend

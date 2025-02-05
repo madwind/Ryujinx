@@ -7,6 +7,8 @@ using LibHac.Ns;
 using LibHac.Tools.Fs;
 using LibHac.Tools.FsSystem;
 using LibHac.Tools.FsSystem.NcaUtils;
+using Ryujinx.Ava.Common.Locale;
+using Ryujinx.Ava.Utilities.Compat;
 using Ryujinx.Common.Logging;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.Loaders.Processes.Extensions;
@@ -21,11 +23,47 @@ namespace Ryujinx.Ava.Utilities.AppLibrary
         public bool Favorite { get; set; }
         public byte[] Icon { get; set; }
         public string Name { get; set; } = "Unknown";
-        public ulong Id { get; set; }
+
+        private ulong _id;
+
+        public ulong Id
+        {
+            get => _id;
+            set
+            {
+                _id = value;
+                PlayabilityStatus = CompatibilityCsv.GetStatus(Id);
+            }
+        }
         public string Developer { get; set; } = "Unknown";
         public string Version { get; set; } = "0";
+
+        public bool HasPlayabilityInfo => PlayabilityStatus != null;
+
+        public string LocalizedStatus =>
+            PlayabilityStatus.HasValue 
+                ? LocaleManager.Instance[PlayabilityStatus!.Value] 
+                : string.Empty;
+
+        public LocaleKeys? PlayabilityStatus { get; set; }
+        public string LocalizedStatusTooltip =>
+            PlayabilityStatus.HasValue 
+#pragma warning disable CS8509 // It is exhaustive for any value this property can contain.
+                ? LocaleManager.Instance[PlayabilityStatus!.Value switch
+#pragma warning restore CS8509
+                {
+                    LocaleKeys.CompatibilityListPlayable => LocaleKeys.CompatibilityListPlayableTooltip,
+                    LocaleKeys.CompatibilityListIngame => LocaleKeys.CompatibilityListIngameTooltip,
+                    LocaleKeys.CompatibilityListMenus => LocaleKeys.CompatibilityListMenusTooltip,
+                    LocaleKeys.CompatibilityListBoots => LocaleKeys.CompatibilityListBootsTooltip,
+                    LocaleKeys.CompatibilityListNothing => LocaleKeys.CompatibilityListNothingTooltip,
+                }]
+                : string.Empty;
         public int PlayerCount { get; set; }
         public int GameCount { get; set; }
+
+        public bool HasLdnGames => PlayerCount != 0 && GameCount != 0;
+        
         public TimeSpan TimePlayed { get; set; }
         public DateTime? LastPlayed { get; set; }
         public string FileExtension { get; set; }

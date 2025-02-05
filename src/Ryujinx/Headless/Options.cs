@@ -4,7 +4,6 @@ using Ryujinx.Ava.Utilities.Configuration;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Configuration.Hid;
 using Ryujinx.HLE;
-using Ryujinx.HLE.HOS.Services.Account.Acc;
 using Ryujinx.HLE.HOS.SystemState;
 using System;
 using System.Collections.Generic;
@@ -149,7 +148,7 @@ namespace Ryujinx.Headless
                 IgnoreMissingServices = configurationState.System.IgnoreMissingServices;
             
             if (NeedsOverride(nameof(IgnoreControllerApplet)))
-                IgnoreControllerApplet = configurationState.IgnoreApplet;
+                IgnoreControllerApplet = configurationState.System.IgnoreApplet;
             
             return;
             

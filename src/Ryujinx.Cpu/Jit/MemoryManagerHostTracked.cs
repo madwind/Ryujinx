@@ -8,7 +8,6 @@ using Ryujinx.Memory.Tracking;
 using System;
 using System.Buffers;
 using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.CompilerServices;
 
 namespace Ryujinx.Cpu.Jit
@@ -240,7 +239,7 @@ namespace Ryujinx.Cpu.Jit
 
             if (TryGetVirtualContiguous(va, data.Length, out MemoryBlock memoryBlock, out ulong offset))
             {
-                var target = memoryBlock.GetSpan(offset, data.Length);
+                Span<byte> target = memoryBlock.GetSpan(offset, data.Length);
 
                 bool changed = !data.SequenceEqual(target);
 
@@ -443,7 +442,7 @@ namespace Ryujinx.Cpu.Jit
                 return null;
             }
 
-            var regions = new List<HostMemoryRange>();
+            List<HostMemoryRange> regions = [];
             ulong endVa = va + size;
 
             try

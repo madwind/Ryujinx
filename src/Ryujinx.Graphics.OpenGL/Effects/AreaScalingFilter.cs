@@ -2,7 +2,6 @@ using OpenTK.Graphics.OpenGL;
 using Ryujinx.Common;
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.OpenGL.Image;
-using System;
 using static Ryujinx.Graphics.OpenGL.Effects.ShaderHelper;
 
 namespace Ryujinx.Graphics.OpenGL.Effects
@@ -41,7 +40,7 @@ namespace Ryujinx.Graphics.OpenGL.Effects
 
         private void Initialize()
         {
-            var scalingShader = EmbeddedResources.ReadAllText("Ryujinx.Graphics.OpenGL/Effects/Shaders/area_scaling.glsl");
+            string scalingShader = EmbeddedResources.ReadAllText("Ryujinx.Graphics.OpenGL/Effects/Shaders/area_scaling.glsl");
 
             _scalingShaderProgram = CompileProgram(scalingShader, ShaderType.ComputeShader);
 

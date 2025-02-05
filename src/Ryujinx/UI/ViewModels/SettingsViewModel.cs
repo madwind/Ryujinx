@@ -16,7 +16,9 @@ using Ryujinx.Ava.Utilities.Configuration.System;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Configuration.Multiplayer;
 using Ryujinx.Common.GraphicsDriver;
+using Ryujinx.Common.Helper;
 using Ryujinx.Common.Logging;
+using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.Vulkan;
 using Ryujinx.HLE;
 using Ryujinx.HLE.FileSystem;
@@ -50,7 +52,7 @@ namespace Ryujinx.Ava.UI.ViewModels
         [ObservableProperty] private bool _isVulkanAvailable = true;
         [ObservableProperty] private bool _gameDirectoryChanged;
         [ObservableProperty] private bool _autoloadDirectoryChanged;
-        private readonly List<string> _gpuIds = new();
+        private readonly List<string> _gpuIds = [];
         private int _graphicsBackendIndex;
         private int _scalingFilter;
         private int _scalingFilterLevel;
@@ -113,10 +115,6 @@ namespace Ryujinx.Ava.UI.ViewModels
         }
 
         public bool IsOpenGLAvailable => !OperatingSystem.IsMacOS();
-
-        public bool IsAppleSiliconMac => OperatingSystem.IsMacOS() && RuntimeInformation.ProcessArchitecture == Architecture.Arm64;
-
-        public bool IsMacOS => OperatingSystem.IsMacOS();
 
         public bool EnableDiscordIntegration { get; set; }
         public bool CheckUpdatesOnStart { get; set; }
@@ -199,7 +197,7 @@ namespace Ryujinx.Ava.UI.ViewModels
         public bool EnableTextureRecompression { get; set; }
         public bool EnableMacroHLE { get; set; }
         public bool EnableColorSpacePassthrough { get; set; }
-        public bool ColorSpacePassthroughAvailable => IsMacOS;
+        public bool ColorSpacePassthroughAvailable => RunningPlatform.IsMacOS;
         public bool EnableFileLog { get; set; }
         public bool EnableStub { get; set; }
         public bool EnableInfo { get; set; }
@@ -295,6 +293,8 @@ namespace Ryujinx.Ava.UI.ViewModels
             }
         }
 
+        [ObservableProperty] private bool _matchSystemTime;
+
         public DateTimeOffset CurrentDate { get; set; }
 
         public TimeSpan CurrentTime { get; set; }
@@ -328,9 +328,6 @@ namespace Ryujinx.Ava.UI.ViewModels
                 _multiplayerModeIndex = value;
             }
         }
-
-        [GeneratedRegex("Ryujinx-[0-9a-f]{8}")]
-        private static partial Regex LdnPassphraseRegex();
 
         public bool IsInvalidLdnPassphraseVisible { get; set; }
 
@@ -386,7 +383,7 @@ namespace Ryujinx.Ava.UI.ViewModels
         {
             AvailableGpus.Clear();
 
-            var devices = VulkanRenderer.GetPhysicalDevices();
+            DeviceInfo[] devices = VulkanRenderer.GetPhysicalDevices();
 
             if (devices.Length == 0)
             {
@@ -395,7 +392,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             }
             else
             {
-                foreach (var device in devices)
+                foreach (DeviceInfo device in devices)
                 {
                     await Dispatcher.UIThread.InvokeAsync(() =>
                     {
@@ -411,17 +408,6 @@ namespace Ryujinx.Ava.UI.ViewModels
                                 _gpuIds.IndexOf(ConfigurationState.Instance.Graphics.PreferredGpu) : 0;
 
             Dispatcher.UIThread.Post(() => OnPropertyChanged(nameof(PreferredGpuIndex)));
-        }
-
-        public void MatchSystemTime()
-        {
-            (DateTimeOffset dto, TimeSpan timeOfDay) = DateTimeOffset.Now.Extract();
-            
-            CurrentDate = dto;
-            CurrentTime = timeOfDay;
-            
-            OnPropertyChanged(nameof(CurrentDate));
-            OnPropertyChanged(nameof(CurrentTime));
         }
 
         public async Task LoadTimeZones()
@@ -469,7 +455,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         private bool ValidateLdnPassphrase(string passphrase)
         {
-            return string.IsNullOrEmpty(passphrase) || (passphrase.Length == 16 && LdnPassphraseRegex().IsMatch(passphrase));
+            return string.IsNullOrEmpty(passphrase) || (passphrase.Length == 16 && Patterns.LdnPassphrase.IsMatch(passphrase));
         }
 
         public void ValidateAndSetTimeZone(string location)
@@ -488,7 +474,6 @@ namespace Ryujinx.Ava.UI.ViewModels
             EnableDiscordIntegration = config.EnableDiscordIntegration;
             CheckUpdatesOnStart = config.CheckUpdatesOnStart;
             ShowConfirmExit = config.ShowConfirmExit;
-            IgnoreApplet = config.IgnoreApplet;
             RememberWindowState = config.RememberWindowState;
             ShowTitleBar = config.ShowTitleBar;
             HideCursor = (int)config.HideCursor.Value;
@@ -526,12 +511,15 @@ namespace Ryujinx.Ava.UI.ViewModels
             CurrentDate = currentDateTime.Date;
             CurrentTime = currentDateTime.TimeOfDay;
 
-            EnableCustomVSyncInterval = config.Graphics.EnableCustomVSyncInterval.Value;
+            MatchSystemTime = config.System.MatchSystemTime;
+
+            EnableCustomVSyncInterval = config.Graphics.EnableCustomVSyncInterval;
             CustomVSyncInterval = config.Graphics.CustomVSyncInterval;
             VSyncMode = config.Graphics.VSyncMode;
             EnableFsIntegrityChecks = config.System.EnableFsIntegrityChecks;
             DramSize = config.System.DramSize;
             IgnoreMissingServices = config.System.IgnoreMissingServices;
+            IgnoreApplet = config.System.IgnoreApplet;
 
             // CPU
             EnablePptc = config.System.EnablePtc;
@@ -591,7 +579,6 @@ namespace Ryujinx.Ava.UI.ViewModels
             config.EnableDiscordIntegration.Value = EnableDiscordIntegration;
             config.CheckUpdatesOnStart.Value = CheckUpdatesOnStart;
             config.ShowConfirmExit.Value = ShowConfirmExit;
-            config.IgnoreApplet.Value = IgnoreApplet;
             config.RememberWindowState.Value = RememberWindowState;
             config.ShowTitleBar.Value = ShowTitleBar;
             config.HideCursor.Value = (HideCursorMode)HideCursor;
@@ -631,13 +618,12 @@ namespace Ryujinx.Ava.UI.ViewModels
                 config.System.TimeZone.Value = TimeZone;
             }
 
+            config.System.MatchSystemTime.Value = MatchSystemTime;
             config.System.SystemTimeOffset.Value = Convert.ToInt64((CurrentDate.ToUnixTimeSeconds() + CurrentTime.TotalSeconds) - DateTimeOffset.Now.ToUnixTimeSeconds());
-            config.Graphics.VSyncMode.Value = VSyncMode;
-            config.Graphics.EnableCustomVSyncInterval.Value = EnableCustomVSyncInterval;
-            config.Graphics.CustomVSyncInterval.Value = CustomVSyncInterval;
             config.System.EnableFsIntegrityChecks.Value = EnableFsIntegrityChecks;
             config.System.DramSize.Value = DramSize;
             config.System.IgnoreMissingServices.Value = IgnoreMissingServices;
+            config.System.IgnoreApplet.Value = IgnoreApplet;
 
             // CPU
             config.System.EnablePtc.Value = EnablePptc;
@@ -646,6 +632,9 @@ namespace Ryujinx.Ava.UI.ViewModels
             config.System.UseHypervisor.Value = UseHypervisor;
 
             // Graphics
+            config.Graphics.VSyncMode.Value = VSyncMode;
+            config.Graphics.EnableCustomVSyncInterval.Value = EnableCustomVSyncInterval;
+            config.Graphics.CustomVSyncInterval.Value = CustomVSyncInterval;
             config.Graphics.GraphicsBackend.Value = (GraphicsBackend)GraphicsBackendIndex;
             config.Graphics.PreferredGpu.Value = _gpuIds.ElementAtOrDefault(PreferredGpuIndex);
             config.Graphics.EnableShaderCache.Value = EnableShaderCache;

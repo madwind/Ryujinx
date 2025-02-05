@@ -4,14 +4,12 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
-using DiscordRPC;
 using Ryujinx.Ava.UI.Helpers;
 using Ryujinx.Ava.UI.ViewModels.Input;
 using Ryujinx.Common.Configuration.Hid.Controller;
-using Ryujinx.Common.Logging;
 using Ryujinx.Input;
 using Ryujinx.Input.Assigner;
-using System;
+using Button = Ryujinx.Input.Button;
 using StickInputId = Ryujinx.Common.Configuration.Hid.Controller.StickInputId;
 
 namespace Ryujinx.Ava.UI.Views.Input
@@ -85,7 +83,7 @@ namespace Ryujinx.Ava.UI.Views.Input
 
         private void Button_IsCheckedChanged(object sender, RoutedEventArgs e)
         {
-            if (sender is ToggleButton button) 
+            if (sender is ToggleButton button)
             {
                 if (button.IsChecked is true)
                 {
@@ -104,16 +102,18 @@ namespace Ryujinx.Ava.UI.Views.Input
 
                         PointerPressed += MouseClick;
 
-                        var viewModel = (DataContext as ControllerInputViewModel);
+                        ControllerInputViewModel viewModel = (DataContext as ControllerInputViewModel);
 
-                        IKeyboard keyboard = (IKeyboard)viewModel.ParentModel.AvaloniaKeyboardDriver.GetGamepad("0"); // Open Avalonia keyboard for cancel operations.
+                        IKeyboard keyboard =
+                            (IKeyboard)viewModel.ParentModel.AvaloniaKeyboardDriver
+                                .GetGamepad("0"); // Open Avalonia keyboard for cancel operations.
                         IButtonAssigner assigner = CreateButtonAssigner(isStick);
 
                         _currentAssigner.ButtonAssigned += (sender, e) =>
                         {
                             if (e.ButtonValue.HasValue)
                             {
-                                var buttonValue = e.ButtonValue.Value;
+                                Button buttonValue = e.ButtonValue.Value;
                                 viewModel.ParentModel.IsModified = true;
 
                                 switch (button.Name)
@@ -221,7 +221,7 @@ namespace Ryujinx.Ava.UI.Views.Input
         {
             IButtonAssigner assigner;
 
-            var controllerInputViewModel = DataContext as ControllerInputViewModel;
+            ControllerInputViewModel controllerInputViewModel = DataContext as ControllerInputViewModel;
 
             assigner = new GamepadButtonAssigner(
                 controllerInputViewModel.ParentModel.SelectedGamepad,
@@ -234,6 +234,12 @@ namespace Ryujinx.Ava.UI.Views.Input
         protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
         {
             base.OnDetachedFromVisualTree(e);
+            
+            foreach (IGamepad gamepad in RyujinxApp.MainWindow.InputManager.GamepadDriver.GetGamepads())
+            {
+                gamepad?.ClearLed();
+            }
+            
             _currentAssigner?.Cancel();
             _currentAssigner = null;
         }

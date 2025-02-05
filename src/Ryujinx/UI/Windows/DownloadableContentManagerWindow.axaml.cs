@@ -77,7 +77,7 @@ namespace Ryujinx.Ava.UI.Windows
 
         private void OnSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            foreach (var content in e.AddedItems)
+            foreach (object content in e.AddedItems)
             {
                 if (content is DownloadableContentModel model)
                 {
@@ -85,7 +85,7 @@ namespace Ryujinx.Ava.UI.Windows
                 }
             }
 
-            foreach (var content in e.RemovedItems)
+            foreach (object content in e.RemovedItems)
             {
                 if (content is DownloadableContentModel model)
                 {

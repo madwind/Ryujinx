@@ -1,5 +1,4 @@
 using Avalonia.Collections;
-using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -9,21 +8,20 @@ using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.Common.Models;
 using Ryujinx.Ava.UI.Helpers;
 using Ryujinx.Ava.Utilities.AppLibrary;
-using Ryujinx.HLE.FileSystem;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Application = Avalonia.Application;
 
 namespace Ryujinx.Ava.UI.ViewModels
 {
     public partial class DownloadableContentManagerViewModel : BaseModel
     {
         private readonly ApplicationLibrary _applicationLibrary;
-        private AvaloniaList<DownloadableContentModel> _downloadableContents = new();
-        [ObservableProperty] private AvaloniaList<DownloadableContentModel> _selectedDownloadableContents = new();
-        [ObservableProperty] private AvaloniaList<DownloadableContentModel> _views = new();
+        private AvaloniaList<DownloadableContentModel> _downloadableContents = [];
+        [ObservableProperty] private AvaloniaList<DownloadableContentModel> _selectedDownloadableContents = [];
+        [ObservableProperty] private AvaloniaList<DownloadableContentModel> _views = [];
         [ObservableProperty] private bool _showBundledContentNotice = false;
 
         private string _search;
@@ -71,8 +69,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         private void LoadDownloadableContents()
         {
-            var dlcs = _applicationLibrary.DownloadableContents.Items
-                .Where(it => it.Dlc.TitleIdBase == _applicationData.IdBase);
+            (DownloadableContentModel Dlc, bool IsEnabled)[] dlcs = _applicationLibrary.FindDlcConfigurationFor(_applicationData.Id);
 
             bool hasBundledContent = false;
             foreach ((DownloadableContentModel dlc, bool isEnabled) in dlcs)
@@ -101,11 +98,11 @@ namespace Ryujinx.Ava.UI.ViewModels
                 .ThenBy(it => it.TitleId)
                 .AsObservableChangeSet()
                 .Filter(Filter)
-                .Bind(out var view).AsObservableList();
+                .Bind(out ReadOnlyObservableCollection<DownloadableContentModel> view).AsObservableList();
 
             // NOTE(jpr): this works around a bug where calling _views.Clear also clears SelectedDownloadableContents for
             // some reason. so we save the items here and add them back after
-            var items = SelectedDownloadableContents.ToArray();
+            DownloadableContentModel[] items = SelectedDownloadableContents.ToArray();
             
             Views.Clear();
             Views.AddRange(view);
@@ -130,7 +127,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public async void Add()
         {
-            var result = await _storageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+            IReadOnlyList<IStorageFile> result = await _storageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
             {
                 Title = LocaleManager.Instance[LocaleKeys.SelectDlcDialogTitle],
                 AllowMultiple = true,
@@ -138,17 +135,17 @@ namespace Ryujinx.Ava.UI.ViewModels
                 {
                     new("NSP")
                     {
-                        Patterns = new[] { "*.nsp" },
-                        AppleUniformTypeIdentifiers = new[] { "com.ryujinx.nsp" },
-                        MimeTypes = new[] { "application/x-nx-nsp" },
+                        Patterns = ["*.nsp"],
+                        AppleUniformTypeIdentifiers = ["com.ryujinx.nsp"],
+                        MimeTypes = ["application/x-nx-nsp"],
                     },
                 },
             });
 
-            var totalDlcAdded = 0;
-            foreach (var file in result)
+            int totalDlcAdded = 0;
+            foreach (IStorageFile file in result)
             {
-                if (!AddDownloadableContent(file.Path.LocalPath, out var newDlcAdded))
+                if (!AddDownloadableContent(file.Path.LocalPath, out int newDlcAdded))
                 {
                     await ContentDialogHelper.CreateErrorDialog(LocaleManager.Instance[LocaleKeys.DialogDlcNoDlcErrorMessage]);
                 }
@@ -171,18 +168,18 @@ namespace Ryujinx.Ava.UI.ViewModels
                 return false;
             }
 
-            if (!_applicationLibrary.TryGetDownloadableContentFromFile(path, out var dlcs) || dlcs.Count == 0)
+            if (!_applicationLibrary.TryGetDownloadableContentFromFile(path, out List<DownloadableContentModel> dlcs) || dlcs.Count == 0)
             {
                 return false;
             }
 
-            var dlcsForThisGame = dlcs.Where(it => it.TitleIdBase == _applicationData.IdBase).ToList();
+            List<DownloadableContentModel> dlcsForThisGame = dlcs.Where(it => it.TitleIdBase == _applicationData.IdBase).ToList();
             if (dlcsForThisGame.Count == 0)
             {
                 return false;
             }
 
-            foreach (var dlc in dlcsForThisGame)
+            foreach (DownloadableContentModel dlc in dlcsForThisGame)
             {
                 if (!DownloadableContents.Contains(dlc))
                 {
@@ -246,13 +243,13 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public void Save()
         {
-            var dlcs = DownloadableContents.Select(it => (it, SelectedDownloadableContents.Contains(it))).ToList();
+            List<(DownloadableContentModel it, bool)> dlcs = DownloadableContents.Select(it => (it, SelectedDownloadableContents.Contains(it))).ToList();
             _applicationLibrary.SaveDownloadableContentsForGame(_applicationData, dlcs);
         }
 
         private Task ShowNewDlcAddedDialog(int numAdded)
         {
-            var msg = string.Format(LocaleManager.Instance[LocaleKeys.DlcWindowDlcAddedMessage], numAdded);
+            string msg = string.Format(LocaleManager.Instance[LocaleKeys.DlcWindowDlcAddedMessage], numAdded);
             return Dispatcher.UIThread.InvokeAsync(async () =>
             {
                 await ContentDialogHelper.ShowTextDialog(

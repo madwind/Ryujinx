@@ -192,14 +192,14 @@ namespace Ryujinx.Graphics.Shader
                 typeName += "_array";
             }
 
-            var format = aggregateType switch
+            string format = aggregateType switch
             {
                 AggregateType.S32 => "int",
                 AggregateType.U32 => "uint",
                 _ => "float"
             };
 
-            return $"{typeName}<{format}{(image ? ", access::read_write" : "")}>";
+            return $"{typeName}<{format}{(image ? ", access::read_write" : string.Empty)}>";
         }
     }
 }

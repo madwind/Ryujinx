@@ -5,7 +5,6 @@ using Ryujinx.Memory.Tracking;
 using System;
 using System.Buffers;
 using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.Versioning;
 
@@ -233,13 +232,13 @@ namespace Ryujinx.Cpu.AppleHv
                 yield break;
             }
 
-            var guestRegions = GetPhysicalRegionsImpl(va, size);
+            IEnumerable<MemoryRange> guestRegions = GetPhysicalRegionsImpl(va, size);
             if (guestRegions == null)
             {
                 yield break;
             }
 
-            foreach (var guestRegion in guestRegions)
+            foreach (MemoryRange guestRegion in guestRegions)
             {
                 nint pointer = _backingMemory.GetPointer(guestRegion.Address, guestRegion.Size);
                 yield return new HostMemoryRange((nuint)(ulong)pointer, guestRegion.Size);
@@ -254,7 +253,7 @@ namespace Ryujinx.Cpu.AppleHv
                 yield break;
             }
 
-            foreach (var physicalRegion in GetPhysicalRegionsImpl(va, size))
+            foreach (MemoryRange physicalRegion in GetPhysicalRegionsImpl(va, size))
             {
                 yield return physicalRegion;
             }

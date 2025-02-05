@@ -28,7 +28,9 @@ namespace Ryujinx.Ava.Utilities.Compat
     
     public class CompatibilityCsv
     {
-        static CompatibilityCsv()
+        static CompatibilityCsv() => Load();
+
+        public static void Load()
         {
             using Stream csvStream = Assembly.GetExecutingAssembly()
                 .GetManifestResourceStream("RyujinxGameCompatibilityList")!;
@@ -37,15 +39,31 @@ namespace Ryujinx.Ava.Utilities.Compat
             using SepReader reader = Sep.Reader().From(csvStream);
             ColumnIndices columnIndices = new(reader.Header.IndexOf);
 
-            Entries = reader
+            _entries = reader
                 .Enumerate(row => new CompatibilityEntry(ref columnIndices, row))
                 .OrderBy(it => it.GameName)
                 .ToArray();
             
-            Logger.Debug?.Print(LogClass.UI, "Compatibility CSV loaded.", "LoadCompatCsv");
+            Logger.Debug?.Print(LogClass.UI, "Compatibility CSV loaded.", "LoadCompatibility");
         }
 
-        public static CompatibilityEntry[] Entries { get; private set; }
+        private static CompatibilityEntry[] _entries;
+        
+        public static CompatibilityEntry[] Entries 
+        {
+            get
+            {
+                if (_entries == null)
+                    Load();
+                
+                return _entries;
+            }
+        }
+
+        public static LocaleKeys? GetStatus(string titleId)
+            => Entries.FirstOrDefault(x => x.TitleId.HasValue && x.TitleId.Value.EqualsIgnoreCase(titleId))?.Status;
+        
+        public static LocaleKeys? GetStatus(ulong titleId) => GetStatus(titleId.ToString("X16"));
     }
 
     public class CompatibilityEntry
@@ -70,7 +88,7 @@ namespace Ryujinx.Ava.Utilities.Compat
                 _ => null
             };
 
-            if (DateTime.TryParse(ColStr(row[indices.LastUpdated]), out var dt))
+            if (DateTime.TryParse(ColStr(row[indices.LastUpdated]), out DateTime dt))
                 LastUpdated = dt;
 
             return;
@@ -95,20 +113,17 @@ namespace Ryujinx.Ava.Utilities.Compat
             .Select(FormatLabelName)
             .JoinToString(", ");
 
-        public override string ToString()
-        {
-            StringBuilder sb = new("CompatibilityEntry: {");
-            sb.Append($"{nameof(GameName)}=\"{GameName}\", ");
-            sb.Append($"{nameof(TitleId)}={TitleId}, ");
-            sb.Append($"{nameof(Labels)}={
-                Labels.FormatCollection(it => $"\"{it}\"", separator: ", ", prefix: "[", suffix: "]")
-            }, ");
-            sb.Append($"{nameof(Status)}=\"{Status}\", ");
-            sb.Append($"{nameof(LastUpdated)}=\"{LastUpdated}\"");
-            sb.Append('}');
-
-            return sb.ToString();
-        }
+        public override string ToString() =>
+            new StringBuilder("CompatibilityEntry: {")
+                .Append($"{nameof(GameName)}=\"{GameName}\", ")
+                .Append($"{nameof(TitleId)}={TitleId}, ")
+                .Append($"{nameof(Labels)}={
+                    Labels.FormatCollection(it => $"\"{it}\"", separator: ", ", prefix: "[", suffix: "]")
+                }, ")
+                .Append($"{nameof(Status)}=\"{Status}\", ")
+                .Append($"{nameof(LastUpdated)}=\"{LastUpdated}\"")
+                .Append('}')
+                .ToString();
 
         public static string FormatLabelName(string labelName) => labelName.ToLower() switch
         {

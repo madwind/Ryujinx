@@ -6,6 +6,7 @@ using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.UI.Helpers;
 using Ryujinx.Ava.UI.Models;
 using Ryujinx.Ava.UI.ViewModels;
+using Ryujinx.Ava.Utilities.AppLibrary;
 using Ryujinx.Common.Helper;
 using System.Threading.Tasks;
 using Button = Avalonia.Controls.Button;
@@ -23,21 +24,21 @@ namespace Ryujinx.Ava.UI.Windows
             InitializeComponent();
         }
 
-        public ModManagerWindow(ulong titleId)
+        public ModManagerWindow(ulong titleId, ulong titleIdBase, ApplicationLibrary applicationLibrary)
         {
-            DataContext = ViewModel = new ModManagerViewModel(titleId);
+            DataContext = ViewModel = new ModManagerViewModel(titleId, titleIdBase, applicationLibrary);
 
             InitializeComponent();
         }
 
-        public static async Task Show(ulong titleId, string titleName)
+        public static async Task Show(ulong titleId, ulong titleIdBase, ApplicationLibrary appLibrary, string titleName)
         {
             ContentDialog contentDialog = new()
             {
                 PrimaryButtonText = string.Empty,
                 SecondaryButtonText = string.Empty,
                 CloseButtonText = string.Empty,
-                Content = new ModManagerWindow(titleId),
+                Content = new ModManagerWindow(titleId, titleIdBase, appLibrary),
                 Title = string.Format(LocaleManager.Instance[LocaleKeys.ModWindowTitle], titleName, titleId.ToString("X16")),
             };
 
@@ -66,7 +67,7 @@ namespace Ryujinx.Ava.UI.Windows
             {
                 if (button.DataContext is ModModel model)
                 {
-                    var result = await ContentDialogHelper.CreateConfirmationDialog(
+                    UserResult result = await ContentDialogHelper.CreateConfirmationDialog(
                         LocaleManager.Instance[LocaleKeys.DialogWarning],
                         LocaleManager.Instance.UpdateAndGetDynamicValue(LocaleKeys.DialogModManagerDeletionWarningMessage, model.Name),
                         LocaleManager.Instance[LocaleKeys.InputDialogYes],
@@ -83,7 +84,7 @@ namespace Ryujinx.Ava.UI.Windows
 
         private async void DeleteAll(object sender, RoutedEventArgs e)
         {
-            var result = await ContentDialogHelper.CreateConfirmationDialog(
+            UserResult result = await ContentDialogHelper.CreateConfirmationDialog(
                 LocaleManager.Instance[LocaleKeys.DialogWarning],
                 LocaleManager.Instance[LocaleKeys.DialogModManagerDeletionAllWarningMessage],
                 LocaleManager.Instance[LocaleKeys.InputDialogYes],
@@ -109,11 +110,11 @@ namespace Ryujinx.Ava.UI.Windows
 
         private void OnSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            foreach (var content in e.AddedItems)
+            foreach (object content in e.AddedItems)
             {
                 if (content is ModModel model)
                 {
-                    var index = ViewModel.Mods.IndexOf(model);
+                    int index = ViewModel.Mods.IndexOf(model);
 
                     if (index != -1)
                     {
@@ -122,11 +123,11 @@ namespace Ryujinx.Ava.UI.Windows
                 }
             }
 
-            foreach (var content in e.RemovedItems)
+            foreach (object content in e.RemovedItems)
             {
                 if (content is ModModel model)
                 {
-                    var index = ViewModel.Mods.IndexOf(model);
+                    int index = ViewModel.Mods.IndexOf(model);
 
                     if (index != -1)
                     {

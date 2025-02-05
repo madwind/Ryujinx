@@ -8,6 +8,7 @@ using DynamicData;
 using FluentAvalonia.UI.Controls;
 using FluentAvalonia.UI.Windowing;
 using Gommon;
+using LibHac.Ns;
 using LibHac.Tools.FsSystem;
 using Ryujinx.Ava.Common;
 using Ryujinx.Ava.Common.Locale;
@@ -136,6 +137,8 @@ namespace Ryujinx.Ava.UI.Windows
             base.OnApplyTemplate(e);
 
             NotificationHelper.SetNotificationManager(this);
+
+            Executor.ExecuteBackgroundAsync(ShowIntelMacWarningAsync);
         }
 
         private void OnScalingChanged(object sender, EventArgs e)
@@ -168,11 +171,11 @@ namespace Ryujinx.Ava.UI.Windows
         {
             Dispatcher.UIThread.Post(() =>
             {
-                var ldnGameDataArray = e.LdnData.ToList();
+                List<LdnGameData> ldnGameDataArray = e.LdnData.ToList();
                 ViewModel.LdnData.Clear();
-                foreach (var application in ViewModel.Applications.Where(it => it.HasControlHolder))
+                foreach (ApplicationData application in ViewModel.Applications.Where(it => it.HasControlHolder))
                 {
-                    ref var controlHolder = ref application.ControlHolder.Value;
+                    ref ApplicationControlProperty controlHolder = ref application.ControlHolder.Value;
                     
                     ViewModel.LdnData[application.IdString] = 
                         LdnGameData.GetArrayForApp(
@@ -189,7 +192,7 @@ namespace Ryujinx.Ava.UI.Windows
 
         private void UpdateApplicationWithLdnData(ApplicationData application)
         {
-            if (application.HasControlHolder && ViewModel.LdnData.TryGetValue(application.IdString, out var ldnGameDatas))
+            if (application.HasControlHolder && ViewModel.LdnData.TryGetValue(application.IdString, out LdnGameData.Array ldnGameDatas))
             {
                 application.PlayerCount = ldnGameDatas.PlayerCount;
                 application.GameCount = ldnGameDatas.GameCount;
@@ -299,7 +302,7 @@ namespace Ryujinx.Ava.UI.Windows
                 LinuxHelper.RecommendedVmMaxMapCount);
 
             UserResult response = await ContentDialogHelper.ShowTextDialog(
-                $"Ryujinx - {LocaleManager.Instance[LocaleKeys.LinuxVmMaxMapCountDialogTitle]}",
+                RyujinxApp.FormatTitle(LocaleKeys.LinuxVmMaxMapCountDialogTitle, false),
                 LocaleManager.Instance[LocaleKeys.LinuxVmMaxMapCountDialogTextPrimary],
                 LocaleManager.Instance[LocaleKeys.LinuxVmMaxMapCountDialogTextSecondary],
                 LocaleManager.Instance[LocaleKeys.LinuxVmMaxMapCountDialogButtonUntilRestart],
@@ -687,11 +690,12 @@ namespace Ryujinx.Ava.UI.Windows
 
                 ApplicationLibrary.LoadApplications(ConfigurationState.Instance.UI.GameDirs);
 
-                var autoloadDirs = ConfigurationState.Instance.UI.AutoloadDirs.Value;
+                List<string> autoloadDirs = ConfigurationState.Instance.UI.AutoloadDirs.Value;
+                autoloadDirs.ForEach(dir => Logger.Info?.Print(LogClass.Application, $"Auto loading DLC & updates from: {dir}"));
                 if (autoloadDirs.Count > 0)
                 {
-                    var updatesLoaded = ApplicationLibrary.AutoLoadTitleUpdates(autoloadDirs, out int updatesRemoved);
-                    var dlcLoaded = ApplicationLibrary.AutoLoadDownloadableContents(autoloadDirs, out int dlcRemoved);
+                    int updatesLoaded = ApplicationLibrary.AutoLoadTitleUpdates(autoloadDirs, out int updatesRemoved);
+                    int dlcLoaded = ApplicationLibrary.AutoLoadDownloadableContents(autoloadDirs, out int dlcRemoved);
 
                     ShowNewContentAddedDialog(dlcLoaded, dlcRemoved, updatesLoaded, updatesRemoved);
                 }
@@ -707,12 +711,13 @@ namespace Ryujinx.Ava.UI.Windows
 
         private void ShowNewContentAddedDialog(int numDlcAdded, int numDlcRemoved, int numUpdatesAdded, int numUpdatesRemoved)
         {
-            string[] messages = {
+            string[] messages =
+            [
                 numDlcRemoved > 0 ? string.Format(LocaleManager.Instance[LocaleKeys.AutoloadDlcRemovedMessage], numDlcRemoved): null,
                 numDlcAdded > 0 ? string.Format(LocaleManager.Instance[LocaleKeys.AutoloadDlcAddedMessage], numDlcAdded): null,
                 numUpdatesRemoved > 0 ? string.Format(LocaleManager.Instance[LocaleKeys.AutoloadUpdateRemovedMessage], numUpdatesRemoved): null,
                 numUpdatesAdded > 0 ? string.Format(LocaleManager.Instance[LocaleKeys.AutoloadUpdateAddedMessage], numUpdatesAdded) : null
-            };
+            ];
 
             string msg = String.Join("\r\n", messages);
 
@@ -730,6 +735,19 @@ namespace Ryujinx.Ava.UI.Windows
                     LocaleManager.Instance[LocaleKeys.InputDialogOk], 
                     (int)Symbol.Checkmark);
             });
+        }
+
+        private static bool _intelMacWarningShown = !RunningPlatform.IsIntelMac;
+
+        public static async Task ShowIntelMacWarningAsync()
+        {
+            if (_intelMacWarningShown) return;
+            
+            await Dispatcher.UIThread.InvokeAsync(async () => await ContentDialogHelper.CreateWarningDialog(
+                "Intel Mac Warning",
+                "Intel Macs are not supported and will not work properly.\nIf you continue, do not come to our Discord asking for support;\nand do not report bugs on the GitHub. They will be closed."));
+
+            _intelMacWarningShown = true;
         }
     }
 }

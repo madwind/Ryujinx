@@ -1,12 +1,13 @@
+using Avalonia.Media;
+using CommunityToolkit.Mvvm.ComponentModel;
 using Ryujinx.Ava.UI.ViewModels;
 using Ryujinx.Common.Configuration.Hid;
 using Ryujinx.Common.Configuration.Hid.Controller;
 using Ryujinx.Common.Configuration.Hid.Controller.Motion;
-using System;
 
 namespace Ryujinx.Ava.UI.Models.Input
 {
-    public class GamepadInputConfig : BaseModel
+    public partial class GamepadInputConfig : BaseModel
     {
         public bool EnableCemuHookMotion { get; set; }
         public string DsuServerHost { get; set; }
@@ -24,388 +25,84 @@ namespace Ryujinx.Ava.UI.Models.Input
         public ControllerType ControllerType { get; set; }
         public PlayerIndex PlayerIndex { get; set; }
 
-        private StickInputId _leftJoystick;
-        public StickInputId LeftJoystick
+        [ObservableProperty] private StickInputId _leftJoystick;
+        [ObservableProperty] private bool _leftInvertStickX;
+        [ObservableProperty] private bool _leftInvertStickY;
+        [ObservableProperty] private bool _leftRotate90;
+        [ObservableProperty] private GamepadInputId _leftStickButton;
+
+        [ObservableProperty] private StickInputId _rightJoystick;
+        [ObservableProperty] private bool _rightInvertStickX;
+        [ObservableProperty] private bool _rightInvertStickY;
+        [ObservableProperty] private bool _rightRotate90;
+        [ObservableProperty] private GamepadInputId _rightStickButton;
+
+        [ObservableProperty] private GamepadInputId _dpadUp;
+        [ObservableProperty] private GamepadInputId _dpadDown;
+        [ObservableProperty] private GamepadInputId _dpadLeft;
+        [ObservableProperty] private GamepadInputId _dpadRight;
+
+        [ObservableProperty] private GamepadInputId _buttonMinus;
+        [ObservableProperty] private GamepadInputId _buttonPlus;
+        
+        [ObservableProperty] private GamepadInputId _buttonA;
+        [ObservableProperty] private GamepadInputId _buttonB;
+        [ObservableProperty] private GamepadInputId _buttonX;
+        [ObservableProperty] private GamepadInputId _buttonY;
+        
+        [ObservableProperty] private GamepadInputId _buttonZl;
+        [ObservableProperty] private GamepadInputId _buttonZr;
+        
+        [ObservableProperty] private GamepadInputId _buttonL;
+        [ObservableProperty] private GamepadInputId _buttonR;
+        
+        [ObservableProperty] private GamepadInputId _leftButtonSl;
+        [ObservableProperty] private GamepadInputId _leftButtonSr;
+        
+        [ObservableProperty] private GamepadInputId _rightButtonSl;
+        [ObservableProperty] private GamepadInputId _rightButtonSr;
+
+        [ObservableProperty] private float _deadzoneLeft;
+        [ObservableProperty] private float _deadzoneRight;
+
+        [ObservableProperty] private float _rangeLeft;
+        [ObservableProperty] private float _rangeRight;
+
+        [ObservableProperty] private float _triggerThreshold;
+
+        [ObservableProperty] private bool _enableMotion;
+        
+        [ObservableProperty] private bool _enableRumble;
+        
+        [ObservableProperty] private bool _enableLedChanging;
+        
+        [ObservableProperty] private Color _ledColor;
+        
+        public bool ShowLedColorPicker => !TurnOffLed && !UseRainbowLed;
+        
+        private bool _turnOffLed;
+        
+        public bool TurnOffLed
         {
-            get => _leftJoystick;
+            get => _turnOffLed;
             set
             {
-                _leftJoystick = value;
+                _turnOffLed = value;
                 OnPropertyChanged();
+                OnPropertyChanged(nameof(ShowLedColorPicker));
             }
         }
-
-        private bool _leftInvertStickX;
-        public bool LeftInvertStickX
+        
+        private bool _useRainbowLed;
+        
+        public bool UseRainbowLed
         {
-            get => _leftInvertStickX;
+            get => _useRainbowLed;
             set
             {
-                _leftInvertStickX = value;
+                _useRainbowLed = value;
                 OnPropertyChanged();
-            }
-        }
-
-        private bool _leftInvertStickY;
-        public bool LeftInvertStickY
-        {
-            get => _leftInvertStickY;
-            set
-            {
-                _leftInvertStickY = value;
-                OnPropertyChanged();
-            }
-        }
-
-        private bool _leftRotate90;
-        public bool LeftRotate90
-        {
-            get => _leftRotate90;
-            set
-            {
-                _leftRotate90 = value;
-                OnPropertyChanged();
-            }
-        }
-
-        private GamepadInputId _leftStickButton;
-        public GamepadInputId LeftStickButton
-        {
-            get => _leftStickButton;
-            set
-            {
-                _leftStickButton = value;
-                OnPropertyChanged();
-            }
-        }
-
-        private StickInputId _rightJoystick;
-        public StickInputId RightJoystick
-        {
-            get => _rightJoystick;
-            set
-            {
-                _rightJoystick = value;
-                OnPropertyChanged();
-            }
-        }
-
-        private bool _rightInvertStickX;
-        public bool RightInvertStickX
-        {
-            get => _rightInvertStickX;
-            set
-            {
-                _rightInvertStickX = value;
-                OnPropertyChanged();
-            }
-        }
-
-        private bool _rightInvertStickY;
-        public bool RightInvertStickY
-        {
-            get => _rightInvertStickY;
-            set
-            {
-                _rightInvertStickY = value;
-                OnPropertyChanged();
-            }
-        }
-
-        private bool _rightRotate90;
-        public bool RightRotate90
-        {
-            get => _rightRotate90;
-            set
-            {
-                _rightRotate90 = value;
-                OnPropertyChanged();
-            }
-        }
-
-        private GamepadInputId _rightStickButton;
-        public GamepadInputId RightStickButton
-        {
-            get => _rightStickButton;
-            set
-            {
-                _rightStickButton = value;
-                OnPropertyChanged();
-            }
-        }
-
-        private GamepadInputId _dpadUp;
-        public GamepadInputId DpadUp
-        {
-            get => _dpadUp;
-            set
-            {
-                _dpadUp = value;
-                OnPropertyChanged();
-            }
-        }
-
-        private GamepadInputId _dpadDown;
-        public GamepadInputId DpadDown
-        {
-            get => _dpadDown;
-            set
-            {
-                _dpadDown = value;
-                OnPropertyChanged();
-            }
-        }
-
-        private GamepadInputId _dpadLeft;
-        public GamepadInputId DpadLeft
-        {
-            get => _dpadLeft;
-            set
-            {
-                _dpadLeft = value;
-                OnPropertyChanged();
-            }
-        }
-
-        private GamepadInputId _dpadRight;
-        public GamepadInputId DpadRight
-        {
-            get => _dpadRight;
-            set
-            {
-                _dpadRight = value;
-                OnPropertyChanged();
-            }
-        }
-
-        private GamepadInputId _buttonL;
-        public GamepadInputId ButtonL
-        {
-            get => _buttonL;
-            set
-            {
-                _buttonL = value;
-                OnPropertyChanged();
-            }
-        }
-
-        private GamepadInputId _buttonMinus;
-        public GamepadInputId ButtonMinus
-        {
-            get => _buttonMinus;
-            set
-            {
-                _buttonMinus = value;
-                OnPropertyChanged();
-            }
-        }
-
-        private GamepadInputId _leftButtonSl;
-        public GamepadInputId LeftButtonSl
-        {
-            get => _leftButtonSl;
-            set
-            {
-                _leftButtonSl = value;
-                OnPropertyChanged();
-            }
-        }
-
-        private GamepadInputId _leftButtonSr;
-        public GamepadInputId LeftButtonSr
-        {
-            get => _leftButtonSr;
-            set
-            {
-                _leftButtonSr = value;
-                OnPropertyChanged();
-            }
-        }
-
-        private GamepadInputId _buttonZl;
-        public GamepadInputId ButtonZl
-        {
-            get => _buttonZl;
-            set
-            {
-                _buttonZl = value;
-                OnPropertyChanged();
-            }
-        }
-
-        private GamepadInputId _buttonA;
-        public GamepadInputId ButtonA
-        {
-            get => _buttonA;
-            set
-            {
-                _buttonA = value;
-                OnPropertyChanged();
-            }
-        }
-
-        private GamepadInputId _buttonB;
-        public GamepadInputId ButtonB
-        {
-            get => _buttonB;
-            set
-            {
-                _buttonB = value;
-                OnPropertyChanged();
-            }
-        }
-
-        private GamepadInputId _buttonX;
-        public GamepadInputId ButtonX
-        {
-            get => _buttonX;
-            set
-            {
-                _buttonX = value;
-                OnPropertyChanged();
-            }
-        }
-
-        private GamepadInputId _buttonY;
-        public GamepadInputId ButtonY
-        {
-            get => _buttonY;
-            set
-            {
-                _buttonY = value;
-                OnPropertyChanged();
-            }
-        }
-
-        private GamepadInputId _buttonR;
-        public GamepadInputId ButtonR
-        {
-            get => _buttonR;
-            set
-            {
-                _buttonR = value;
-                OnPropertyChanged();
-            }
-        }
-
-        private GamepadInputId _buttonPlus;
-        public GamepadInputId ButtonPlus
-        {
-            get => _buttonPlus;
-            set
-            {
-                _buttonPlus = value;
-                OnPropertyChanged();
-            }
-        }
-
-        private GamepadInputId _rightButtonSl;
-        public GamepadInputId RightButtonSl
-        {
-            get => _rightButtonSl;
-            set
-            {
-                _rightButtonSl = value;
-                OnPropertyChanged();
-            }
-        }
-
-        private GamepadInputId _rightButtonSr;
-        public GamepadInputId RightButtonSr
-        {
-            get => _rightButtonSr;
-            set
-            {
-                _rightButtonSr = value;
-                OnPropertyChanged();
-            }
-        }
-
-        private GamepadInputId _buttonZr;
-        public GamepadInputId ButtonZr
-        {
-            get => _buttonZr;
-            set
-            {
-                _buttonZr = value;
-                OnPropertyChanged();
-            }
-        }
-
-        private float _deadzoneLeft;
-        public float DeadzoneLeft
-        {
-            get => _deadzoneLeft;
-            set
-            {
-                _deadzoneLeft = MathF.Round(value, 3);
-                OnPropertyChanged();
-            }
-        }
-
-        private float _deadzoneRight;
-        public float DeadzoneRight
-        {
-            get => _deadzoneRight;
-            set
-            {
-                _deadzoneRight = MathF.Round(value, 3);
-                OnPropertyChanged();
-            }
-        }
-
-        private float _rangeLeft;
-        public float RangeLeft
-        {
-            get => _rangeLeft;
-            set
-            {
-                _rangeLeft = MathF.Round(value, 3);
-                OnPropertyChanged();
-            }
-        }
-
-        private float _rangeRight;
-        public float RangeRight
-        {
-            get => _rangeRight;
-            set
-            {
-                _rangeRight = MathF.Round(value, 3);
-                OnPropertyChanged();
-            }
-        }
-
-        private float _triggerThreshold;
-        public float TriggerThreshold
-        {
-            get => _triggerThreshold;
-            set
-            {
-                _triggerThreshold = MathF.Round(value, 3);
-                OnPropertyChanged();
-            }
-        }
-
-        private bool _enableMotion;
-        public bool EnableMotion
-        {
-            get => _enableMotion;
-            set
-            {
-                _enableMotion = value;
-                OnPropertyChanged();
-            }
-        }
-
-        private bool _enableRumble;
-        public bool EnableRumble
-        {
-            get => _enableRumble;
-            set
-            {
-                _enableRumble = value;
-                OnPropertyChanged();
+                OnPropertyChanged(nameof(ShowLedColorPicker));
             }
         }
 
@@ -483,12 +180,25 @@ namespace Ryujinx.Ava.UI.Models.Input
                     WeakRumble = controllerInput.Rumble.WeakRumble;
                     StrongRumble = controllerInput.Rumble.StrongRumble;
                 }
+                
+                if (controllerInput.Led != null)
+                {
+                    EnableLedChanging = controllerInput.Led.EnableLed;
+                    TurnOffLed = controllerInput.Led.TurnOffLed;
+                    UseRainbowLed = controllerInput.Led.UseRainbow;
+                    uint rawColor = controllerInput.Led.LedColor;
+                    byte alpha = (byte)(rawColor >> 24);
+                    byte red = (byte)(rawColor >> 16);
+                    byte green = (byte)(rawColor >> 8);
+                    byte blue = (byte)(rawColor % 256);
+                    LedColor = new Color(alpha, red, green, blue);
+                }
             }
         }
 
         public InputConfig GetConfig()
         {
-            var config = new StandardControllerInputConfig
+            StandardControllerInputConfig config = new()
             {
                 Id = Id,
                 Backend = InputBackendType.GamepadSDL2,
@@ -539,6 +249,13 @@ namespace Ryujinx.Ava.UI.Models.Input
                     EnableRumble = EnableRumble,
                     WeakRumble = WeakRumble,
                     StrongRumble = StrongRumble,
+                },
+                Led = new LedConfigController
+                {
+                    EnableLed = EnableLedChanging,
+                    TurnOffLed = this.TurnOffLed,
+                    UseRainbow = UseRainbowLed,
+                    LedColor = LedColor.ToUInt32()
                 },
                 Version = InputConfig.CurrentVersion,
                 DeadzoneLeft = DeadzoneLeft,

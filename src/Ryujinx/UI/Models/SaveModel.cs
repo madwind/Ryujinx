@@ -2,11 +2,9 @@ using Gommon;
 using LibHac.Fs;
 using LibHac.Ncm;
 using Ryujinx.Ava.UI.ViewModels;
-using Ryujinx.Ava.UI.Windows;
 using Ryujinx.Ava.Utilities;
 using Ryujinx.Ava.Utilities.AppLibrary;
 using Ryujinx.HLE.FileSystem;
-using System;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -48,7 +46,7 @@ namespace Ryujinx.Ava.UI.Models
             TitleId = info.ProgramId;
             UserId = info.UserId;
 
-            var appData = RyujinxApp.MainWindow.ViewModel.Applications.FirstOrDefault(x => x.IdString.EqualsIgnoreCase(TitleIdString));
+            ApplicationData appData = RyujinxApp.MainWindow.ViewModel.Applications.FirstOrDefault(x => x.IdString.EqualsIgnoreCase(TitleIdString));
 
             InGameList = appData != null;
 
@@ -59,13 +57,13 @@ namespace Ryujinx.Ava.UI.Models
             }
             else
             {
-                var appMetadata = ApplicationLibrary.LoadAndSaveMetaData(TitleIdString);
+                ApplicationMetadata appMetadata = ApplicationLibrary.LoadAndSaveMetaData(TitleIdString);
                 Title = appMetadata.Title ?? TitleIdString;
             }
 
             Task.Run(() =>
             {
-                var saveRoot = Path.Combine(VirtualFileSystem.GetNandPath(), $"user/save/{info.SaveDataId:x16}");
+                string saveRoot = Path.Combine(VirtualFileSystem.GetNandPath(), $"user/save/{info.SaveDataId:x16}");
 
                 long totalSize = GetDirectorySize(saveRoot);
 
@@ -74,14 +72,14 @@ namespace Ryujinx.Ava.UI.Models
                     long size = 0;
                     if (Directory.Exists(path))
                     {
-                        var directories = Directory.GetDirectories(path);
-                        foreach (var directory in directories)
+                        string[] directories = Directory.GetDirectories(path);
+                        foreach (string directory in directories)
                         {
                             size += GetDirectorySize(directory);
                         }
 
-                        var files = Directory.GetFiles(path);
-                        foreach (var file in files)
+                        string[] files = Directory.GetFiles(path);
+                        foreach (string file in files)
                         {
                             size += new FileInfo(file).Length;
                         }

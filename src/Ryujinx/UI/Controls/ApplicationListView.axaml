@@ -2,20 +2,16 @@
     x:Class="Ryujinx.Ava.UI.Controls.ApplicationListView"
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:controls="clr-namespace:Ryujinx.Ava.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:helpers="clr-namespace:Ryujinx.Ava.UI.Helpers"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="clr-namespace:FluentAvalonia.UI.Controls;assembly=FluentAvalonia"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     d:DesignHeight="450"
     d:DesignWidth="800"
     Focusable="True"
     mc:Ignorable="d"
     xmlns:viewModels="clr-namespace:Ryujinx.Ava.UI.ViewModels"
     x:DataType="viewModels:MainWindowViewModel">
-    <UserControl.Resources>
-        <helpers:BitmapArrayValueConverter x:Key="ByteImage" />
-    </UserControl.Resources>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="*" />
@@ -63,7 +59,7 @@
                                     Classes.large="{Binding $parent[UserControl].((viewModels:MainWindowViewModel)DataContext).IsGridLarge}"
                                     Classes.normal="{Binding $parent[UserControl].((viewModels:MainWindowViewModel)DataContext).IsGridMedium}"
                                     Classes.small="{Binding $parent[UserControl].((viewModels:MainWindowViewModel)DataContext).IsGridSmall}"
-                                    Source="{Binding Icon, Converter={StaticResource ByteImage}}" />
+                                    Source="{Binding Icon, Converter={x:Static helpers:BitmapArrayValueConverter.Instance}}" />
                                 <Border
                                     Grid.Column="2"
                                     Margin="0,0,5,0"
@@ -90,6 +86,29 @@
                                             Text="{Binding Version}"
                                             TextAlignment="Start"
                                             TextWrapping="Wrap" />
+                                        <Button 
+                                            Click="PlayabilityStatus_OnClick" 
+                                            HorizontalContentAlignment="Left"
+                                            VerticalAlignment="Center"
+                                            IsVisible="{Binding HasPlayabilityInfo}"
+                                            Background="{DynamicResource AppListBackgroundColor}"
+                                            Margin="-1, 0, 0, 0"
+                                            Padding="0" >
+                                            <TextBlock
+                                                Margin="1.5"
+                                                Tag="{Binding IdString}"
+                                                Text="{Binding LocalizedStatus}"
+                                                Foreground="{Binding PlayabilityStatus, Converter={x:Static helpers:PlayabilityStatusConverter.Shared}}"
+                                                TextAlignment="Start"
+                                                TextWrapping="Wrap" />
+                                            <Button.Styles>
+                                                <Style Selector="Button">
+                                                    <Setter Property="MinWidth"
+                                                            Value="0" /> 
+                                <!-- avoids very wide buttons from the overall project avalonia style -->
+                                                </Style>
+                                            </Button.Styles>
+                                        </Button>
                                     </StackPanel>
                                 </Border>
                                 <StackPanel

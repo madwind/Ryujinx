@@ -1,26 +1,35 @@
 using DiscordRPC;
-using Humanizer;
-using Humanizer.Localisation;
+using Gommon;
+using MsgPack;
+using Ryujinx.Ava.Utilities;
 using Ryujinx.Ava.Utilities.AppLibrary;
 using Ryujinx.Ava.Utilities.Configuration;
 using Ryujinx.Common;
+using Ryujinx.Common.Helper;
+using Ryujinx.Common.Logging;
 using Ryujinx.HLE;
 using Ryujinx.HLE.Loaders.Processes;
+using Ryujinx.Horizon;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
 using System.Text;
 
 namespace Ryujinx.Ava
 {
     public static class DiscordIntegrationModule
     {
-        public static Timestamps StartedAt { get; set; }
+        public static Timestamps EmulatorStartedAt { get; set; }
+        public static Timestamps GuestAppStartedAt { get; set; }
 
         private static string VersionString
-            => (ReleaseInformation.IsCanaryBuild ? "Canary " : string.Empty) + $"v{ReleaseInformation.Version}"; 
+            => (ReleaseInformation.IsCanaryBuild ? "Canary " : string.Empty) + $"v{ReleaseInformation.Version}";
 
-        private static readonly string _description = 
-            ReleaseInformation.IsValid 
-                    ? $"{VersionString} {ReleaseInformation.ReleaseChannelOwner}/{ReleaseInformation.ReleaseChannelSourceRepo}@{ReleaseInformation.BuildGitHash}" 
-                    : "dev build";
+        private static readonly string _description =
+            ReleaseInformation.IsValid
+                ? $"{VersionString} {ReleaseInformation.ReleaseChannelOwner}/{ReleaseInformation.ReleaseChannelSourceRepo}@{ReleaseInformation.BuildGitHash}"
+                : "dev build";
 
         private const string ApplicationId = "1293250299716173864";
 
@@ -29,6 +38,8 @@ namespace Ryujinx.Ava
 
         private static DiscordRpcClient _discordClient;
         private static RichPresence _discordPresenceMain;
+        private static RichPresence _discordPresencePlaying;
+        private static ApplicationMetadata _currentApp;
 
         public static void Initialize()
         {
@@ -36,25 +47,16 @@ namespace Ryujinx.Ava
             {
                 Assets = new Assets
                 {
-                    LargeImageKey = "ryujinx",
-                    LargeImageText = TruncateToByteLength(_description)
+                    LargeImageKey = "ryujinx", LargeImageText = TruncateToByteLength(_description)
                 },
                 Details = "Main Menu",
                 State = "Idling",
-                Timestamps = StartedAt
+                Timestamps = EmulatorStartedAt
             };
 
             ConfigurationState.Instance.EnableDiscordIntegration.Event += Update;
-            TitleIDs.CurrentApplication.Event += (_, e) =>
-            {
-                if (e.NewValue)
-                    SwitchToPlayingState(
-                        ApplicationLibrary.LoadAndSaveMetaData(e.NewValue),
-                        Switch.Shared.Processes.ActiveApplication
-                    );
-                else 
-                    SwitchToMainState();
-            };
+            TitleIDs.CurrentApplication.Event += (_, e) => Use(e.NewValue);
+            HorizonStatic.PlayReport += HandlePlayReport;
         }
 
         private static void Update(object sender, ReactiveEventArgs<bool> evnt)
@@ -75,14 +77,25 @@ namespace Ryujinx.Ava
                     _discordClient = new DiscordRpcClient(ApplicationId);
 
                     _discordClient.Initialize();
-                    _discordClient.SetPresence(_discordPresenceMain);
+
+                    Use(TitleIDs.CurrentApplication);
                 }
             }
         }
 
-        private static void SwitchToPlayingState(ApplicationMetadata appMeta, ProcessResult procRes)
+        public static void Use(Optional<string> titleId)
         {
-            _discordClient?.SetPresence(new RichPresence
+            if (titleId.TryGet(out string tid))
+                SwitchToPlayingState(
+                    ApplicationLibrary.LoadAndSaveMetaData(tid),
+                    Switch.Shared.Processes.ActiveApplication
+                );
+            else
+                SwitchToMainState();
+        }
+
+        private static RichPresence CreatePlayingState(ApplicationMetadata appMeta, ProcessResult procRes) =>
+            new()
             {
                 Assets = new Assets
                 {
@@ -93,13 +106,45 @@ namespace Ryujinx.Ava
                 },
                 Details = TruncateToByteLength($"Playing {appMeta.Title}"),
                 State = appMeta.LastPlayed.HasValue && appMeta.TimePlayed.TotalSeconds > 5
-                    ? $"Total play time: {appMeta.TimePlayed.Humanize(2, false, maxUnit: TimeUnit.Hour)}"
+                    ? $"Total play time: {ValueFormatUtils.FormatTimeSpan(appMeta.TimePlayed)}"
                     : "Never played",
-                Timestamps = Timestamps.Now
-            });
+                Timestamps = GuestAppStartedAt ??= Timestamps.Now
+            };
+
+        private static void SwitchToPlayingState(ApplicationMetadata appMeta, ProcessResult procRes)
+        {
+            _discordClient?.SetPresence(_discordPresencePlaying ??= CreatePlayingState(appMeta, procRes));
+            _currentApp = appMeta;
         }
 
-        private static void SwitchToMainState() => _discordClient?.SetPresence(_discordPresenceMain);
+        private static void SwitchToMainState()
+        {
+            _discordClient?.SetPresence(_discordPresenceMain);
+            _discordPresencePlaying = null;
+            _currentApp = null;
+        }
+
+        private static void HandlePlayReport(MessagePackObject playReport)
+        {
+            if (_discordClient is null) return;
+            if (!TitleIDs.CurrentApplication.Value.HasValue) return;
+            if (_discordPresencePlaying is null) return;
+
+            PlayReportAnalyzer.FormattedValue formattedValue =
+                PlayReport.Analyzer.Format(TitleIDs.CurrentApplication.Value, _currentApp, playReport);
+
+            if (!formattedValue.Handled) return;
+
+            _discordPresencePlaying.Details = formattedValue.Reset 
+                ? $"Playing {_currentApp.Title}" 
+                : formattedValue.FormattedString;
+
+            if (_discordClient.CurrentPresence.Details.Equals(_discordPresencePlaying.Details))
+                return; //don't trigger an update if the set presence Details are identical to current
+
+            _discordClient.SetPresence(_discordPresencePlaying);
+            Logger.Info?.Print(LogClass.UI, "Updated Discord RPC based on a supported play report.");
+        }
 
         private static string TruncateToByteLength(string input)
         {

@@ -281,6 +281,34 @@ namespace Ryujinx.Input.SDL3
                 (float leftStickX, float leftStickY) = rawState.GetStick(_stickUserMapping[(int)StickInputId.Left]);
                 (float rightStickX, float rightStickY) = rawState.GetStick(_stickUserMapping[(int)StickInputId.Right]);
 
+                if (_configuration.LeftJoyconStick.InvertStickX)
+                {
+                    leftStickX = -leftStickX;
+                }
+                if (_configuration.LeftJoyconStick.InvertStickY)
+                {
+                    leftStickY = -leftStickY;
+                }
+
+                if (_configuration.RightJoyconStick.InvertStickX)
+                {
+                    rightStickX = -rightStickX;
+                }
+                if (_configuration.RightJoyconStick.InvertStickY)
+                {
+                    rightStickY = -rightStickY;
+                }
+
+                if (_configuration.LeftJoyconStick.Rotate90CW)
+                {
+                    (leftStickX, leftStickY) = (leftStickY, -leftStickX);
+                }
+
+                if (_configuration.RightJoyconStick.Rotate90CW)
+                {
+                    (rightStickX, rightStickY) = (rightStickY, -rightStickX);
+                }
+                
                 result.SetStick(StickInputId.Left, leftStickX, leftStickY);
                 result.SetStick(StickInputId.Right, rightStickX, rightStickY);
             }
@@ -295,28 +323,6 @@ namespace Ryujinx.Input.SDL3
             return value * ConvertRate;
         }
 
-        private JoyconConfigControllerStick<GamepadInputId, Common.Configuration.Hid.Controller.StickInputId>
-            GetLogicalJoyStickConfig(StickInputId inputId)
-        {
-            switch (inputId)
-            {
-                case StickInputId.Left:
-                    if (_configuration.RightJoyconStick.Joystick ==
-                        Common.Configuration.Hid.Controller.StickInputId.Left)
-                        return _configuration.RightJoyconStick;
-                    else
-                        return _configuration.LeftJoyconStick;
-                case StickInputId.Right:
-                    if (_configuration.LeftJoyconStick.Joystick ==
-                        Common.Configuration.Hid.Controller.StickInputId.Right)
-                        return _configuration.LeftJoyconStick;
-                    else
-                        return _configuration.RightJoyconStick;
-            }
-
-            return null;
-        }
-
         public (float, float) GetStick(StickInputId inputId)
         {
             if (inputId == StickInputId.Unbound)
@@ -326,27 +332,6 @@ namespace Ryujinx.Input.SDL3
 
             float resultX = ConvertRawStickValue(stickX);
             float resultY = -ConvertRawStickValue(stickY);
-
-            if (HasConfiguration)
-            {
-                var joyconStickConfig = GetLogicalJoyStickConfig(inputId);
-
-                if (joyconStickConfig != null)
-                {
-                    if (joyconStickConfig.InvertStickX)
-                        resultX = -resultX;
-
-                    if (joyconStickConfig.InvertStickY)
-                        resultY = -resultY;
-
-                    if (joyconStickConfig.Rotate90CW)
-                    {
-                        float temp = resultX;
-                        resultX = resultY;
-                        resultY = -temp;
-                    }
-                }
-            }
 
             return (resultX, resultY);
         }

@@ -4005,10 +4005,14 @@ public static unsafe partial class SDL
 	[UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
 	public static partial IntPtr SDL_GetKeyboardFocus();
 
-	[LibraryImport(nativeLibName)]
-	[UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-	[return: MarshalUsing(CountElementName = "numkeys")]
-	public static partial Span<SDLBool> SDL_GetKeyboardState(out int numkeys);
+    public static Span<SDLBool> SDL_GetKeyboardState()
+    {
+        var result = SDL_GetKeyboardState(out var numkeys);
+        return new Span<SDLBool>((void*) result, numkeys);
+    }
+    [LibraryImport(nativeLibName)]
+    [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    public static partial IntPtr SDL_GetKeyboardState(out int numkeys);
 
 	[LibraryImport(nativeLibName)]
 	[UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]

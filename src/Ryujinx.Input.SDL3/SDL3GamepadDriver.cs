@@ -1,5 +1,4 @@
 using Ryujinx.Common.Logging;
-using Ryujinx.Input.SDL3;
 using Ryujinx.SDL3.Common;
 using System;
 using System.Collections.Generic;

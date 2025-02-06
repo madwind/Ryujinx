@@ -18,6 +18,7 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 using Button = Ryujinx.Input.Button;
+using ControllerType = Ryujinx.Common.Configuration.Hid.ControllerType;
 using StickInputId = Ryujinx.Common.Configuration.Hid.Controller.StickInputId;
 
 namespace Ryujinx.Ava.UI.Views.Input
@@ -26,7 +27,6 @@ namespace Ryujinx.Ava.UI.Views.Input
     {
         private ButtonKeyAssigner _currentAssigner;
         private volatile bool _isRunning = true;
-        private const float StickMaxPosition = 3;
 
         public ControllerInputView()
         {
@@ -255,24 +255,24 @@ namespace Ryujinx.Ava.UI.Views.Input
             _isRunning = false;
         }
 
-        private string BuildSvgCss(IGamepad gamepad, GamepadInputConfig config, JoystickPosition leftPosition,
-            JoystickPosition rightPosition)
+        private string BuildSvgCss(GamepadStateSnapshot gamepadStateSnapshot, JoystickPosition leftPosition,
+            JoystickPosition rightPosition, bool isProController)
         {
-            gamepad.SetConfiguration(config.GetConfig());
             StringBuilder sb = new();
             for (int i = 0; i < (int)GamepadInputId.Count; i++)
             {
                 GamepadButtonInputId button = (GamepadButtonInputId)i;
-                if (gamepad.GetMappedStateSnapshot().IsPressed(button))
+                if (gamepadStateSnapshot.IsPressed(button))
                 {
                     sb.Append($"#{button}{{fill:#00bbdb;}}");
                 }
             }
 
+            int stickMaxPosition = isProController ? 30 : 3;
             sb.Append(
-                $"#LeftStick{{transform: translate ({(float)leftPosition.Dx / short.MaxValue * StickMaxPosition} {-(float)leftPosition.Dy / short.MaxValue * StickMaxPosition});}}");
+                $"#LeftStick{{transform: translate ({(float)leftPosition.Dx / short.MaxValue * stickMaxPosition} {-(float)leftPosition.Dy / short.MaxValue * stickMaxPosition});}}");
             sb.Append(
-                $"#RightStick{{transform: translate ({(float)rightPosition.Dx / short.MaxValue * StickMaxPosition} {-(float)rightPosition.Dy / short.MaxValue * StickMaxPosition});}}");
+                $"#RightStick{{transform: translate ({(float)rightPosition.Dx / short.MaxValue * stickMaxPosition} {-(float)rightPosition.Dy / short.MaxValue * stickMaxPosition});}}");
             return sb.ToString();
         }
 
@@ -285,31 +285,27 @@ namespace Ryujinx.Ava.UI.Views.Input
                     var viewModel = DataContext as ControllerInputViewModel;
                     if (viewModel != null)
                     {
+                        GamepadInputConfig config = viewModel.Config;
+                        bool isProController = viewModel.ParentModel.Controller == 0;
                         IGamepad gamepad = viewModel.ParentModel.SelectedGamepad;
-                        var config = viewModel.Config;
-                        JoystickPosition leftPosition = default, rightposition = default;
-                        if (config.LeftJoystick != StickInputId.Unbound)
-                        {
-                            var stickInputId = (Ryujinx.Input.StickInputId)(int)config.LeftJoystick;
-                            (float leftAxisX, float leftAxisY) = gamepad.GetStick(stickInputId);
-                            leftPosition = NpadController.GetJoystickPosition(leftAxisX, leftAxisY,
-                                config.DeadzoneLeft, config.RangeLeft);
-                            viewModel.LeftStickPosition = $"{leftPosition.Dx}, {leftPosition.Dy}";
-                        }
+                        gamepad.SetConfiguration(config.GetConfig());
+                        GamepadStateSnapshot gamepadStateSnapshot = gamepad.GetMappedStateSnapshot();
 
-                        if (config.RightJoystick != StickInputId.Unbound)
-                        {
-                            StickInputId stickInputId = config.RightJoystick;
-                            (float rightAxisX, float rightAxisY) =
-                                gamepad.GetStick((Ryujinx.Input.StickInputId)stickInputId);
-                            rightposition = NpadController.GetJoystickPosition(rightAxisX, rightAxisY,
-                                config.DeadzoneRight, config.RangeRight);
-                            viewModel.RightStickPosition = $"{rightposition.Dx}, {rightposition.Dy}";
-                        }
+                        (float leftAxisX, float leftAxisY) =
+                            gamepadStateSnapshot.GetStick(Ryujinx.Input.StickInputId.Left);
+                        JoystickPosition leftPosition = NpadController.GetJoystickPosition(leftAxisX, leftAxisY,
+                            config.DeadzoneLeft, config.RangeLeft);
+                        viewModel.LeftStickPosition = $"{leftPosition.Dx}, {leftPosition.Dy}";
 
-                        viewModel.UpdateImageCss(BuildSvgCss(gamepad, config, leftPosition, rightposition));
+                        (float rightAxisX, float rightAxisY) =
+                            gamepadStateSnapshot.GetStick(Ryujinx.Input.StickInputId.Right);
+                        JoystickPosition rightposition = NpadController.GetJoystickPosition(rightAxisX, rightAxisY,
+                            config.DeadzoneRight, config.RangeRight);
+                        viewModel.RightStickPosition = $"{rightposition.Dx}, {rightposition.Dy}";
 
-                        // 假设你已获得加速度计和陀螺仪数据
+                        viewModel.UpdateImageCss(BuildSvgCss(gamepadStateSnapshot, leftPosition, rightposition,
+                            isProController));
+
                         Vector3 accelerometerData = gamepad.GetMotionData(MotionInputId.Accelerometer);
                         Vector3 gyroscopeData = gamepad.GetMotionData(MotionInputId.Gyroscope);
 

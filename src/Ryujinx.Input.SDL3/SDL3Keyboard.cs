@@ -2,7 +2,6 @@ using Ryujinx.Common.Configuration.Hid;
 using Ryujinx.Common.Configuration.Hid.Keyboard;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -223,13 +222,8 @@ namespace Ryujinx.Input.SDL3
 
         public KeyboardStateSnapshot GetKeyboardStateSnapshot()
         {
-            Span<SDLBool> rawKeyboardState;
+            Span<SDLBool> rawKeyboardState=SDL_GetKeyboardState();
             SDL_Keymod rawKeyboardModifierState = SDL_GetModState();
-
-            unsafe
-            {
-                 rawKeyboardState = SDL_GetKeyboardState(out int numKeys);
-            }
 
             bool[] keysState = new bool[(int)Key.Count];
 

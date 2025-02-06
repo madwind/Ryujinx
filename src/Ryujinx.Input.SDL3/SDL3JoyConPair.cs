@@ -1,3 +1,4 @@
+using JetBrains.Annotations;
 using Ryujinx.Common.Configuration.Hid;
 using Ryujinx.Common.Configuration.Hid.Controller;
 using System.Collections.Generic;
@@ -65,12 +66,38 @@ namespace Ryujinx.Input.SDL3
                 }
 
                 (float leftStickX, float leftStickY) = rawState.GetStick(_stickUserMapping[(int)StickInputId.Left]);
-                (float rightStickX, float rightStickY) = rawState.GetStick(_stickUserMapping[(int)StickInputId.Right]);
+                (float rightStickX, float rightStickY) =rawState.GetStick(_stickUserMapping[(int)StickInputId.Right]);
 
+                if (_configuration.LeftJoyconStick.InvertStickX)
+                {
+                    leftStickX = -leftStickX;
+                }
+                if (_configuration.LeftJoyconStick.InvertStickY)
+                {
+                    leftStickY = -leftStickY;
+                }
+
+                if (_configuration.RightJoyconStick.InvertStickX)
+                {
+                    rightStickX = -rightStickX;
+                }
+                if (_configuration.RightJoyconStick.InvertStickY)
+                {
+                    rightStickY = -rightStickY;
+                }
+
+                if (_configuration.LeftJoyconStick.Rotate90CW)
+                {
+                    (leftStickX, leftStickY) = (leftStickY, -leftStickX);
+                }
+
+                if (_configuration.RightJoyconStick.Rotate90CW)
+                {
+                    (rightStickX, rightStickY) = (rightStickY, -rightStickX);
+                }
                 result.SetStick(StickInputId.Left, leftStickX, leftStickY);
                 result.SetStick(StickInputId.Right, rightStickX, rightStickY);
             }
-
             return result;
         }
 

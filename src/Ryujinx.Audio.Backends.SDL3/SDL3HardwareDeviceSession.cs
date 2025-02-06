@@ -1,6 +1,5 @@
 using Ryujinx.Audio.Backends.Common;
 using Ryujinx.Audio.Common;
-using Ryujinx.Common.Logging;
 using Ryujinx.Common.Memory;
 using Ryujinx.Memory;
 using System;
@@ -40,11 +39,9 @@ namespace Ryujinx.Audio.Backends.SDL3
             _volume = 1f;
         }
 
-        private void EnsureAudioStreamSetup(AudioBuffer buffer)
+        private void EnsureAudioStreamSetup()
         {
-            uint bufferSampleCount = (uint)GetSampleCount(buffer);
-            bool needAudioSetup = (_outputStream == 0 && !_hasSetupError) ||
-                                  (bufferSampleCount >= Constants.TargetSampleCount);
+            bool needAudioSetup = _outputStream == 0 && !_hasSetupError;
 
             if (needAudioSetup)
             {
@@ -87,19 +84,14 @@ namespace Ryujinx.Audio.Backends.SDL3
             }
 
             using SpanOwner<byte> samplesOwner = SpanOwner<byte>.Rent(frameCount * _bytesPerFrame);
-
             Span<byte> samples = samplesOwner.Span;
             int samplesLength = samples.Length;
             _ringBuffer.Read(samples, 0, samplesLength);
 
             fixed (byte* p = samples)
             {
-                nint pStreamSrc = (nint)p;
-                nint pStreamDst = SDL_calloc(1,samplesLength);
-                // Apply volume to written data
-                SDL_MixAudio(pStreamDst, pStreamSrc, _nativeSampleFormat, (uint)samplesLength, _driver.Volume);
-                SDL_PutAudioStreamData(stream, pStreamDst, samplesLength);
-                SDL_free(pStreamDst);
+                nint pBuffer = (nint)p;
+                SDL_PutAudioStreamData(stream, pBuffer, samplesLength);
             }
 
             ulong sampleCount = GetSampleCount(samplesLength);
@@ -148,7 +140,7 @@ namespace Ryujinx.Audio.Backends.SDL3
 
         public override void QueueBuffer(AudioBuffer buffer)
         {
-            EnsureAudioStreamSetup(buffer);
+            EnsureAudioStreamSetup();
 
             if (_outputStream != 0)
             {
@@ -169,6 +161,10 @@ namespace Ryujinx.Audio.Backends.SDL3
         public override void SetVolume(float volume)
         {
             _volume = volume;
+            if (_outputStream != 0)
+            {
+                SDL_SetAudioStreamGain(_outputStream, _volume);
+            }
         }
 
         public override void Start()

@@ -18,8 +18,20 @@ namespace Ryujinx.Audio.Backends.SDL3
         private readonly ConcurrentDictionary<SDL3HardwareDeviceSession, byte> _sessions;
 
         private readonly bool _supportSurroundConfiguration;
+        private float _volume;
 
-        public float Volume { get; set; }
+        public float Volume
+        {
+            get => _volume;
+            set
+            {
+                _volume = value;
+                foreach (SDL3HardwareDeviceSession session in _sessions.Keys)
+                {
+                    session.SetVolume(_volume);
+                }
+            }
+        }
 
         public SDL3HardwareDeviceDriver()
         {
@@ -48,7 +60,8 @@ namespace Ryujinx.Audio.Backends.SDL3
 
         private static bool IsSupportedInternal()
         {
-            nint device = OpenStream(SampleFormat.PcmInt16, Constants.TargetSampleRate, Constants.ChannelCountMax, null);
+            nint device = OpenStream(SampleFormat.PcmInt16, Constants.TargetSampleRate, Constants.ChannelCountMax,
+                null);
 
             if (device != 0)
             {

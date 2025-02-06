@@ -114,10 +114,10 @@
                 <Button
                     IsEnabled="{Binding WantsToReset}"
                     Margin="10"
-                    Content="Reset Settings"
+                    Content="{ext:Locale SettingsButtonReset}"
                     Command="{Binding ResetButton}" />
                 <CheckBox IsChecked="{Binding WantsToReset}"/>
-                <TextBlock Text="I want to reset my settings."/>
+                <TextBlock Text="{ext:Locale SettingsButtonResetConfirm}"/>
             </StackPanel>
             <ReversibleStackPanel
                 Grid.Column="2"

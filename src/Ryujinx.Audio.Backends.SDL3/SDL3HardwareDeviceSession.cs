@@ -22,7 +22,6 @@ namespace Ryujinx.Audio.Backends.SDL3
         private readonly int _bytesPerFrame;
         private bool _started;
         private float _volume;
-        private readonly SDL_AudioFormat _nativeSampleFormat;
 
         public SDL3HardwareDeviceSession(SDL3HardwareDeviceDriver driver, IVirtualMemoryManager memoryManager,
             SampleFormat requestedSampleFormat, uint requestedSampleRate, uint requestedChannelCount) : base(
@@ -34,7 +33,6 @@ namespace Ryujinx.Audio.Backends.SDL3
             _ringBuffer = new DynamicRingBuffer();
             _callbackDelegate = Update;
             _bytesPerFrame = BackendHelper.GetSampleSize(RequestedSampleFormat) * (int)RequestedChannelCount;
-            _nativeSampleFormat = SDL3HardwareDeviceDriver.GetSDL3Format(RequestedSampleFormat);
             _started = false;
             _volume = 1f;
         }

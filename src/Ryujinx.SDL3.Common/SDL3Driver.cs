@@ -143,7 +143,8 @@ namespace Ryujinx.SDL3.Common
             {
                 OnJoyBatteryUpdated?.Invoke(evnt.jbattery.which, evnt.jbattery);
             }
-            else if (evnt.type is >= (uint)SDL_EventType.SDL_EVENT_WINDOW_FIRST and <= (uint)SDL_EventType.SDL_EVENT_WINDOW_LAST
+            else if (evnt.type is >= (uint)SDL_EventType.SDL_EVENT_WINDOW_FIRST
+                     and <= (uint)SDL_EventType.SDL_EVENT_WINDOW_LAST
                      or (uint)SDL_EventType.SDL_EVENT_MOUSE_BUTTON_DOWN
                      or (uint)SDL_EventType.SDL_EVENT_MOUSE_BUTTON_UP)
             {
@@ -153,23 +154,22 @@ namespace Ryujinx.SDL3.Common
                 }
             }
         }
-
+        private void PollEventAction()
+        {
+            while (SDL_PollEvent(out SDL_Event evnt))
+            {
+                HandleSDLEvent(ref evnt);
+            }
+        }
         private void EventWorker()
         {
             const int WaitTimeMs = 10;
 
-            using ManualResetEventSlim waitHandle = new(false);
             while (_isRunning)
             {
-                MainThreadDispatcher?.Invoke(() =>
-                {
-                    while (SDL_PollEvent(out SDL_Event evnt))
-                    {
-                        HandleSDLEvent(ref evnt);
-                    }
-                });
+                MainThreadDispatcher?.Invoke(PollEventAction);
 
-                waitHandle.Wait(WaitTimeMs);
+                Thread.Sleep(WaitTimeMs);
             }
         }
 

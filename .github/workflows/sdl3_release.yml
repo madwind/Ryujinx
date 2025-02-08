@@ -23,8 +23,8 @@ jobs:
       - name: Get version info
         id: version_info
         run: |
-          echo "build_version=${{ env.RYUJINX_BASE_VERSION }}.${{ github.run_number }}" >> $GITHUB_OUTPUT
-          echo "prev_build_version=${{ env.RYUJINX_BASE_VERSION }}.$((${{ github.run_number }} - 1))" >> $GITHUB_OUTPUT
+          echo "build_version=${{ env.RYUJINX_BASE_VERSION }}.${{ github.run_number }}-SDL3" >> $GITHUB_OUTPUT
+          echo "prev_build_version=${{ env.RYUJINX_BASE_VERSION }}.$((${{ github.run_number }} - 1))-SDL3" >> $GITHUB_OUTPUT
         shell: bash
 
       - name: Create tag
@@ -34,15 +34,15 @@ jobs:
             github.rest.git.createRef({
               owner: "${{ env.RYUJINX_TARGET_RELEASE_CHANNEL_OWNER }}",
               repo: "${{ env.RYUJINX_TARGET_RELEASE_CHANNEL_REPO }}",
-              ref: 'refs/tags/${{ steps.version_info.outputs.build_version }}-SDL3',
+              ref: 'refs/tags/${{ steps.version_info.outputs.build_version }}',
               sha: context.sha
             })
 
       - name: Create release
         uses: ncipollo/release-action@v1
         with:
-          name: ${{ steps.version_info.outputs.build_version }}-SDL3
-          tag: ${{ steps.version_info.outputs.build_version }}-SDL3
+          name: ${{ steps.version_info.outputs.build_version }}
+          tag: ${{ steps.version_info.outputs.build_version }}
           body: |
             # Stable builds:
             | Platform | Artifact |
@@ -52,7 +52,7 @@ jobs:
             | Linux ARM 64-bit | [Stable Linux ARM Artifact](https://github.com/${{ env.RYUJINX_TARGET_RELEASE_CHANNEL_OWNER }}/${{ env.RYUJINX_TARGET_RELEASE_CHANNEL_REPO }}/releases/download/${{ steps.version_info.outputs.build_version }}/ryujinx-${{ steps.version_info.outputs.build_version }}-linux_arm64.tar.gz) |
             | macOS | [Stable macOS Artifact](https://github.com/${{ env.RYUJINX_TARGET_RELEASE_CHANNEL_OWNER }}/${{ env.RYUJINX_TARGET_RELEASE_CHANNEL_REPO }}/releases/download/${{ steps.version_info.outputs.build_version }}/ryujinx-${{ steps.version_info.outputs.build_version }}-macos_universal.app.tar.gz) |
             
-            **Full Changelog**: https://github.com/${{ env.RYUJINX_TARGET_RELEASE_CHANNEL_OWNER }}/${{ env.RYUJINX_TARGET_RELEASE_CHANNEL_REPO }}/compare/${{ steps.version_info.outputs.prev_build_version }}-SDL3...${{ steps.version_info.outputs.build_version }}-SDL3
+            **Full Changelog**: https://github.com/${{ env.RYUJINX_TARGET_RELEASE_CHANNEL_OWNER }}/${{ env.RYUJINX_TARGET_RELEASE_CHANNEL_REPO }}/compare/${{ steps.version_info.outputs.prev_build_version }}-SDL3...${{ steps.version_info.outputs.build_version }}
           omitBodyDuringUpdate: true
           owner: ${{ env.RYUJINX_TARGET_RELEASE_CHANNEL_OWNER }}
           repo: ${{ env.RYUJINX_TARGET_RELEASE_CHANNEL_REPO }}
@@ -80,8 +80,8 @@ jobs:
       - name: Get version info
         id: version_info
         run: |
-          echo "build_version=${{ env.RYUJINX_BASE_VERSION }}.${{ github.run_number }}" >> $GITHUB_OUTPUT
-          echo "prev_build_version=${{ env.RYUJINX_BASE_VERSION }}.$((${{ github.run_number }} - 1))" >> $GITHUB_OUTPUT
+          echo "build_version=${{ env.RYUJINX_BASE_VERSION }}.${{ github.run_number }}-SDL3" >> $GITHUB_OUTPUT
+          echo "prev_build_version=${{ env.RYUJINX_BASE_VERSION }}.$((${{ github.run_number }} - 1))-SDL3" >> $GITHUB_OUTPUT
           echo "git_short_hash=$(git rev-parse --short "${{ github.sha }}")" >> $GITHUB_OUTPUT
         shell: bash
 
@@ -161,9 +161,9 @@ jobs:
       - name: Pushing new release
         uses: ncipollo/release-action@v1
         with:
-          name: ${{ steps.version_info.outputs.build_version }}-SDL3
+          name: ${{ steps.version_info.outputs.build_version }}
           artifacts: "release_output/*.tar.gz,release_output/*.zip,release_output/*AppImage*"
-          tag: ${{ steps.version_info.outputs.build_version }}-SDL3
+          tag: ${{ steps.version_info.outputs.build_version }}
           body: |
             # Stable builds:
             | Platform | Artifact |
@@ -173,7 +173,7 @@ jobs:
             | Linux ARM 64-bit | [Stable Linux ARM Artifact](https://github.com/${{ env.RYUJINX_TARGET_RELEASE_CHANNEL_OWNER }}/${{ env.RYUJINX_TARGET_RELEASE_CHANNEL_REPO }}/releases/download/${{ steps.version_info.outputs.build_version }}/ryujinx-${{ steps.version_info.outputs.build_version }}-linux_arm64.tar.gz) |
             | macOS | [Stable macOS Artifact](https://github.com/${{ env.RYUJINX_TARGET_RELEASE_CHANNEL_OWNER }}/${{ env.RYUJINX_TARGET_RELEASE_CHANNEL_REPO }}/releases/download/${{ steps.version_info.outputs.build_version }}/ryujinx-${{ steps.version_info.outputs.build_version }}-macos_universal.app.tar.gz) |
             
-            **Full Changelog**: https://github.com/${{ env.RYUJINX_TARGET_RELEASE_CHANNEL_OWNER }}/${{ env.RYUJINX_TARGET_RELEASE_CHANNEL_REPO }}/compare/${{ steps.version_info.outputs.prev_build_version }}-SDL3...${{ steps.version_info.outputs.build_version }}-SDL3
+            **Full Changelog**: https://github.com/${{ env.RYUJINX_TARGET_RELEASE_CHANNEL_OWNER }}/${{ env.RYUJINX_TARGET_RELEASE_CHANNEL_REPO }}/compare/${{ steps.version_info.outputs.prev_build_version }}-SDL3...${{ steps.version_info.outputs.build_version }}
           omitBodyDuringUpdate: true
           allowUpdates: true
           replacesArtifacts: true
@@ -233,9 +233,9 @@ jobs:
       - name: Pushing new release
         uses: ncipollo/release-action@v1
         with:
-          name: ${{ steps.version_info.outputs.build_version }}-SDL3
+          name: ${{ steps.version_info.outputs.build_version }}
           artifacts: "publish/*.tar.gz"
-          tag: ${{ steps.version_info.outputs.build_version }}-SDL3
+          tag: ${{ steps.version_info.outputs.build_version }}
           body: ""
           omitBodyDuringUpdate: true
           allowUpdates: true

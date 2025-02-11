@@ -415,7 +415,8 @@ namespace Ryujinx.Ava.Utilities.Configuration
                     cff.IgnoreApplet = false;
                 }),
                 (60, static cff => cff.StartNoUI = false),
-                (61, static cff => cff.MatchSystemTime = false)
+                (61, static cff => cff.MatchSystemTime = false),
+                (62, static cff => cff.LoggingEnableAvalonia = false)
             );
     }
 }

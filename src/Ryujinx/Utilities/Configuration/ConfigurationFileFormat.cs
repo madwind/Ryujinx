@@ -15,7 +15,7 @@ namespace Ryujinx.Ava.Utilities.Configuration
         /// <summary>
         /// The current version of the file format
         /// </summary>
-        public const int CurrentVersion = 1000;
+        public const int CurrentVersion = 1001;
 
         /// <summary>
         /// Version of the configuration file format
@@ -111,6 +111,11 @@ namespace Ryujinx.Ava.Utilities.Configuration
         /// Enables printing FS access log messages
         /// </summary>
         public bool LoggingEnableFsAccessLog { get; set; }
+        
+        /// <summary>
+        /// Enables log messages from Avalonia
+        /// </summary>
+        public bool LoggingEnableAvalonia { get; set; }
 
         /// <summary>
         /// Controls which log messages are written to the log targets
@@ -384,6 +389,10 @@ namespace Ryujinx.Ava.Utilities.Configuration
         /// </summary>
         public List<InputConfig> InputConfig { get; set; }
         
+        /// <summary>
+        /// The speed of spectrum cycling for the Rainbow LED feature.
+        /// </summary>
+        public float RainbowSpeed { get; set; }
 
         /// <summary>
         /// Graphics backend

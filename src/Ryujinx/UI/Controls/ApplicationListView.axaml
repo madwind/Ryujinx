@@ -93,7 +93,19 @@
                                             IsVisible="{Binding HasPlayabilityInfo}"
                                             Background="{DynamicResource AppListBackgroundColor}"
                                             Margin="-1, 0, 0, 0"
-                                            Padding="0" >
+                                            Padding="0">
+                                            <ToolTip.Tip>
+                                                <StackPanel Orientation="Vertical">
+                                                    <TextBlock 
+                                                        Text="{Binding LocalizedStatusTooltip}" />
+                                                    <Separator 
+                                                        Margin="0, 10, 0, 10" 
+                                                        IsVisible="{Binding HasCompatibilityLabels}" />
+                                                    <TextBlock 
+                                                        IsVisible="{Binding HasCompatibilityLabels}"
+                                                        Text="{Binding FormattedCompatibilityLabels}" />
+                                                </StackPanel>
+                                            </ToolTip.Tip>
                                             <TextBlock
                                                 Margin="1.5"
                                                 Tag="{Binding IdString}"
@@ -140,7 +152,8 @@
                                         TextWrapping="Wrap" />
                                     <TextBlock
                                         HorizontalAlignment="Stretch"
-                                        Text="{Binding Converter={helpers:MultiplayerInfoConverter}}"
+                                        IsVisible="{Binding HasLdnGames}"
+                                        Text="{Binding Converter={x:Static helpers:MultiplayerInfoConverter.Instance}}"
                                         TextAlignment="Start"
                                         TextWrapping="Wrap"/>
                                 </StackPanel>

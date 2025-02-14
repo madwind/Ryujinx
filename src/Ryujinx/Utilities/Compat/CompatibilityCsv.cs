@@ -60,10 +60,21 @@ namespace Ryujinx.Ava.Utilities.Compat
             }
         }
 
+        public static CompatibilityEntry Find(string titleId)
+            => Entries.FirstOrDefault(x => x.TitleId.HasValue && x.TitleId.Value.EqualsIgnoreCase(titleId));
+        
+        public static CompatibilityEntry Find(ulong titleId)
+            => Find(titleId.ToString("X16"));
+        
         public static LocaleKeys? GetStatus(string titleId)
-            => Entries.FirstOrDefault(x => x.TitleId.HasValue && x.TitleId.Value.EqualsIgnoreCase(titleId))?.Status;
+            => Find(titleId)?.Status;
         
         public static LocaleKeys? GetStatus(ulong titleId) => GetStatus(titleId.ToString("X16"));
+        
+        public static string GetLabels(string titleId)
+            => Find(titleId)?.FormattedIssueLabels;
+        
+        public static string GetLabels(ulong titleId) => GetLabels(titleId.ToString("X16"));
     }
 
     public class CompatibilityEntry
@@ -100,12 +111,25 @@ namespace Ryujinx.Ava.Utilities.Compat
         public Optional<string> TitleId { get; }
         public string[] Labels { get; }
         public LocaleKeys? Status { get; }
+
+        public LocaleKeys? StatusDescription
+            => Status switch
+            {
+                LocaleKeys.CompatibilityListPlayable => LocaleKeys.CompatibilityListPlayableTooltip,
+                LocaleKeys.CompatibilityListIngame => LocaleKeys.CompatibilityListIngameTooltip,
+                LocaleKeys.CompatibilityListMenus => LocaleKeys.CompatibilityListMenusTooltip,
+                LocaleKeys.CompatibilityListBoots => LocaleKeys.CompatibilityListBootsTooltip,
+                LocaleKeys.CompatibilityListNothing => LocaleKeys.CompatibilityListNothingTooltip,
+                _ => null
+            };
+        
         public DateTime LastUpdated { get; }
 
         public string LocalizedLastUpdated =>
             LocaleManager.FormatDynamicValue(LocaleKeys.CompatibilityListLastUpdated, LastUpdated.Humanize());
-
+        
         public string LocalizedStatus => LocaleManager.Instance[Status!.Value];
+        public string LocalizedStatusDescription => LocaleManager.Instance[StatusDescription!.Value];
         public string FormattedTitleId => TitleId
             .OrElse(new string(' ', 16));
 

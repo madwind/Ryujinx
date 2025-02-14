@@ -2,7 +2,7 @@ using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
-using Gommon;
+using CommunityToolkit.Mvvm.Input;
 using LibHac.Tools.FsSystem;
 using Ryujinx.Audio.Backends.OpenAL;
 using Ryujinx.Audio.Backends.SDL2;
@@ -13,6 +13,7 @@ using Ryujinx.Ava.UI.Models.Input;
 using Ryujinx.Ava.UI.Windows;
 using Ryujinx.Ava.Utilities.Configuration;
 using Ryujinx.Ava.Utilities.Configuration.System;
+using Ryujinx.Ava.Utilities.Configuration.UI;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Configuration.Multiplayer;
 using Ryujinx.Common.GraphicsDriver;
@@ -28,8 +29,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Net.NetworkInformation;
-using System.Runtime.InteropServices;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using TimeZone = Ryujinx.Ava.UI.Models.TimeZone;
 
@@ -123,9 +122,14 @@ namespace Ryujinx.Ava.UI.ViewModels
         public bool RememberWindowState { get; set; }
         public bool ShowTitleBar { get; set; }
         public int HideCursor { get; set; }
+        public int UpdateCheckerType { get; set; }
         public bool EnableDockedMode { get; set; }
         public bool EnableKeyboard { get; set; }
         public bool EnableMouse { get; set; }
+        public bool DisableInputWhenOutOfFocus { get; set; }
+        
+        public int FocusLostActionType { get; set; }
+        
         public VSyncMode VSyncMode
         {
             get => _vSyncMode;
@@ -206,6 +210,7 @@ namespace Ryujinx.Ava.UI.ViewModels
         public bool EnableTrace { get; set; }
         public bool EnableGuest { get; set; }
         public bool EnableFsAccessLog { get; set; }
+        public bool EnableAvaloniaLog { get; set; }
         public bool EnableDebug { get; set; }
         public bool IsOpenAlEnabled { get; set; }
         public bool IsSoundIoEnabled { get; set; }
@@ -477,6 +482,8 @@ namespace Ryujinx.Ava.UI.ViewModels
             RememberWindowState = config.RememberWindowState;
             ShowTitleBar = config.ShowTitleBar;
             HideCursor = (int)config.HideCursor.Value;
+            UpdateCheckerType = (int)config.UpdateCheckerType.Value;
+            FocusLostActionType = (int)config.FocusLostActionType.Value;
 
             GameDirectories.Clear();
             GameDirectories.AddRange(config.UI.GameDirs.Value);
@@ -496,6 +503,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             EnableDockedMode = config.System.EnableDockedMode;
             EnableKeyboard = config.Hid.EnableKeyboard;
             EnableMouse = config.Hid.EnableMouse;
+            DisableInputWhenOutOfFocus = config.Hid.DisableInputWhenOutOfFocus;
 
             // Keyboard Hotkeys
             KeyboardHotkey = new HotkeyConfig(config.Hid.Hotkeys.Value);
@@ -562,6 +570,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             EnableGuest = config.Logger.EnableGuest;
             EnableDebug = config.Logger.EnableDebug;
             EnableFsAccessLog = config.Logger.EnableFsAccessLog;
+            EnableAvaloniaLog = config.Logger.EnableAvaloniaLog;
             FsGlobalAccessLogMode = config.System.FsGlobalAccessLogMode;
             OpenglDebugLevel = (int)config.Logger.GraphicsDebugLevel.Value;
 
@@ -582,6 +591,8 @@ namespace Ryujinx.Ava.UI.ViewModels
             config.RememberWindowState.Value = RememberWindowState;
             config.ShowTitleBar.Value = ShowTitleBar;
             config.HideCursor.Value = (HideCursorMode)HideCursor;
+            config.UpdateCheckerType.Value = (UpdaterType)UpdateCheckerType;
+            config.FocusLostActionType.Value = (FocusLostType)FocusLostActionType;
 
             if (GameDirectoryChanged)
             {
@@ -605,6 +616,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             config.System.EnableDockedMode.Value = EnableDockedMode;
             config.Hid.EnableKeyboard.Value = EnableKeyboard;
             config.Hid.EnableMouse.Value = EnableMouse;
+            config.Hid.DisableInputWhenOutOfFocus.Value = DisableInputWhenOutOfFocus;
 
             // Keyboard Hotkeys
             config.Hid.Hotkeys.Value = KeyboardHotkey.GetConfig();
@@ -681,6 +693,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             config.Logger.EnableGuest.Value = EnableGuest;
             config.Logger.EnableDebug.Value = EnableDebug;
             config.Logger.EnableFsAccessLog.Value = EnableFsAccessLog;
+            config.Logger.EnableAvaloniaLog.Value = EnableAvaloniaLog;
             config.System.FsGlobalAccessLogMode.Value = FsGlobalAccessLogMode;
             config.Logger.GraphicsDebugLevel.Value = (GraphicsDebugLevel)OpenglDebugLevel;
 
@@ -721,6 +734,25 @@ namespace Ryujinx.Ava.UI.ViewModels
             SaveSettings();
             CloseWindow?.Invoke();
         }
+
+        [ObservableProperty] private bool _wantsToReset;
+
+        public AsyncRelayCommand ResetButton => Commands.Create(async () =>
+        {
+            if (!WantsToReset) return;
+            
+            CloseWindow?.Invoke();
+            ConfigurationState.Instance.LoadDefault();
+            ConfigurationState.Instance.ToFileFormat().SaveConfig(Program.ConfigurationPath);
+            RyujinxApp.MainWindow.LoadApplications();
+
+            await ContentDialogHelper.CreateInfoDialog(
+                $"Your {RyujinxApp.FullAppName} configuration has been reset.",
+                "",
+                string.Empty,
+                LocaleManager.Instance[LocaleKeys.SettingsButtonClose],
+                "Configuration Reset");
+        });
 
         public void CancelButton()
         {

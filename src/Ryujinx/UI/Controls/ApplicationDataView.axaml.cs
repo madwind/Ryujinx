@@ -1,12 +1,9 @@
-﻿using Avalonia;
-using Avalonia.Controls;
+﻿using Avalonia.Controls;
 using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
 using Avalonia.Styling;
 using FluentAvalonia.UI.Controls;
-using Ryujinx.Ava;
 using Ryujinx.Ava.Common.Locale;
-using Ryujinx.Ava.UI.Controls;
 using Ryujinx.Ava.UI.Helpers;
 using Ryujinx.Ava.UI.ViewModels;
 using Ryujinx.Ava.UI.Windows;
@@ -23,10 +20,12 @@ namespace Ryujinx.Ava.UI.Controls
         {
             ContentDialog contentDialog = new()
             {
+                Title = appData.Name,
                 PrimaryButtonText = string.Empty,
                 SecondaryButtonText = string.Empty,
                 CloseButtonText = LocaleManager.Instance[LocaleKeys.SettingsButtonClose],
-                Content = new ApplicationDataView { DataContext = appData }
+                MinWidth = 256,
+                Content = new ApplicationDataView { DataContext = new ApplicationDataViewModel(appData) }
             };
 
             Style closeButton = new(x => x.Name("CloseButton"));

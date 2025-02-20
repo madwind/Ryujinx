@@ -1,5 +1,6 @@
 using Humanizer;
 using LibHac.Ns;
+using LibHac.Util;
 using Ryujinx.Ava;
 using Ryujinx.Common;
 using Ryujinx.Common.Configuration;
@@ -515,7 +516,7 @@ namespace Ryujinx.Headless
             Exit();
         }
 
-        public bool DisplayErrorAppletDialog(string title, string message, string[] buttonsText)
+        public bool DisplayErrorAppletDialog(string title, string message, string[] buttonsText, (uint Module, uint Description)? errorCode = null)
         {
             SDL_MessageBoxButtonData[] buttons = new SDL_MessageBoxButtonData[buttonsText.Length];
             unsafe

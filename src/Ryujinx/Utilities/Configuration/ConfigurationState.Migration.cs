@@ -1,4 +1,3 @@
-using Avalonia.Media;
 using Gommon;
 using Ryujinx.Ava.Utilities.Configuration.System;
 using Ryujinx.Ava.Utilities.Configuration.UI;
@@ -45,6 +44,8 @@ namespace Ryujinx.Ava.Utilities.Configuration
             
             EnableDiscordIntegration.Value = cff.EnableDiscordIntegration;
             CheckUpdatesOnStart.Value = cff.CheckUpdatesOnStart;
+            UpdateCheckerType.Value = cff.UpdateCheckerType;
+            FocusLostActionType.Value = cff.FocusLostActionType;
             ShowConfirmExit.Value = cff.ShowConfirmExit;
             RememberWindowState.Value = cff.RememberWindowState;
             ShowTitleBar.Value = cff.ShowTitleBar;
@@ -86,6 +87,7 @@ namespace Ryujinx.Ava.Utilities.Configuration
             System.Region.Value = cff.SystemRegion;
             System.TimeZone.Value = cff.SystemTimeZone;
             System.SystemTimeOffset.Value = cff.SystemTimeOffset;
+            System.MatchSystemTime.Value = cff.MatchSystemTime;
             System.EnableDockedMode.Value = cff.DockedMode;
             System.EnablePtc.Value = cff.EnablePtc;
             System.EnableLowPowerPtc.Value = cff.EnableLowPowerPtc;
@@ -97,7 +99,7 @@ namespace Ryujinx.Ava.Utilities.Configuration
             System.MemoryManagerMode.Value = cff.MemoryManagerMode;
             System.DramSize.Value = cff.DramSize;
             System.IgnoreMissingServices.Value = cff.IgnoreMissingServices;
-            System.IgnoreApplet.Value = cff.IgnoreApplet;
+            System.IgnoreControllerApplet.Value = cff.IgnoreApplet;
             System.UseHypervisor.Value = cff.UseHypervisor;
             
             UI.GuiColumns.FavColumn.Value = cff.GuiColumns.FavColumn;
@@ -138,6 +140,7 @@ namespace Ryujinx.Ava.Utilities.Configuration
             
             Hid.EnableKeyboard.Value = cff.EnableKeyboard;
             Hid.EnableMouse.Value = cff.EnableMouse;
+            Hid.DisableInputWhenOutOfFocus.Value = cff.DisableInputWhenOutOfFocus;
             Hid.Hotkeys.Value = cff.Hotkeys;
             Hid.InputConfig.Value = cff.InputConfig ?? [];
 
@@ -416,7 +419,10 @@ namespace Ryujinx.Ava.Utilities.Configuration
                 }),
                 (60, static cff => cff.StartNoUI = false),
                 (61, static cff => cff.MatchSystemTime = false),
-                (62, static cff => cff.LoggingEnableAvalonia = false)
+                (62, static cff => cff.LoggingEnableAvalonia = false),
+                (63, static cff => cff.UpdateCheckerType = cff.CheckUpdatesOnStart ? UpdaterType.PromptAtStartup : UpdaterType.Off),
+                (64, static cff => cff.DisableInputWhenOutOfFocus = false),
+                (65, static cff => cff.FocusLostActionType = cff.DisableInputWhenOutOfFocus ? FocusLostType.BlockInput : FocusLostType.DoNothing)
             );
     }
 }

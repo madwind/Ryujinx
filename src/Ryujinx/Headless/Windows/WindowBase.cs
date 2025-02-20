@@ -1,6 +1,5 @@
 using Humanizer;
 using LibHac.Ns;
-using LibHac.Util;
 using Ryujinx.Ava;
 using Ryujinx.Common;
 using Ryujinx.Common.Configuration;

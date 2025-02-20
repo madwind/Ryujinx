@@ -190,6 +190,15 @@ namespace Ryujinx.Input.HLE
             }
         }
 
+        public bool InputUpdatesBlocked
+        {
+            get
+            {
+                lock (_lock)
+                    return _blockInputUpdates;
+            }
+        }
+
         public void BlockInputUpdates()
         {
             lock (_lock)

@@ -19,6 +19,7 @@ using Ryujinx.Common.Utilities;
 using Ryujinx.HLE.HOS.Services.Nfc.AmiiboDecryption;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -153,11 +154,13 @@ namespace Ryujinx.Ava.UI.Views.Main
 
             string name = ViewModel.AppHost.Device.Processes.ActiveApplication.ApplicationControlProperties.Title[(int)ViewModel.AppHost.Device.System.State.DesiredTitleLanguage].NameString.ToString();
 
-            await new CheatWindow(
-                Window.VirtualFileSystem,
-                ViewModel.AppHost.Device.Processes.ActiveApplication.ProgramIdText,
-                name,
-                ViewModel.SelectedApplication.Path).ShowDialog(Window);
+            await StyleableAppWindow.ShowAsync(
+                new CheatWindow(
+                    Window.VirtualFileSystem,
+                    ViewModel.AppHost.Device.Processes.ActiveApplication.ProgramIdText,
+                    name,
+                    ViewModel.SelectedApplication.Path)
+            );
 
             ViewModel.AppHost.Device.EnableCheats();
         }

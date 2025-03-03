@@ -49,7 +49,7 @@ namespace Ryujinx.Ava.UI.ViewModels.Input
         private int _controller;
         private string _controllerImage;
         private int _device;
-        private object _configViewModel;
+        [ObservableProperty] private object _configViewModel;
         [ObservableProperty] private string _profileName;
         private bool _isLoaded;
 
@@ -74,7 +74,6 @@ namespace Ryujinx.Ava.UI.ViewModels.Input
                 OnPropertiesChanged(nameof(HasLed), nameof(CanClearLed));
             }
         }
-        public StickVisualizer VisualStick { get; private set; }
 
         public ObservableCollection<PlayerModel> PlayerIndexes { get; set; }
         public ObservableCollection<(DeviceType Type, string Id, string Name)> Devices { get; set; }
@@ -94,19 +93,6 @@ namespace Ryujinx.Ava.UI.ViewModels.Input
 
         public bool IsModified { get; set; }
         public event Action NotifyChangesEvent;
-
-        public object ConfigViewModel
-        {
-            get => _configViewModel;
-            set
-            {
-                _configViewModel = value;
-
-                VisualStick.UpdateConfig(value);
-
-                OnPropertyChanged();
-            }
-        }
 
         public PlayerIndex PlayerIdChoose
         {
@@ -283,7 +269,6 @@ namespace Ryujinx.Ava.UI.ViewModels.Input
             Devices = [];
             ProfilesList = [];
             DeviceList = [];
-            VisualStick = new StickVisualizer(this);
 
             ControllerImage = ProControllerResource;
 
@@ -304,12 +289,12 @@ namespace Ryujinx.Ava.UI.ViewModels.Input
 
             if (Config is StandardKeyboardInputConfig keyboardInputConfig)
             {
-                ConfigViewModel = new KeyboardInputViewModel(this, new KeyboardInputConfig(keyboardInputConfig), VisualStick);
+                ConfigViewModel = new KeyboardInputViewModel(this, new KeyboardInputConfig(keyboardInputConfig));
             }
 
             if (Config is StandardControllerInputConfig controllerInputConfig)
             {
-                ConfigViewModel = new ControllerInputViewModel(this, new GamepadInputConfig(controllerInputConfig), VisualStick);
+                ConfigViewModel = new ControllerInputViewModel(this, new GamepadInputConfig(controllerInputConfig));
             }
         }
 
@@ -907,8 +892,6 @@ namespace Ryujinx.Ava.UI.ViewModels.Input
             _mainWindow.InputManager.GamepadDriver.OnGamepadDisconnected -= HandleOnGamepadDisconnected;
 
             _mainWindow.ViewModel.AppHost?.NpadManager.UnblockInputUpdates();
-
-            VisualStick.Dispose();
 
             SelectedGamepad?.Dispose();
 

@@ -17,7 +17,12 @@
     </Design.DataContext>
     <Grid
         HorizontalAlignment="Stretch"
-        VerticalAlignment="Center" RowDefinitions="Auto,70,Auto">
+        VerticalAlignment="Center">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="70" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
         <TextBlock
             Grid.Row="0"
             TextWrapping="Wrap"

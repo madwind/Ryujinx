@@ -21,7 +21,12 @@
         <Border Classes="settings">
             <Panel
                 Margin="10">
-                <Grid RowDefinitions="Auto,*,Auto">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
                     <views:InputView
                         Grid.Row="0"
                         Name="InputView" />

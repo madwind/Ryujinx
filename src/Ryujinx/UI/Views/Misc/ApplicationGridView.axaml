@@ -14,7 +14,10 @@
     mc:Ignorable="d"
     xmlns:viewModels="clr-namespace:Ryujinx.Ava.UI.ViewModels"
     x:DataType="viewModels:MainWindowViewModel">
-    <Grid RowDefinitions="*">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
         <ListBox
             Grid.Row="0"
             Padding="8"
@@ -54,7 +57,11 @@
                             Classes.small="{Binding $parent[UserControl].((viewModels:MainWindowViewModel)DataContext).IsGridSmall}"
                             ClipToBounds="True"
                             CornerRadius="4">
-                            <Grid RowDefinitions="Auto,Auto">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
                                 <Image
                                     Grid.Row="0"
                                     HorizontalAlignment="Stretch"

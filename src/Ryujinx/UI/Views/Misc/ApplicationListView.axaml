@@ -13,7 +13,10 @@
     mc:Ignorable="d"
     xmlns:viewModels="clr-namespace:Ryujinx.Ava.UI.ViewModels"
     x:DataType="viewModels:MainWindowViewModel">
-    <Grid RowDefinitions="*">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
         <ListBox
             Name="GameListBox"
             Grid.Row="0"

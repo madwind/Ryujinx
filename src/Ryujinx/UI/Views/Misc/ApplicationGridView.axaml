@@ -1,5 +1,5 @@
 <UserControl
-    x:Class="Ryujinx.Ava.UI.Controls.ApplicationGridView"
+    x:Class="Ryujinx.Ava.UI.Views.Misc.ApplicationGridView"
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="clr-namespace:Ryujinx.Ava.UI.Controls"

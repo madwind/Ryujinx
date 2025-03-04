@@ -1,4 +1,5 @@
 ﻿using Gommon;
+using Humanizer;
 using System;
 using System.Buffers.Binary;
 using System.Collections.Generic;
@@ -18,6 +19,9 @@ namespace Ryujinx.Ava.Utilities.PlayReport
                 < -201d => "Exploring the Depths",
                 _ => "Roaming Hyrule"
             };
+        
+        private static FormattedValue SkywardSwordHD_Rupees(SingleValue value)
+            => "rupee".ToQuantity(value.Matched.IntValue);
 
         private static FormattedValue SuperMarioOdyssey_AssistMode(SingleValue value)
             => value.Matched.BoxedValue is 1 ? "Playing in Assist Mode" : "Playing in Regular Mode";
@@ -55,12 +59,13 @@ namespace Ryujinx.Ava.Utilities.PlayReport
                 "Race" => "Racing",
                 _ => FormattedValue.ForceReset
             };
-
-        private static FormattedValue PokemonSVUnionCircle(SingleValue value)
-            => value.Matched.BoxedValue is 0 ? "Playing Alone" : "Playing in a group";
-
-        private static FormattedValue PokemonSVArea(SingleValue value)
-            => value.Matched.StringValue switch
+        
+        private static FormattedValue PokemonSV(MultiValue values)
+        {
+            
+            string playStatus = values.Matched[0].BoxedValue is 0 ? "Playing Alone" : "Playing in a group";
+            
+            FormattedValue locations = values.Matched[1].ToString()  switch
             {
                 // Base Game Locations
                 "a_w01" => "South Area One",
@@ -88,10 +93,13 @@ namespace Ryujinx.Ava.Utilities.PlayReport
                 "a_w24" => "South Paldean Sea",
                 "a_w25" => "West Paldean Sea",
                 "a_w26" => "East Paldean Sea",
-                "a_w27" => "Nouth Paldean Sea",
+                "a_w27" => "North Paldean Sea",
                 //TODO DLC Locations
                 _ => FormattedValue.ForceReset
             };
+            
+            return$"{playStatus} in {locations}";
+        }
 
         private static FormattedValue SuperSmashBrosUltimate_Mode(SparseMultiValue values)
         {
@@ -109,6 +117,11 @@ namespace Ryujinx.Ava.Utilities.PlayReport
             if (values.Matched.TryGetValue("anniversary", out Value anniversary))
             {
                 return $"Achievement Unlocked - ID: {anniversary}";
+            }
+
+            if (values.Matched.ContainsKey("is_created"))
+            {
+                return "Edited a Custom Stage!"; 
             }
 
             if (values.Matched.ContainsKey("adv_slot"))

@@ -33,7 +33,6 @@ using Ryujinx.Common.Utilities;
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.GAL.Multithreading;
 using Ryujinx.Graphics.Gpu;
-using Ryujinx.Graphics.Metal;
 using Ryujinx.Graphics.OpenGL;
 using Ryujinx.Graphics.Vulkan;
 using Ryujinx.HLE;
@@ -892,14 +891,10 @@ namespace Ryujinx.Ava
             VirtualFileSystem.ReloadKeySet();
 
             // Initialize Renderer.
-            GraphicsBackend backend = TitleIDs.SelectGraphicsBackend(ApplicationId.ToString("X16"), ConfigurationState.Instance.Graphics.GraphicsBackend);
+            GraphicsBackend backend = ConfigurationState.Instance.Graphics.GraphicsBackend;
 
             IRenderer renderer = backend switch
             {
-#pragma warning disable CA1416 // This call site is reachable on all platforms
-                // SelectGraphicsBackend does a check for Mac, on top of checking if it's an ARM Mac. This isn't a problem.
-                GraphicsBackend.Metal => new MetalRenderer((RendererHost.EmbeddedWindow as EmbeddedWindowMetal)!.CreateSurface),
-#pragma warning restore CA1416
                 GraphicsBackend.Vulkan => VulkanRenderer.Create(
                     ConfigurationState.Instance.Graphics.PreferredGpu,
                     (RendererHost.EmbeddedWindow as EmbeddedWindowVulkan)!.CreateSurface,
@@ -907,53 +902,19 @@ namespace Ryujinx.Ava
                 _ => new OpenGLRenderer()
             };
 
-            BackendThreading threadingMode = ConfigurationState.Instance.Graphics.BackendThreading;
-
-            bool isGALThreaded = threadingMode == BackendThreading.On || (threadingMode == BackendThreading.Auto && renderer.PreferThreading);
-            if (isGALThreaded)
-            {
-                renderer = new ThreadedRenderer(renderer);
-            }
-
-            Logger.Info?.PrintMsg(LogClass.Gpu, $"Backend Threading ({threadingMode}): {isGALThreaded}");
-
             // Initialize Configuration.
-            MemoryConfiguration memoryConfiguration = ConfigurationState.Instance.System.DramSize.Value;
-
-            Device = new Switch(new HLEConfiguration(
-                VirtualFileSystem,
-                _viewModel.LibHacHorizonManager,
-                ContentManager,
-                _accountManager,
-                _userChannelPersistence,
-                renderer,
-                InitializeAudio(),
-                memoryConfiguration,
-                _viewModel.UiHandler,
-                (SystemLanguage)ConfigurationState.Instance.System.Language.Value,
-                (RegionCode)ConfigurationState.Instance.System.Region.Value,
-                ConfigurationState.Instance.Graphics.VSyncMode,
-                ConfigurationState.Instance.System.EnableDockedMode,
-                ConfigurationState.Instance.System.EnablePtc,
-                ConfigurationState.Instance.System.EnableInternetAccess,
-                ConfigurationState.Instance.System.EnableFsIntegrityChecks ? IntegrityCheckLevel.ErrorOnInvalid : IntegrityCheckLevel.None,
-                ConfigurationState.Instance.System.FsGlobalAccessLogMode,
-                ConfigurationState.Instance.System.MatchSystemTime 
-                    ? 0 
-                    : ConfigurationState.Instance.System.SystemTimeOffset,
-                ConfigurationState.Instance.System.TimeZone,
-                ConfigurationState.Instance.System.MemoryManagerMode,
-                ConfigurationState.Instance.System.IgnoreMissingServices,
-                ConfigurationState.Instance.Graphics.AspectRatio,
-                ConfigurationState.Instance.System.AudioVolume,
-                ConfigurationState.Instance.System.UseHypervisor,
-                ConfigurationState.Instance.Multiplayer.LanInterfaceId.Value,
-                ConfigurationState.Instance.Multiplayer.Mode,
-                ConfigurationState.Instance.Multiplayer.DisableP2p,
-                ConfigurationState.Instance.Multiplayer.LdnPassphrase,
-                ConfigurationState.Instance.Multiplayer.LdnServer,
-                ConfigurationState.Instance.Graphics.CustomVSyncInterval.Value,
-                ConfigurationState.Instance.Hacks.ShowDirtyHacks ? ConfigurationState.Instance.Hacks.EnabledHacks : null));
+            Device = new Switch(ConfigurationState.Instance.CreateHleConfiguration()
+                .Configure(
+                    VirtualFileSystem,
+                    _viewModel.LibHacHorizonManager,
+                    ContentManager,
+                    _accountManager,
+                    _userChannelPersistence,
+                    renderer.TryMakeThreaded(ConfigurationState.Instance.Graphics.BackendThreading),
+                    InitializeAudio(),
+                    _viewModel.UiHandler
+                )
+            );
         }
 
         private static IHardwareDeviceDriver InitializeAudio()
@@ -1118,6 +1079,13 @@ namespace Ryujinx.Ava
             });
 
             (RendererHost.EmbeddedWindow as EmbeddedWindowOpenGL)?.MakeCurrent(true);
+            
+            // Reload settings when the game is turned off
+            // (resets custom settings if there were any)
+            Program.ReloadConfig();
+
+            // Reload application list (changes the status of the user setting if it was added or removed during the game)
+            Dispatcher.UIThread.Post(() => RyujinxApp.MainWindow.LoadApplications());
         }
 
         public void InitStatus()
@@ -1126,7 +1094,6 @@ namespace Ryujinx.Ava
             {
                 GraphicsBackend.Vulkan => "Vulkan",
                 GraphicsBackend.OpenGl => "OpenGL",
-                GraphicsBackend.Metal => "Metal",
                 _ => throw new NotImplementedException()
             };
 
@@ -1181,6 +1148,9 @@ namespace Ryujinx.Ava
 
         private void UpdateShaderCount()
         {
+            if (_displayCount is 0 && _renderer.ProgramCount is 0)
+                return;
+            
             // If there is a mismatch between total program compile and previous count
             // this means new shaders have been compiled and should be displayed.
             if (_renderer.ProgramCount != _previousCount)
@@ -1254,12 +1224,10 @@ namespace Ryujinx.Ava
                             VSyncModeToggle();
                             break;
                         case KeyboardHotkeyState.CustomVSyncIntervalDecrement:
-                            Device.DecrementCustomVSyncInterval();
-                            _viewModel.CustomVSyncInterval -= 1;
+                            _viewModel.CustomVSyncInterval = Device.DecrementCustomVSyncInterval();
                             break;
                         case KeyboardHotkeyState.CustomVSyncIntervalIncrement:
-                            Device.IncrementCustomVSyncInterval();
-                            _viewModel.CustomVSyncInterval += 1;
+                            _viewModel.CustomVSyncInterval = Device.IncrementCustomVSyncInterval();
                             break;
                         case KeyboardHotkeyState.Screenshot:
                             ScreenshotRequested = true;

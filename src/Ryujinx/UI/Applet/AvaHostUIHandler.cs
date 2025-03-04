@@ -41,7 +41,7 @@ namespace Ryujinx.Ava.UI.Applet
 
             bool okPressed = false;
 
-            if (ConfigurationState.Instance.System.IgnoreApplet)
+            if (ConfigurationState.Instance.System.IgnoreControllerApplet)
                 return false;
 
             Dispatcher.UIThread.InvokeAsync(async () =>
@@ -95,7 +95,7 @@ namespace Ryujinx.Ava.UI.Applet
                             _parent.SettingsWindow =
                                 new SettingsWindow(_parent.VirtualFileSystem, _parent.ContentManager);
 
-                            await _parent.SettingsWindow.ShowDialog(window);
+                            await StyleableAppWindow.ShowAsync(_parent.SettingsWindow, window);
 
                             _parent.SettingsWindow = null;
 

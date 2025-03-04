@@ -2,9 +2,7 @@
 using Avalonia.Controls;
 using Avalonia.Media;
 using Ryujinx.Ava.Utilities.Configuration;
-using Ryujinx.Common;
 using Ryujinx.Common.Configuration;
-using Ryujinx.Common.Logging;
 using System;
 
 namespace Ryujinx.Ava.UI.Renderer
@@ -24,8 +22,7 @@ namespace Ryujinx.Ava.UI.Renderer
             EmbeddedWindow = ConfigurationState.Instance.Graphics.GraphicsBackend.Value switch
             {
                 GraphicsBackend.OpenGl => new EmbeddedWindowOpenGL(),
-                GraphicsBackend.Metal => new EmbeddedWindowMetal(),
-                GraphicsBackend.Vulkan or GraphicsBackend.Auto => new EmbeddedWindowVulkan(),
+                GraphicsBackend.Vulkan => new EmbeddedWindowVulkan(),
                 _ => throw new NotSupportedException()
             };
 
@@ -37,37 +34,8 @@ namespace Ryujinx.Ava.UI.Renderer
             {
                 EmbeddedWindowVulkan => GraphicsBackend.Vulkan,
                 EmbeddedWindowOpenGL => GraphicsBackend.OpenGl,
-                EmbeddedWindowMetal => GraphicsBackend.Metal,
                 _ => throw new NotImplementedException()
             };
-
-        public RendererHost(string titleId)
-        {
-            Focusable = true;
-            FlowDirection = FlowDirection.LeftToRight;
-
-            EmbeddedWindow =
-#pragma warning disable CS8509
-                TitleIDs.SelectGraphicsBackend(titleId, ConfigurationState.Instance.Graphics.GraphicsBackend) switch
-#pragma warning restore CS8509
-                {
-                    GraphicsBackend.OpenGl => new EmbeddedWindowOpenGL(),
-                    GraphicsBackend.Metal => new EmbeddedWindowMetal(),
-                    GraphicsBackend.Vulkan => new EmbeddedWindowVulkan(),
-                };
-
-            string backendText = EmbeddedWindow switch
-            {
-                EmbeddedWindowVulkan => "Vulkan",
-                EmbeddedWindowOpenGL => "OpenGL",
-                EmbeddedWindowMetal => "Metal",
-                _ => throw new NotImplementedException()
-            };
-                    
-            Logger.Info?.PrintMsg(LogClass.Gpu, $"Backend ({ConfigurationState.Instance.Graphics.GraphicsBackend.Value}): {backendText}");
-
-            Initialize();
-        }
         
         
         private void Initialize()
@@ -107,4 +75,3 @@ namespace Ryujinx.Ava.UI.Renderer
         }
     }
 }
-

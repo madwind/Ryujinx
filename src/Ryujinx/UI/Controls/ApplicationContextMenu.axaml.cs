@@ -9,6 +9,7 @@ using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.Common.Models;
 using Ryujinx.Ava.UI.Helpers;
 using Ryujinx.Ava.UI.ViewModels;
+using Ryujinx.Ava.UI.Views.Misc;
 using Ryujinx.Ava.UI.Windows;
 using Ryujinx.Ava.Utilities;
 using Ryujinx.Ava.Utilities.AppLibrary;
@@ -26,6 +27,7 @@ namespace Ryujinx.Ava.UI.Controls
 {
     public class ApplicationContextMenu : MenuFlyout
     {
+        
         public ApplicationContextMenu()
         {
             InitializeComponent();
@@ -91,11 +93,14 @@ namespace Ryujinx.Ava.UI.Controls
         public async void OpenCheatManager_Click(object sender, RoutedEventArgs args)
         {
             if (sender is MenuItem { DataContext: MainWindowViewModel { SelectedApplication: not null } viewModel })
-                await new CheatWindow(
-                    viewModel.VirtualFileSystem,
-                    viewModel.SelectedApplication.IdString,
-                    viewModel.SelectedApplication.Name,
-                    viewModel.SelectedApplication.Path).ShowDialog((Window)viewModel.TopLevel);
+                await StyleableAppWindow.ShowAsync(
+                    new CheatWindow(
+                        viewModel.VirtualFileSystem,
+                        viewModel.SelectedApplication.IdString,
+                        viewModel.SelectedApplication.Name,
+                        viewModel.SelectedApplication.Path
+                    )
+                );
         }
 
         public void OpenModsDirectory_Click(object sender, RoutedEventArgs args)
@@ -189,7 +194,7 @@ namespace Ryujinx.Ava.UI.Controls
                 DirectoryInfo mainDir = new(Path.Combine(AppDataManager.GamesDirPath, viewModel.SelectedApplication.IdString, "cache", "cpu", "0"));
                 DirectoryInfo backupDir = new(Path.Combine(AppDataManager.GamesDirPath, viewModel.SelectedApplication.IdString, "cache", "cpu", "1"));
 
-                List<FileInfo> cacheFiles = new();
+                List<FileInfo> cacheFiles = [];
 
                 if (mainDir.Exists)
                 {
@@ -200,7 +205,7 @@ namespace Ryujinx.Ava.UI.Controls
                 if (backupDir.Exists)
                 {
                     cacheFiles.AddRange(backupDir.EnumerateFiles("*.cache"));
-                    cacheFiles.AddRange(mainDir.EnumerateFiles("*.info"));
+                    cacheFiles.AddRange(backupDir.EnumerateFiles("*.info"));
                 }
 
                 if (cacheFiles.Count > 0)
@@ -386,13 +391,26 @@ namespace Ryujinx.Ava.UI.Controls
                     viewModel.SelectedApplication.Icon
                 );
         }
-        
+
+        public async void EditGameConfiguration_Click(object sender, RoutedEventArgs args)
+        {
+            if (sender is MenuItem { DataContext: MainWindowViewModel { SelectedApplication: not null } viewModel })
+            {
+                await StyleableAppWindow.ShowAsync(new GameSpecificSettingsWindow(viewModel));
+
+                // just checking for file presence
+                viewModel.SelectedApplication.HasIndependentConfiguration = File.Exists(Program.GetDirGameUserConfig(viewModel.SelectedApplication.IdString,false,false));
+
+                viewModel.RefreshView();
+            }
+        }
+
         public async void OpenApplicationCompatibility_Click(object sender, RoutedEventArgs args)
         {
             if (sender is MenuItem { DataContext: MainWindowViewModel { SelectedApplication: not null } viewModel })
                 await CompatibilityList.Show(viewModel.SelectedApplication.IdString);
         }
-        
+               
         public async void OpenApplicationData_Click(object sender, RoutedEventArgs args)
         {
             if (sender is MenuItem { DataContext: MainWindowViewModel { SelectedApplication: not null } viewModel })

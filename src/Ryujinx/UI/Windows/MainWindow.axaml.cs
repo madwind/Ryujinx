@@ -139,8 +139,24 @@ namespace Ryujinx.Ava.UI.Windows
             base.OnApplyTemplate(e);
 
             NotificationHelper.SetNotificationManager(this);
-
-            Executor.ExecuteBackgroundAsync(ShowIntelMacWarningAsync);
+            
+            Executor.ExecuteBackgroundAsync(async () =>
+            {
+                await ShowIntelMacWarningAsync();
+                FilePath firmwarePath = CommandLineState.FirmwareToInstallPathArg;
+                if (firmwarePath is not null)
+                {
+                    if ((firmwarePath.ExistsAsFile && firmwarePath.Extension is "xci" or "zip") ||
+                        firmwarePath.ExistsAsDirectory)
+                    {
+                        await Dispatcher.UIThread.InvokeAsync(() => 
+                            ViewModel.HandleFirmwareInstallation(firmwarePath));
+                        CommandLineState.FirmwareToInstallPathArg = null;
+                    }
+                    else
+                        Logger.Notice.Print(LogClass.UI, "Invalid firmware type provided. Path must be a directory, or a .zip or .xci file.");
+                }
+            });
         }
 
         private void OnScalingChanged(object sender, EventArgs e)
@@ -173,17 +189,12 @@ namespace Ryujinx.Ava.UI.Windows
         {
             Dispatcher.UIThread.Post(() =>
             {
-                List<LdnGameData> ldnGameDataArray = e.LdnData.ToList();
                 ViewModel.LdnData.Clear();
                 foreach (ApplicationData application in ViewModel.Applications.Where(it => it.HasControlHolder))
                 {
                     ref ApplicationControlProperty controlHolder = ref application.ControlHolder.Value;
-                    
-                    ViewModel.LdnData[application.IdString] = 
-                        LdnGameData.GetArrayForApp(
-                            ldnGameDataArray, 
-                            ref controlHolder
-                        );
+
+                    ViewModel.LdnData[application.IdString] = e.LdnData.Where(ref controlHolder);
                     
                     UpdateApplicationWithLdnData(application);
                 }
@@ -223,7 +234,7 @@ namespace Ryujinx.Ava.UI.Windows
             _deferLoad = true;
             _launchPath = launchPathArg;
             _launchApplicationId = launchApplicationId;
-            _startFullscreen = startFullscreenArg;
+            _startFullscreen = startFullscreenArg;          
         }
 
         public void SwitchToGameControl(bool startFullscreen = false)
@@ -374,6 +385,7 @@ namespace Ryujinx.Ava.UI.Windows
 
                             if (applicationData != null)
                             {
+                                ViewModel.SelectedApplication = applicationData;
                                 await ViewModel.LoadApplication(applicationData, _startFullscreen);
                             }
                             else
@@ -385,6 +397,7 @@ namespace Ryujinx.Ava.UI.Windows
                         else
                         {
                             applicationData = applications[0];
+                            ViewModel.SelectedApplication = applicationData;
                             await ViewModel.LoadApplication(applicationData, _startFullscreen);
                         }
                     }

@@ -631,6 +631,7 @@
 010030D012FF6000,"Bus Driver Simulator",,playable,2022-10-17 13:55:27
 0100A9101418C000,"BUSTAFELLOWS",nvdec,playable,2020-10-17 20:04:41
 0100177005C8A000,"BUTCHER",,playable,2021-01-11 18:50:17
+01008c2019598000,"Bluey: The Videogame",,playable,2025-02-11 04:38:00
 01000B900D8B0000,"Cadence of Hyrule: Crypt of the NecroDancer Featuring The Legend of Zelda",slow;nvdec,playable,2024-04-01 22:43:40
 010065700EE06000,"Cadence of Hyrule: Crypt of the NecroDancer Featuring The Legend of Zelda Demo",demo;gpu;nvdec,ingame,2021-02-14 21:48:15
 01005C00117A8000,"Café Enchanté",,playable,2020-11-13 14:54:25
@@ -969,6 +970,7 @@
 0100751007ADA000,"Don't Starve: Nintendo Switch Edition",nvdec,playable,2022-02-05 20:43:34
 010088B010DD2000,"Dongo Adventure",,playable,2022-10-04 16:22:26
 0100C1F0051B6000,"Donkey Kong Country™: Tropical Freeze",,playable,2024-08-05 16:46:10
+01009D901BC56000,"Donkey Kong Country™: Returns HD",gpu,ingame,2025-02-16 13:44:12
 0100F2C00F060000,"Doodle Derby",,boots,2020-12-04 22:51:48
 0100416004C00000,"DOOM",gpu;slow;nvdec;online-broken,ingame,2024-09-23 15:40:07
 010018900DD00000,"DOOM (1993)",nvdec;online-broken,menus,2022-09-06 13:32:19
@@ -1158,7 +1160,7 @@
 010095600AA36000,"Fill-a-Pix: Phil's Epic Adventure",,playable,2020-12-22 13:48:22
 0100C3A00BB76000,"Fimbul",nvdec,playable,2022-07-26 13:31:47
 0100C8200E942000,"Fin and the Ancient Mystery",nvdec,playable,2020-12-17 16:40:39
-01000EA014150000,"FINAL FANTASY",crash,nothing,2024-09-05 20:55:30
+01000EA014150000,"FINAL FANTASY",,playable,2025-02-16 21:27:30
 01006B7014156000,"FINAL FANTASY II",crash,nothing,2024-04-13 19:18:04
 01006F000B056000,"FINAL FANTASY IX",audout;nvdec,playable,2021-06-05 11:35:00
 0100AA201415C000,"FINAL FANTASY V",,playable,2023-04-26 01:11:55
@@ -1381,6 +1383,9 @@
 0100763015C2E000,"Gunvolt Chronicles: Luminous Avenger iX 2",crash;Needs Update,nothing,2022-04-29 15:34:34
 01002C8018554000,"Gurimugurimoa OnceMore Demo",,playable,2022-07-29 22:07:31
 0100AC601DCA8000,"GYLT",crash,ingame,2024-03-18 20:16:51
+0100c3c012718000,"Grand Theft Auto: III – The Definitive Edition",gpu;UE4,ingame,2022-10-31 20:13:52
+0100182014022000,"Grand Theft Auto: Vice City – The Definitive Edition",gpu;UE4,ingame,2022-10-31 20:13:52
+010065a014024000,"Grand Theft Auto: San Andreas – The Definitive Edition",gpu;UE4,ingame,2022-10-31 20:13:52
 0100822012D76000,"HAAK",gpu,ingame,2023-02-19 14:31:05
 01007E100EFA8000,"Habroxia",,playable,2020-06-16 23:04:42
 0100535012974000,"Hades",vulkan,playable,2022-10-05 10:45:21
@@ -1435,7 +1440,7 @@
 010083A018262000,"Hitman: Blood Money — Reprisal",deadlock,ingame,2024-09-28 16:28:50
 01004B100A5CC000,"Hob: The Definitive Edition",,playable,2021-01-13 09:39:19
 0100F7300ED2C000,"Hoggy2",,playable,2022-10-10 13:53:35
-0100F7E00C70E000,"Hogwarts Legacy",slow,ingame,2024-09-03 19:53:58
+0100F7E00C70E000,"Hogwarts Legacy",UE4;slow,ingame,2024-09-03 19:53:58
 0100633007D48000,"Hollow Knight",nvdec,playable,2023-01-16 15:44:56
 0100F2100061E800,"Hollow0",UE4;gpu,ingame,2021-03-03 23:42:56
 0100342009E16000,"Holy Potatoes! What The Hell?!",,playable,2020-07-03 10:48:56
@@ -1799,6 +1804,7 @@
 010005A00B312000,"Megaton Rainfall",gpu;opengl,boots,2022-08-04 18:29:43
 0100EA100DF92000,"Meiji Katsugeki Haikara Ryuuseigumi - Seibai Shimaseu, Yonaoshi Kagyou",32-bit;nvdec,playable,2022-12-05 13:19:12
 0100B360068B2000,"Mekorama",gpu,boots,2021-06-17 16:37:21
+010012301932A000,"Melatonin",,playable,2025-02-16 04:08:17
 01000FA010340000,"Melbits World",nvdec;online,menus,2021-11-26 13:51:22
 0100F68019636000,"Melon Journey",,playable,2023-04-23 21:20:01
 010079C012896000,"Memories Off -Innocent Fille- for Dearest",,playable,2020-08-04 07:31:22
@@ -2727,7 +2733,7 @@
 0100C2500FC20000,"Splatoon™ 3",ldn-works;opengl-backend-bug;LAN;amd-vendor-bug,playable,2024-08-04 23:49:11
 0100BA0018500000,"Splatoon™ 3: Splatfest World Premiere",gpu;online-broken;demo,ingame,2022-09-19 03:17:12
 010062800D39C000,"SpongeBob SquarePants: Battle for Bikini Bottom - Rehydrated",online-broken;UE4;ldn-broken;vulkan-backend-bug,playable,2023-08-01 19:29:34
-01009FB0172F4000,"SpongeBob SquarePants: The Cosmic Shake",gpu;UE4,ingame,2023-08-01 19:29:53
+01009FB0172F4000,"SpongeBob SquarePants: The Cosmic Shake",gpu;UE4,ingame,2024-03-04 16:35:00
 010097C01336A000,"Spooky Chase",,playable,2022-11-04 12:17:44
 0100C6100D75E000,"Spooky Ghosts Dot Com",,playable,2021-06-15 15:16:11
 0100DE9005170000,"Sports Party",nvdec,playable,2021-03-05 13:40:42
@@ -2838,6 +2844,7 @@
 01009B90006DC000,"Super Mario Maker™ 2",online-broken;ldn-broken,playable,2024-08-25 11:05:19
 0100000000010000,"Super Mario Odyssey™",nvdec;intel-vendor-bug;mac-bug,playable,2024-08-25 01:32:34
 010036B0034E4000,"Super Mario Party™",gpu;Needs Update;ldn-works,ingame,2024-06-21 05:10:16
+0100965017338000,"Super Mario Party Jamboree",mac-bug;gpu,ingame,2025-02-17 02:09:20
 0100BC0018138000,"Super Mario RPG™",gpu;audio;nvdec,ingame,2024-06-19 17:43:42
 ,"Super Mario World",homebrew,boots,2024-06-13 01:40:31
 010049900F546000,"Super Mario™ 3D All-Stars",services-horizon;slow;vulkan;amd-vendor-bug,ingame,2024-05-07 02:38:16

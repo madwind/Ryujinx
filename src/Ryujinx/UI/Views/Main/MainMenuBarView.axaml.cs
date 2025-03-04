@@ -6,6 +6,7 @@ using Gommon;
 using LibHac.Common;
 using LibHac.Ns;
 using Ryujinx.Ava.Common.Locale;
+using Ryujinx.Ava.UI.Controls;
 using Ryujinx.Ava.UI.Helpers;
 using Ryujinx.Ava.UI.ViewModels;
 using Ryujinx.Ava.UI.Windows;
@@ -19,15 +20,15 @@ using Ryujinx.Common.Utilities;
 using Ryujinx.HLE.HOS.Services.Nfc.AmiiboDecryption;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace Ryujinx.Ava.UI.Views.Main
 {
-    public partial class MainMenuBarView : UserControl
+    public partial class MainMenuBarView : RyujinxControl<MainWindowViewModel>
     {
         public MainWindow Window { get; private set; }
-        public MainWindowViewModel ViewModel { get; private set; }
 
         public MainMenuBarView()
         {
@@ -72,7 +73,7 @@ namespace Ryujinx.Ava.UI.Views.Main
                     {
                         Content = $".{it.FileName}",
                         IsChecked = it.FileType.GetConfigValue(ConfigurationState.Instance.UI.ShownFileTypes),
-                        Command = MiniCommand.Create(() => Window.ToggleFileType(it.FileName))
+                        Command = Commands.Create(() => Window.ToggleFileType(it.FileName))
                     }
                 );
 
@@ -107,7 +108,7 @@ namespace Ryujinx.Ava.UI.Views.Main
                     Margin = new Thickness(3, 0, 3, 0),
                     HorizontalAlignment = HorizontalAlignment.Stretch,
                     Header = languageName,
-                    Command = MiniCommand.Create(() => MainWindowViewModel.ChangeLanguage(language))
+                    Command = Commands.Create(() => MainWindowViewModel.ChangeLanguage(language))
                 };
 
                 yield return menuItem;
@@ -130,9 +131,26 @@ namespace Ryujinx.Ava.UI.Views.Main
             Window.SettingsWindow = new(Window.VirtualFileSystem, Window.ContentManager);
 
             Rainbow.Enable();
-            
-            await Window.SettingsWindow.ShowDialog(Window);
-            
+
+            if (ViewModel.SelectedApplication is null) // Checks if game data exists
+            {
+                await StyleableAppWindow.ShowAsync(Window.SettingsWindow);
+            }
+            else
+            { 
+                bool customConfigExists = File.Exists(Program.GetDirGameUserConfig(ViewModel.SelectedApplication.IdString));
+
+                if (!ViewModel.IsGameRunning || !customConfigExists)
+                {
+                    await Window.SettingsWindow.ShowDialog(Window); // The game is not running, or if the user configuration does not exist
+                }
+                else
+                {
+                    // If there is a custom configuration in the folder
+                    await StyleableAppWindow.ShowAsync(new GameSpecificSettingsWindow(ViewModel, customConfigExists));
+                }
+            }
+
             Rainbow.Disable();
             Rainbow.Reset();
 
@@ -158,11 +176,13 @@ namespace Ryujinx.Ava.UI.Views.Main
 
             string name = ViewModel.AppHost.Device.Processes.ActiveApplication.ApplicationControlProperties.Title[(int)ViewModel.AppHost.Device.System.State.DesiredTitleLanguage].NameString.ToString();
 
-            await new CheatWindow(
-                Window.VirtualFileSystem,
-                ViewModel.AppHost.Device.Processes.ActiveApplication.ProgramIdText,
-                name,
-                ViewModel.SelectedApplication.Path).ShowDialog(Window);
+            await StyleableAppWindow.ShowAsync(
+                new CheatWindow(
+                    Window.VirtualFileSystem,
+                    ViewModel.AppHost.Device.Processes.ActiveApplication.ProgramIdText,
+                    name,
+                    ViewModel.SelectedApplication.Path)
+            );
 
             ViewModel.AppHost.Device.EnableCheats();
         }

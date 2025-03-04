@@ -1,5 +1,6 @@
 using ARMeilleure;
 using Gommon;
+using LibHac.Tools.FsSystem;
 using Ryujinx.Ava.Utilities.Configuration.System;
 using Ryujinx.Ava.Utilities.Configuration.UI;
 using Ryujinx.Common;
@@ -10,6 +11,7 @@ using Ryujinx.Common.Helper;
 using Ryujinx.Common.Logging;
 using Ryujinx.Common.Utilities;
 using Ryujinx.HLE;
+using Ryujinx.HLE.HOS.SystemState;
 using System.Collections.Generic;
 using System.Linq;
 using RyuLogger = Ryujinx.Common.Logging.Logger;
@@ -18,7 +20,7 @@ namespace Ryujinx.Ava.Utilities.Configuration
 {
     public partial class ConfigurationState
     {
-                /// <summary>
+        /// <summary>
         /// UI configuration section
         /// </summary>
         public class UISection
@@ -383,7 +385,7 @@ namespace Ryujinx.Ava.Utilities.Configuration
             /// <summary>
             ///  Ignore Controller Applet
             /// </summary>
-            public ReactiveObject<bool> IgnoreApplet { get; private set; }
+            public ReactiveObject<bool> IgnoreControllerApplet { get; private set; }
 
             /// <summary>
             /// Uses Hypervisor over JIT if available
@@ -424,8 +426,8 @@ namespace Ryujinx.Ava.Utilities.Configuration
                 DramSize.LogChangesToValue(nameof(DramSize));
                 IgnoreMissingServices = new ReactiveObject<bool>();
                 IgnoreMissingServices.LogChangesToValue(nameof(IgnoreMissingServices));
-                IgnoreApplet = new ReactiveObject<bool>();
-                IgnoreApplet.LogChangesToValue(nameof(IgnoreApplet));
+                IgnoreControllerApplet = new ReactiveObject<bool>();
+                IgnoreControllerApplet.LogChangesToValue(nameof(IgnoreControllerApplet));
                 AudioVolume = new ReactiveObject<float>();
                 AudioVolume.LogChangesToValue(nameof(AudioVolume));
                 UseHypervisor = new ReactiveObject<bool>();
@@ -647,6 +649,14 @@ namespace Ryujinx.Ava.Utilities.Configuration
             /// </summary>
             public ReactiveObject<string> LdnServer { get; private set; }
 
+            public string GetLdnServer()
+            {
+                string ldnServer = LdnServer;
+                return string.IsNullOrEmpty(ldnServer) 
+                    ? SharedConstants.DefaultLanPlayHost 
+                    : ldnServer;
+            }
+
             public MultiplayerSection()
             {
                 LanInterfaceId = new ReactiveObject<string>();
@@ -829,5 +839,35 @@ namespace Ryujinx.Ava.Utilities.Configuration
             EnableHardwareAcceleration = new ReactiveObject<bool>();
             HideCursor = new ReactiveObject<HideCursorMode>();
         }
+
+        public HleConfiguration CreateHleConfiguration() =>
+            new(
+                System.DramSize,
+                (SystemLanguage)System.Language.Value,
+                (RegionCode)System.Region.Value,
+                Graphics.VSyncMode,
+                System.EnableDockedMode,
+                System.EnablePtc,
+                System.EnableInternetAccess,
+                System.EnableFsIntegrityChecks 
+                    ? IntegrityCheckLevel.ErrorOnInvalid 
+                    : IntegrityCheckLevel.None,
+                System.FsGlobalAccessLogMode,
+                System.MatchSystemTime
+                    ? 0
+                    : System.SystemTimeOffset,
+                System.TimeZone,
+                System.MemoryManagerMode,
+                System.IgnoreMissingServices,
+                Graphics.AspectRatio,
+                System.AudioVolume,
+                System.UseHypervisor,
+                Multiplayer.LanInterfaceId,
+                Multiplayer.Mode,
+                Multiplayer.DisableP2p,
+                Multiplayer.LdnPassphrase,
+                Instance.Multiplayer.GetLdnServer(),
+                Instance.Graphics.CustomVSyncInterval,
+                Instance.Hacks.ShowDirtyHacks ? Instance.Hacks.EnabledHacks : null);
     }
 }

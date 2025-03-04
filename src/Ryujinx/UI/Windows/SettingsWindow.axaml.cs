@@ -1,6 +1,4 @@
-using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Input;
 using FluentAvalonia.UI.Controls;
 using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.UI.ViewModels;
@@ -8,7 +6,6 @@ using Ryujinx.HLE.FileSystem;
 using Ryujinx.Input;
 using System;
 using System.Linq;
-using Key = Avalonia.Input.Key;
 
 namespace Ryujinx.Ava.UI.Windows
 {
@@ -27,10 +24,6 @@ namespace Ryujinx.Ava.UI.Windows
 
             InitializeComponent();
             Load();
-
-#if DEBUG
-            this.AttachDevTools(new KeyGesture(Key.F12, KeyModifiers.Alt));
-#endif
         }
 
         public SettingsWindow()
@@ -45,7 +38,7 @@ namespace Ryujinx.Ava.UI.Windows
         {
             InputPage.InputView?.SaveCurrentProfile();
 
-            if (Owner is MainWindow window && (ViewModel.GameDirectoryChanged || ViewModel.AutoloadDirectoryChanged))
+            if (Owner is MainWindow window && ViewModel.GameListNeedsRefresh)
             {
                 window.LoadApplications();
             }
@@ -64,34 +57,34 @@ namespace Ryujinx.Ava.UI.Windows
             {
                 switch (navItem.Tag.ToString())
                 {
-                    case nameof(UiPage):
+                    case "UiPage":
                         UiPage.ViewModel = ViewModel;
                         NavPanel.Content = UiPage;
                         break;
-                    case nameof(InputPage):
+                    case "InputPage":
                         NavPanel.Content = InputPage;
                         break;
-                    case nameof(HotkeysPage):
+                    case "HotkeysPage":
                         NavPanel.Content = HotkeysPage;
                         break;
-                    case nameof(SystemPage):
+                    case "SystemPage":
                         SystemPage.ViewModel = ViewModel;
                         NavPanel.Content = SystemPage;
                         break;
-                    case nameof(CpuPage):
+                    case "CpuPage":
                         NavPanel.Content = CpuPage;
                         break;
-                    case nameof(GraphicsPage):
+                    case "GraphicsPage":
                         NavPanel.Content = GraphicsPage;
                         break;
-                    case nameof(AudioPage):
+                    case "AudioPage":
                         NavPanel.Content = AudioPage;
                         break;
-                    case nameof(NetworkPage):
+                    case "NetworkPage":
                         NetworkPage.ViewModel = ViewModel;
                         NavPanel.Content = NetworkPage;
                         break;
-                    case nameof(LoggingPage):
+                    case "LoggingPage":
                         NavPanel.Content = LoggingPage;
                         break;
                     case nameof(HacksPage):

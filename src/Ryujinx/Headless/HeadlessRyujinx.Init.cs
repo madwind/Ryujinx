@@ -2,7 +2,8 @@ using DiscordRPC;
 using LibHac.Tools.FsSystem;
 using Ryujinx.Audio.Backends.SDL3;
 using Ryujinx.Ava;
-using Ryujinx.Ava.Utilities.Configuration;
+using Ryujinx.Ava.Systems;
+using Ryujinx.Ava.Systems.Configuration;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Configuration.Hid;
 using Ryujinx.Common.Configuration.Hid.Controller;
@@ -312,49 +313,42 @@ namespace Ryujinx.Headless
             return new OpenGLRenderer();
         }
 
-        private static Switch InitializeEmulationContext(WindowBase window, IRenderer renderer, Options options)
-        {
-            BackendThreading threadingMode = options.BackendThreading;
-
-            bool threadedGAL = threadingMode == BackendThreading.On || (threadingMode == BackendThreading.Auto && renderer.PreferThreading);
-
-            if (threadedGAL)
-            {
-                renderer = new ThreadedRenderer(renderer);
-            }
-
-            HLEConfiguration configuration = new(_virtualFileSystem,
-                _libHacHorizonManager,
-                _contentManager,
-                _accountManager,
-                _userChannelPersistence,
-                renderer,
-                new SDL3HardwareDeviceDriver(),
-                options.DramSize,
-                window,
-                options.SystemLanguage,
-                options.SystemRegion,
-                options.VSyncMode,
-                !options.DisableDockedMode,
-                !options.DisablePTC,
-                options.EnableInternetAccess,
-                !options.DisableFsIntegrityChecks ? IntegrityCheckLevel.ErrorOnInvalid : IntegrityCheckLevel.None,
-                options.FsGlobalAccessLogMode,
-                options.SystemTimeOffset,
-                options.SystemTimeZone,
-                options.MemoryManagerMode,
-                options.IgnoreMissingServices,
-                options.AspectRatio,
-                options.AudioVolume,
-                options.UseHypervisor ?? true,
-                options.MultiplayerLanInterfaceId,
-                Common.Configuration.Multiplayer.MultiplayerMode.Disabled,
-                false,
-                string.Empty,
-                string.Empty,
-                options.CustomVSyncInterval);
-
-            return new Switch(configuration);
-        }
+        private static Switch InitializeEmulationContext(WindowBase window, IRenderer renderer, Options options) =>
+            new(
+                new HleConfiguration(
+                        options.DramSize,
+                        options.SystemLanguage,
+                        options.SystemRegion,
+                        options.VSyncMode,
+                        !options.DisableDockedMode,
+                        !options.DisablePTC,
+                        options.EnableInternetAccess,
+                        !options.DisableFsIntegrityChecks ? IntegrityCheckLevel.ErrorOnInvalid : IntegrityCheckLevel.None,
+                        options.FsGlobalAccessLogMode,
+                        options.SystemTimeOffset,
+                        options.SystemTimeZone,
+                        options.MemoryManagerMode,
+                        options.IgnoreMissingServices,
+                        options.AspectRatio,
+                        options.AudioVolume,
+                        options.UseHypervisor ?? true,
+                        options.MultiplayerLanInterfaceId,
+                        Common.Configuration.Multiplayer.MultiplayerMode.Disabled,
+                        false,
+                        string.Empty,
+                        string.Empty,
+                        options.CustomVSyncInterval
+                    )
+                    .Configure(
+                        _virtualFileSystem,
+                        _libHacHorizonManager,
+                        _contentManager,
+                        _accountManager,
+                        _userChannelPersistence,
+                        renderer.TryMakeThreaded(options.BackendThreading),
+                        new SDL3HardwareDeviceDriver(),
+                        window
+                    )
+            );
     }
 }

@@ -1,4 +1,4 @@
-$env:TAG_NAME="release-3.2.6"
+$env:TAG_NAME="release-3.2.8"
 
 git submodule update --init --recursive
 git -C src/Ryujinx.SDL3-CS/external/SDL fetch --tags

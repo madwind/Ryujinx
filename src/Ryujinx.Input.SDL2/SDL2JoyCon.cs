@@ -275,6 +275,10 @@ namespace Ryujinx.Input.SDL2
             }
         }
 
+        public void SetLed(uint packedRgb)
+        {
+        }
+
         public GamepadStateSnapshot GetStateSnapshot()
         {
             return IGamepad.GetStateSnapshot(this);

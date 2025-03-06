@@ -96,6 +96,10 @@ namespace Ryujinx.Input.SDL2
             right.SetConfiguration(configuration);
         }
 
+        public void SetLed(uint packedRgb)
+        {
+        }
+
         public void SetTriggerThreshold(float triggerThreshold)
         {
             left.SetTriggerThreshold(triggerThreshold);
